@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HTML5 Canvas Demo</title>
+<!--[if IE]>
+  <script type="text/javascript" src="excanvas.js"></script>
+<![endif]-->
+<script>
+  window.onload=function() {
+    var mycanvas=document.getElementById("myCanvasTag");
+    var mycontext=mycanvas.getContext('2d');
+    mycontext.fillStyle='rgb(0,0,255)'; 
+    //前面两个参数:是左上角，后面两个参数是宽和高
+    mycontext.fillRect(30,30,300,300);           
+    mycontext.fillStyle='rgba(0,255,0,0.5)';  
+    mycontext.fillRect(60,60,300,300);    
+    mycontext.fillStyle='rgba(255,0,0,0.25)';  
+    mycontext.fillRect(90,90,300,300); 
+  }
+</script>
+</head>
+<body>
+<div style="margin-left:30px;">
+<canvas id="myCanvasTag" width="400" height="400" style="border: 10px yellow solid">
+</canvas>
+<br /><br />
+<a href="index.html">back</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<title>香香,原谅我嘿</title>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<style type="text/css">
+		@font-face {
+			font-family: digit;
+			/*src: url('digital-7_mono.ttf') format("truetype");*/
+			src:local('☺'),  
+        url('digital-7_mono.ttf') format("truetype");
+       
+        font-weight:normal;  
+        font-style:normal; 
+		}
+	</style>
+
+	<link href="css/default.css" type="text/css" rel="stylesheet">
+	<script type="text/javascript" src="js/jquery.js"></script>
+	<script type="text/javascript" src="js/garden.js"></script>
+    <script type="text/javascript" src="js/functions.js"></script>
+    <script type="text/javascript" src="js/mylove.js"></script>
+     <script type="text/javascript" src="js/can1.js"></script>
+    <script type="text/javascript">
+       $(function(){
+	         $("#back").action({
+	            actionImg:"image/back1.png",
+	         });
+		});
+    
+    </script>
+</head>
+
+<body>
+    
+     <div id="back" class="common_back">
+       <canvas id="can1"></canvas>
+    
+    </div>
+    <div  class="music_back">
+    	<embed class="zyddn_back" src="music/zyddn.mp3" autostart="true" loop="true" width="100" height="60" controls="smallconsole">
+    </div>
+	<div id="mainDiv">
+		<div id="content">
+			<div id="code">
+				<span class="font_name">香香,别再生我气了,好不好啊?</span><br />
+				<span class="signature">你也知道我嘴巴是挺笨的,不会说好话,老是惹你生气来着,</span><br />
+				<span class="signature">但是我内心怎么想的,你是知道的.</span><br />
+				<span class="signature">如果你还在意盆栽的事,我先说那就是我的错,</span><br />
+				<span class="signature">跟朋友聊天的时候,想起你跟我说过,你喜欢养花什么的,我就想去给你买盆栽.</span><br />
+				<span class="signature">跟朋友说是你想要盆栽,惹你生气了,希望你能原谅我.</span><br />
+				<span class="signature">还有那天晚上说是给我的东西,我也没拿.</span><br />
+				<span class="signature">后来你要送给我,我是置之不顾,甩头就走了.</span><br />
+				<span class="signature">这件事也是我不好,当时真的是心里面很乱,我只是想一个个静静.</span><br />
+
+				<span class="signature">每次和你出来玩的时候,每时每刻都是开心的,</span><br />
+				<span class="signature">不知道为什么了,这种感觉别人是给不了的.</span><br />
+				<span class="signature">哪怕是一直陪着你,也是我最有意义的事.</span><br />
+				
+				<span class="signature">平时看到你开心,我也会跟着你一起开心.</span><br />
+				<span class="signature">你不开心了,我会第一个站出来问你是怎么了.</span><br />
+				<span class="signature">慢慢地这种喜欢就更加强烈了.</span><br />
+				<span class="signature">平时跟你开玩笑说到帅哥的时候,心里面就有种吃醋的感觉.</span><br />
+				<span class="signature">虽然我知道这只是开玩笑的,但有时候还是当真了.</span><br />
+				<span class="signature">因为我在意你的每一个想法.</span><br />
+				<span class="signature">慢慢地这种喜欢就变得更加强烈了.</span><br />
+				<span class="signature">还有平时对你动手动脚的,那是因为喜欢你.</span><br />
+				<span class="signature">我也是不太会写长篇文章的人,说了点真心话.</span><br />
+				<span class="signature">说错话了,我肯定会第一时间站出来承认错误.</span><br />
+				<span class="signature">希望你不要生我气了,原谅我.</span><br />
+			</div>
+			
+			<div id="loveHeart">
+				<canvas id="garden"></canvas>
+				<div id="words">
+					<div id="messages">
+						XiangXiang, I am waiting......
+						<div id="elapseClock"></div>
+					</div>
+					<div id="loveu">
+						I have prepared.<br/>
+						<div class="signature">- ItBoy</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="copyright">
+			Inspired by <a href="#">FlowerPower</a> project.<br />
+			Copyright © 2015 <a href='#'>xiangcheng.me</a> 2015.3.1
+		</div>
+	</div>
+	<script type="text/javascript">
+		var offsetX = $("#loveHeart").width() / 2;
+		var offsetY = $("#loveHeart").height() / 2 - 55;
+		var together = new Date();
+		together.setFullYear(2017, 12, 20);
+		together.setHours(14);
+		together.setMinutes(0);
+		together.setSeconds(0);
+		together.setMilliseconds(0);
+		
+		if (!document.createElement('canvas').getContext) {
+			var msg = document.createElement("div");
+			msg.id = "errorMsg";
+			msg.innerHTML = "Your browser doesn't support HTML5!<br/>Recommend use Chrome 14+/IE 9+/Firefox 7+/Safari 4+"; 
+			document.body.appendChild(msg);
+			$("#code").css("display", "none")
+			$("#copyright").css("position", "absolute");
+			$("#copyright").css("bottom", "10px");
+		    document.execCommand("stop");
+		} else {
+			setTimeout(function () {
+				startHeartAnimation();
+			}, 5000);
+
+			timeElapse(together);
+			setInterval(function () {
+				timeElapse(together);
+			}, 500);
+
+			adjustCodePosition();
+			$("#code").typewriter();
+		}
+	</script>
+</body>
+</html>

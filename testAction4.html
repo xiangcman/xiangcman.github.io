@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HTML5 Canvas Demo</title>
+<!--[if IE]>
+  <script type="text/javascript" src="excanvas.js"></script>
+<![endif]-->
+<script>
+  window.onload=function() {
+    var mycanvas=document.getElementById("myCanvasTag");
+    var mycontext=mycanvas.getContext('2d');
+    var mygradient=mycontext.createRadialGradient(300,300,0,300,300,300);           
+    mygradient.addColorStop("0","magenta");
+    mygradient.addColorStop(".25","blue");
+    mygradient.addColorStop(".50","green");
+    mygradient.addColorStop(".75","yellow");
+    mygradient.addColorStop("1.0","red");                
+    mycontext.fillStyle=mygradient;
+    mycontext.fillRect(0,0,400,400);
+  }
+</script>
+</head>
+<body>
+<div style="margin-left:30px;">
+<canvas id="myCanvasTag" width="400" height="400" style="border: 10px blue solid">
+</canvas>
+<br /><br />
+<a href="index.html">back</a>
+</div>
+</body>
+</html>
