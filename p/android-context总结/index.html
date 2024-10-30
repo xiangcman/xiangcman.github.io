@@ -435,8 +435,8 @@ ActivityThread.performLaunchActivity</p>
 <p>通过base调用getSystemService，而base其实也是activity。Application是继承自ContextWrapper：</p>
 <img src=getSystemService详细过程.png width=60% />
 <p>base是contextimpl，最终调用的是contextimpl的getSystemService，activity亦是如此：</p>
-<img src=context的getSystemService.png width=60% />
-<img src=从服务中心获取对应的service.png width=60% />
+<img src=context的getSystemservice.png width=60% />
+<img src=从服务中心中获取对应的service.png width=60% />
 <p>从SYSTEM_SERVICE_FETCHERS中获取：</p>
 <img src=从SYSTEM_SERVICE_FETCHERS中获取.png width=60% />
 <p>最终是在此处添加了一个PhoneLayoutInflater对象，并把contextimpl.getOuterContext传进去了，此处传进去的是Activity对象。</p>
