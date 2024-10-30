@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n">
+<title>Android context总结</title>
+
+<link rel='canonical' href='https://example.com/p/android-context%E6%80%BB%E7%BB%93/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Android context总结">
+<meta property='og:description' content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n">
+<meta property='og:url' content='https://example.com/p/android-context%E6%80%BB%E7%BB%93/'>
+<meta property='og:site_name' content='xiancheng blog'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-10-25T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-10-25T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="Android context总结">
+<meta name="twitter:description" content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu13739649187745961479.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiancheng blog</a></h1>
+            <h2 class="site-description">日常笔记</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://example.com/" selected>English</option>
+                                
+                                    <option value="https://example.com/zh-cn/" >中文</option>
+                                
+                                    <option value="https://example.com/ar/" >عربي</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#类图">类图</a></li>
+        <li><a href="#context创建">Context创建</a></li>
+        <li><a href="#context传递">Context传递</a></li>
+        <li><a href="#主题设置">主题设置</a></li>
+        <li><a href="#layoutinflater中的context">LayoutInflater中的context</a>
+          <ol>
+            <li><a href="#layoutinflaterfromcontext">LayoutInflater.from(context)：</a></li>
+            <li><a href="#layoutinflaterinflate">layoutinflater.inflate:</a></li>
+          </ol>
+        </li>
+        <li><a href="#attr部分">Attr部分</a>
+          <ol>
+            <li><a href="#defstyleattrdefstyleres">defStyleAttr、defStyleRes</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%BA%90%E7%A0%81/" >
+                源码
+            </a>
+        
+            <a href="/categories/ui/" >
+                Ui
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/android-context%E6%80%BB%E7%BB%93/">Android context总结</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 25, 2024</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    2 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h3 id="类图">类图
+</h3><img src=context.png width=60% />
+<h3 id="context创建">Context创建
+</h3><p>Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl
+ActivityThread.performLaunchActivity</p>
+<img src=contextimpl创建过程.png width=60% />
+<img src=contextimpl创建详细过程.png width=80% />
+<p>接着会调用contextimpl的setOuterContext，传入的是activity。</p>
+<img src=setOuterContext.png width=60% />
+<img src=setOuterContext过程.png width=60% />
+<blockquote>
+<p>结论：contextImpl中的outerContext指向了activity。</p>
+</blockquote>
+<h3 id="context传递">Context传递
+</h3><img src=attach调用.png width=60% />
+<p>attach调用了attachBaseContext，并把contextimpl传进去了：</p>
+<img src=attachBaseContext.png width=60% />
+<p>该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：</p>
+<img src=getBaseContext.png width=60% />
+<p>getBaseContext指向了刚刚attach方法传进来的contextimpl。</p>
+<img src=getApplicationContext.png width=60% />
+<p>指向了mBase.getApplicationContext：</p>
+<img src=getApplicationContext详细过程.png width=60% />
+<p>mPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：</p>
+<img src=创建application.png width=60% />
+<blockquote>
+<p>结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。</p>
+</blockquote>
+<h3 id="主题设置">主题设置
+</h3><p>回到performLaunchActivity，给activity设置主题：</p>
+<img src=给activity设置主题.png width=60% />
+<img src=setTheme.png width=60% />
+<img src=setTheme详细过程.png width=60% />
+<img src=初始化theme过程.png width=60% />
+<p>将theme的resid传进来，最终会把resid这个theme追加到mTheme上。这里牵扯到资源加载，后面再说。</p>
+<h3 id="layoutinflater中的context">LayoutInflater中的context
+</h3><h4 id="layoutinflaterfromcontext">LayoutInflater.from(context)：
+</h4><img src=layoutinflater.png width=60% />
+<p>此处的context一般是activity，看activity.getSystemService方法，如果传入的不是activity，比如是ContextThemeWrapper，Application会怎么样：</p>
+<img src=getSystemService.png width=60% />
+<p>通过base调用getSystemService，而base其实也是activity。Application是继承自ContextWrapper：</p>
+<img src=getSystemService详细过程.png width=60% />
+<p>base是contextimpl，最终调用的是contextimpl的getSystemService，activity亦是如此：</p>
+<img src=context的getSystemService.png width=60% />
+<img src=从服务中心获取对应的service.png width=60% />
+<p>从SYSTEM_SERVICE_FETCHERS中获取：</p>
+<img src=从SYSTEM_SERVICE_FETCHERS中获取.png width=60% />
+<p>最终是在此处添加了一个PhoneLayoutInflater对象，并把contextimpl.getOuterContext传进去了，此处传进去的是Activity对象。</p>
+<h4 id="layoutinflaterinflate">layoutinflater.inflate:
+</h4><p>此过程调用createViewFromTag来创建view：</p>
+<img src=createViewFromTag.png width=60% />
+<p>此处看view有没有theme属性，有的话，则构造一个contextthemeWrapper出来，举个例子：</p>
+<img src=布局例子.png width=60% />
+<p>此处定义了一个theme属性，那么给该view的构造器传入的context就是一个contextThemeWrapper对象。</p>
+<img src=传入context.png width=60% />
+<p>在from方法里面，传入一个contextthemewrapper对象，并携带一个style。根据上面分析from方法时，contextthemewrapper是通过base.getSystemService。此处的base又是activity，又因为activity.getSystemService，调用base.getSystemService，所以最终又回到了contextimpl.getSystemService。而在创建PhoneLayoutInflater的时候，又通过contextimpl.getOuterContext传入到PhoneLayoutInflater构造器中，但是在contextthemewrapper中最后又调了PhoneLayoutInflater的cloneInContext：</p>
+<img src=cloneInContext.png width=60% />
+<img src=cloneInContext详细过程.png width=60% />
+<blockquote>
+<p>所以此种情况下，最终给view传的context也是一个contextthemewrapper的context。</p>
+</blockquote>
+<h3 id="attr部分">Attr部分
+</h3><p>从主题中获取属性：</p>
+<img src=主题属性.png width=60% />
+<p>最终这些属性是通过context的obtainStyledAttributes获取属性值。常见的方法是：</p>
+<img src=obtainStyledAttributes.png width=60% />
+<p>AttributeSet表示所有的属性集，它是在inflate过程中解析到view的属性集。
+attrs表示的是要从哪个属性集中取到属性。
+例如：</p>
+<img src=attrs属性.png width=60% />
+<p>attrs文件中定义一个declare-styleable属性集，aapt工具会生成对应的R.class，但是此时是一个R.jar文件：</p>
+<img src=R文件位置.png width=60% />
+<p>该文件在<strong>app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debug/R.jar</strong>，反编译该jar文件：</p>
+<img src=反编译后的R文件.png width=60% />
+<p>最终所有的资源类型都会生成一个R$**.class的类，而R.class其实是一个空壳：</p>
+<img src=R.class原型.png width=30% />
+<p>看刚才定义的declare-styleable生成如下：</p>
+<img src=declare-styleable.png width=30% />
+<p>并且会在R$attr.class下面也会生成一个两个int值：</p>
+<img src=attr中的属性值.png width=30% />
+<p>可以看出来生出来一个R.styleable.TestView的数组和两个int值，分别是R.styleable.TestView_attr1和R.styleable.TestView_attr2，它两分别代表TestView数组的索引，而对应的值是定义在resource.arsc文件中：</p>
+<img src=resource.arsc结果.png width=60% />
+<blockquote>
+<p>所以最终得出结论是：通过context.obtainStyledAttributes传入attrbuteset和attrs数组，得到了typearray，然后通过typearray的索引得到所有的属性：</p>
+</blockquote>
+<img src=取出attr中的属性.png width=60% /> 
+<h4 id="defstyleattrdefstyleres">defStyleAttr、defStyleRes
+</h4><img src=view构造器.png width=60% /> 
+<img src=属性集定义.png width=60% /> 
+<p>新增一个不在declare-styleable数组中的attr11，见R文件：</p>
+<img src=属性值如下.png width=60% /> 
+<p>在R.styleable类中没有attr11的定义，它在R.attr类中定义了：</p>
+<img src=attr中所有属性.png width=60% /> 
+<p>在上面属性中attr7和attr11是引用类型的，他们可以指向另外一个引用。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">TestView1</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="nf">TestView1</span><span class="p">(</span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">this</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="nf">TestView1</span><span class="p">(</span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">AttributeSet</span><span class="w"> </span><span class="n">attrs</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">this</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">attrs</span><span class="p">,</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">attr</span><span class="p">.</span><span class="na">attr11</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="nf">TestView1</span><span class="p">(</span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">AttributeSet</span><span class="w"> </span><span class="n">attrs</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">defStyleAttr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">this</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">attrs</span><span class="p">,</span><span class="w"> </span><span class="n">defStyleAttr</span><span class="p">,</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">style</span><span class="p">.</span><span class="na">DefStyleRes</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="nf">TestView1</span><span class="p">(</span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">AttributeSet</span><span class="w"> </span><span class="n">attrs</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">defStyleAttr</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">defStyleRes</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">super</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">attrs</span><span class="p">,</span><span class="w"> </span><span class="n">defStyleAttr</span><span class="p">,</span><span class="w"> </span><span class="n">defStyleRes</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">TypedArray</span><span class="w"> </span><span class="n">ta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">obtainStyledAttributes</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">styleable</span><span class="p">.</span><span class="na">gui</span><span class="p">,</span><span class="w"> </span><span class="n">defStyleAttr</span><span class="p">,</span><span class="w"> </span><span class="n">defStyleRes</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">log</span><span class="p">(</span><span class="s">&#34;TypedArray length：&#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ta</span><span class="p">.</span><span class="na">length</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">ta</span><span class="p">.</span><span class="na">length</span><span class="p">();</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">attrIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ta</span><span class="p">.</span><span class="na">getIndex</span><span class="p">(</span><span class="n">i</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">attrIndex</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">styleable</span><span class="p">.</span><span class="na">gui_attr1</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">log</span><span class="p">(</span><span class="n">ta</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="n">attrIndex</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">styleable</span><span class="p">.</span><span class="na">gui_attr2</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">log</span><span class="p">(</span><span class="n">ta</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="n">attrIndex</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">styleable</span><span class="p">.</span><span class="na">gui_attr3</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">log</span><span class="p">(</span><span class="n">ta</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="n">attrIndex</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">styleable</span><span class="p">.</span><span class="na">gui_attr4</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">log</span><span class="p">(</span><span class="n">ta</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="n">attrIndex</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">styleable</span><span class="p">.</span><span class="na">gui_attr5</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">log</span><span class="p">(</span><span class="n">ta</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="n">attrIndex</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">styleable</span><span class="p">.</span><span class="na">gui_attr6</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">log</span><span class="p">(</span><span class="n">ta</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="n">attrIndex</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">case</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">styleable</span><span class="p">.</span><span class="na">gui_attr7</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">log</span><span class="p">(</span><span class="n">ta</span><span class="p">.</span><span class="na">getString</span><span class="p">(</span><span class="n">attrIndex</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">default</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">ta</span><span class="p">.</span><span class="na">recycle</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">msg</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Log</span><span class="p">.</span><span class="na">v</span><span class="p">(</span><span class="n">getClass</span><span class="p">().</span><span class="na">getSimpleName</span><span class="p">(),</span><span class="w"> </span><span class="s">&#34;&#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">msg</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>TestView1中defStyleAttr传入R.attr.attr11，defStyleRes传入R.style.DefStyleRes。
+布局文件如下：</p>
+<p><img src=自定义view布局.png width=60% /></p>
+<p><img src=xmlstyle定义.png width=30% /></p>
+<p><img src=style中定义.png width=60% /></p> 
+<p><img src=主题中的子style.png width=30% /></p> 
+<p>其中theme中引用了attr11的引用，而themestyle中引用了attr1-attr4，DefStyleRes中也引用了attr1-attr4。日志如下：</p>
+<img src=日志.png width=30% /> 
+<p>R.styleable.gui总共长度是7，attr1用的xml中定义的，attr2是布局中定义的style中的属性，attr3和attr4取的是theme中attr11定义的attr3和attr4，由于attr5没有在attr11中的style中定义，所以取的是theme中的attr5属性。
+优先级：布局中的attr&gt;布局中的style中的attr&gt;defStyleAttr中的attr&gt;theme中的attr
+此时无论怎么在DefStyleRes中定义属性，都不会在该style里面的attr取值，因为此时定义了defStyleAttr
+此时如果去掉defStyleAttr，则会在DefStyleRes中取值：</p>
+<img src=defaultstyle为0.png width=60% /> 
+<p>结果如下：</p>
+<img src=defaultstyle为0的结果.png width=30% /> 
+<p>总结：defStyleAttr定义了后，defStyleRes中的attr就不起作用了。</p>
+<p>参考：<font color="blue"><a class="link" href="https://blog.csdn.net/GracefulGuigui/article/details/104069265"  target="_blank" rel="noopener"
+    >https://blog.csdn.net/GracefulGuigui/article/details/104069265</a></font></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <div class="disqus-container">
+    <div id="disqus_thread"></div>
+<script>
+    window.disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "hugo-theme-stack" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+<style>
+    .disqus-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+</style>
+
+<script>
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (typeof DISQUS == 'object') {
+            DISQUS.reset({
+                reload: true
+            });
+        }
+    })
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2024 Example Person
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.29.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
