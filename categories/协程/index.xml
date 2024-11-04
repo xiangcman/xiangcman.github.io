@@ -18,40 +18,52 @@
 &lt;/blockquote&gt;
 &lt;h3 id=&#34;coroutinecontext&#34;&gt;CoroutineContext
 &lt;/h3&gt;&lt;p&gt;协程上下文都是继承自CoroutineContext，它是一个接口，内部方法以及内部类如下：&lt;/p&gt;
-&lt;image src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/fed0cdd81113490fa759aa5596168c88~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=e9ecf3d6&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1730773768&amp;x-orig-sign=EGnZfmzUotQ%2BZw17%2FVCPu7m%2F0%2FI%3D&#34; width=&#34;60%&#34;/&gt;
+&lt;image src=&#34;CoroutineContext的方法结构.png&#34; width=&#34;60%&#34;/&gt;
 &lt;p&gt;它的实现子类有如下：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/00dc4a54e6674779b7a0942e8979d00f~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731298370&amp;amp;x-orig-sign=6hV%2BiGr6CpjSuJs%2F99DZbPzBnGI%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/CoroutineContext%E7%9A%84%E5%AD%90%E7%B1%BB.png&#34;
+	width=&#34;1144&#34;
+	height=&#34;266&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/CoroutineContext%E7%9A%84%E5%AD%90%E7%B1%BB_hu8626847606695610042.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/CoroutineContext%E7%9A%84%E5%AD%90%E7%B1%BB_hu8402674993316818611.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;430&#34;
+		data-flex-basis=&#34;1032px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;比如我们常见的EmptyCoroutineContext，它的内部实现如下：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/2680c194b1514997a62f13b6c529b070~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731298370&amp;amp;x-orig-sign=SUuBguHLFRXiFXNSQfTXIW%2BYJ8o%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/EmptyCoroutineContext.png&#34;
+	width=&#34;1658&#34;
+	height=&#34;584&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/EmptyCoroutineContext_hu17043868963951393910.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/EmptyCoroutineContext_hu16831673852013507335.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;283&#34;
+		data-flex-basis=&#34;681px&#34;
 	
 &gt;
 可以看到它的get、fold、plus、minusKey几个方法都是默认实现，你可以理解它就是个空壳子的context。&lt;/p&gt;
 &lt;h3 id=&#34;element&#34;&gt;Element
 &lt;/h3&gt;&lt;p&gt;在讲CoroutineContext内部结构之前，先来认识下Element，它也实现了CoroutineContext接口：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/9836cf3040b44a10a7f8feb9fa56a415~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731298370&amp;amp;x-orig-sign=qanV5PJIvZZWCsSMXlafvRU5uPs%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/Element.png&#34;
+	width=&#34;1550&#34;
+	height=&#34;992&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/Element_hu15590401349125633619.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/Element_hu3579969110286605611.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;156&#34;
+		data-flex-basis=&#34;375px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;Element中有一个key的属性，这里可以理解key就是当前Element的唯一标识。实现一个context的时候需要指明它的key是啥，此处就是用该key来标识&lt;/br&gt;
@@ -59,48 +71,64 @@ get：如果传进来的key和自己的key相等，则返回自己，否则返�
 fold：将初始值和当前element返回给lambda，让lambda自己去处理&lt;/br&gt;
 minusKey：如果传进来的key和自己相同，则返回EmptyCoroutineContext，否则返回自己，其实是删除对应key的context.&lt;/br&gt;&lt;/p&gt;
 &lt;p&gt;写了3个context，然后用&amp;quot;+&amp;ldquo;拼接：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/3eee9b1318364cbeb0f7af4140d14010~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731298370&amp;amp;x-orig-sign=l8pCamWr%2BlYLHnepq0UsqvfjNzI%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E4%BA%8B%E4%BE%8B.png&#34;
+	width=&#34;1082&#34;
+	height=&#34;994&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E4%BA%8B%E4%BE%8B_hu13755084612118008590.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E4%BA%8B%E4%BE%8B_hu2284940685473988837.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;108&#34;
+		data-flex-basis=&#34;261px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;自定义context的时候，需要继承自AbstractCoroutineContextElement，它是继承自Element，因为它强制要求需要一个key作为context的标识，一般key的element标识是当前context，看上面的One这个context，它的key拥有的element是One。&lt;/p&gt;
 &lt;p&gt;输出日志如下：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/643a5ce7f2884531b010d0e5bf34f90a~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731298370&amp;amp;x-orig-sign=ZqRAhv3Gkn2K%2FSHCotlj3CSq%2Fqs%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E6%97%A5%E5%BF%97.png&#34;
+	width=&#34;1306&#34;
+	height=&#34;152&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E6%97%A5%E5%BF%97_hu14013300976917973761.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E6%97%A5%E5%BF%97_hu873730544473955413.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;859&#34;
+		data-flex-basis=&#34;2062px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;One()+Two()+Three()得到的是一个CombinedContext，get方法通过One这个key取到了One这个取对应的Context&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/9da75e4af5ae4a98bf0d3a4ed4f31ff0~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731298370&amp;amp;x-orig-sign=Ltm0VmsmRjo0Wm90NGWjIQNd2No%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E4%BA%8B%E4%BE%8B1.webp&#34;
+	width=&#34;872&#34;
+	height=&#34;188&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E4%BA%8B%E4%BE%8B1_hu3455913607655755948.webp 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E4%BA%8B%E4%BE%8B1_hu7775335761620848618.webp 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;463&#34;
+		data-flex-basis=&#34;1113px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;日志如下：
-&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/8a469386d2734c48b778dcd0dfa21dc3~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731298370&amp;amp;x-orig-sign=rMCKdBMQJyo21zLze93VxaBofm8%3D&#34;
-	
-	
-	
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E4%BA%8B%E4%BE%8B%E6%97%A5%E5%BF%971.webp&#34;
+	width=&#34;1388&#34;
+	height=&#34;68&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E4%BA%8B%E4%BE%8B%E6%97%A5%E5%BF%971_hu9099039475787447912.webp 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E4%BA%8B%E4%BE%8B%E6%97%A5%E5%BF%971_hu17474034632649216684.webp 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;2041&#34;
+		data-flex-basis=&#34;4898px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;可以看到我给One的context拼接了一个EmptyCoroutineContext时候，得到的是它自己，&amp;quot;+&amp;ldquo;是重载了context的plus方法，看下plus方法的实现：&lt;/p&gt;
@@ -272,14 +300,18 @@ minusKey：如果传进来的key和自己相同，则返回EmptyCoroutineContext
 &lt;/blockquote&gt;
 &lt;h3 id=&#34;类图&#34;&gt;类图
 &lt;/h3&gt;&lt;p&gt;再来一张本次讲解的context类图：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/f1833f9430f24e6a83a0524b904503b1~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731298370&amp;amp;x-orig-sign=uLHecefM2xLRH%2FMHpcgSX5Pnyh8%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E7%B1%BB%E5%9B%BE.webp&#34;
+	width=&#34;1084&#34;
+	height=&#34;540&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E7%B1%BB%E5%9B%BE_hu15455108941912633740.webp 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E7%B1%BB%E5%9B%BE_hu14965084907605874504.webp 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;协程上下文类图.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;200&#34;
+		data-flex-basis=&#34;481px&#34;
 	
 &gt;&lt;/p&gt;
 </description>
@@ -322,119 +354,159 @@ minusKey：如果传进来的key和自己相同，则返回EmptyCoroutineContext
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nc&#34;&gt;Log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;d&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TAG&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;onCreate&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/2ac9bf267b5a42289712b51ae1cf13e9~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=PW1P6V3JMXnpkAqKC%2BThlLLuBrw%3D&#34; width=&#34;40%&#34;&gt;
+&lt;/div&gt;&lt;img src=&#34;事例日志.png&#34; width=&#34;40%&#34;&gt;
 &lt;p&gt;上面日志先打印suspend中的代码块，然后执行Continuation的resumeWith，最后执行主线程的代码。&lt;/p&gt;
 &lt;h4 id=&#34;createcoroutine&#34;&gt;createCoroutine
-&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/4ff85ec0898e4ee184a9d32ace3a4e9f~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=RkKvmtlUq5g5XI1zSI4TDJOP8O0%3D&#34;
-	
-	
-	
+&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutine.png&#34;
+	width=&#34;1988&#34;
+	height=&#34;246&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutine_hu17353243712076936128.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutine_hu9867042398564460185.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;808&#34;
+		data-flex-basis=&#34;1939px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;是挂起函数的扩展方法，方法参数是Continuation类型，对应上面的匿名内部类。创建了一个SafeContinuation对象，它也是一个Continuation类型，并传递两个参数。&lt;/p&gt;
 &lt;h4 id=&#34;resume&#34;&gt;resume
-&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/891b845f013b44dd8283df97c5cd36d5~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=nZFujwWSsoL%2BTnkqIjlQZPceqyM%3D&#34;
-	
-	
-	
+&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resume.png&#34;
+	width=&#34;1434&#34;
+	height=&#34;150&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resume_hu4104536995059056195.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resume_hu9889674969297594195.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;956&#34;
+		data-flex-basis=&#34;2294px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;resume方法会调用resumeWith，看下SafeContinuation的resumeWith方法：
-&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/ad05cfb8a9db40a2919d34f78bd408b0~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=uVAj5ehCFZLQytPxrUwG3yTSxVU%3D&#34;
-	
-	
-	
+&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resumeWith.png&#34;
+	width=&#34;2552&#34;
+	height=&#34;932&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resumeWith_hu8003343872576880167.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resumeWith_hu1114294976415646936.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;273&#34;
+		data-flex-basis=&#34;657px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;此处提醒下，kotlin的源码需要到对应的** &lt;strong&gt;Jvm&lt;/strong&gt;类下找，要不然方法只是一个申明。此处的result是构造SafeContinuation传递进来的COROUTINE_SUSPENDED，因此会执行delegate.resumeWith(result)，此处的delegate是createCoroutineUnintercepted(completion).intercepted()创建的。&lt;/p&gt;
 &lt;h4 id=&#34;createcoroutineunintercepted&#34;&gt;createCoroutineUnintercepted
 &lt;/h4&gt;&lt;p&gt;它是挂起函数的扩展方法：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/660459489ac841d9994ee7a7d351b709~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=KFjkJerrOsz0WpZENS3r%2BY728cg%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutineUnintercepted.png&#34;
+	width=&#34;1836&#34;
+	height=&#34;930&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutineUnintercepted_hu15635087535112369954.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutineUnintercepted_hu3032104325456931809.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;197&#34;
+		data-flex-basis=&#34;473px&#34;
 	
 &gt;
 判断当前挂起函数是不是BaseContinuationImpl类型，如果是则调用create方法。&lt;/p&gt;
 &lt;p&gt;此时可以打开字节码，看下上面的(suspend () -&amp;gt; T)是什么对象？&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/49543d5e13f140c791d3c53bfd804a37~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=7CfjTF7cfQ8wPXqSPcvpwTa8g70%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E4%BA%8B%E4%BE%8B%E7%9A%84class%E6%96%87%E4%BB%B6.png&#34;
+	width=&#34;3932&#34;
+	height=&#34;1304&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E4%BA%8B%E4%BE%8B%E7%9A%84class%E6%96%87%E4%BB%B6_hu5585946001264839434.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E4%BA%8B%E4%BE%8B%E7%9A%84class%E6%96%87%E4%BB%B6_hu12809399808810934867.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;301&#34;
+		data-flex-basis=&#34;723px&#34;
 	
 &gt;
 可以看到createCoroutine方法传入了两个参数，我们都知道扩展函数最终编译出来的方法第一个参数是被扩展对象，所以此处的CoroutineActivity$onCreate$1就是(suspend () -&amp;gt; T)，CoroutineActivity$onCreate$2对应的是例子中的Continuation匿名内部类。我们注意下，此时传入CoroutineActivity$onCreate$1中的Continuation参数是null。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/494b843f1f0847858a19c492c9592aab~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=Qad3B0hesbSl0dsBr75SjIDdTs4%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1.png&#34;
+	width=&#34;2060&#34;
+	height=&#34;1234&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1_hu13609711794502215322.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1_hu5950224694337833121.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;166&#34;
+		data-flex-basis=&#34;400px&#34;
 	
 &gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/bd79307170654f74a9ccb4dd9c629a25~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=ik1SPca6CRVs81Zw6dA7B6PzE78%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$2.png&#34;
+	width=&#34;1376&#34;
+	height=&#34;614&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$2_hu7562899221193942890.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$2_hu11783159877060174879.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;224&#34;
+		data-flex-basis=&#34;537px&#34;
 	
 &gt;
 而SuspendLambda的继承关系如下：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/94d6c736ab064399b6c23efb1a3959a2~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=dZcQLzMPRpuVMinGwGflWnQ7ZD8%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SuspendLambda%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB.png&#34;
+	width=&#34;2796&#34;
+	height=&#34;1268&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SuspendLambda%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB_hu13029852010876743680.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SuspendLambda%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB_hu4528197366431948351.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;220&#34;
+		data-flex-basis=&#34;529px&#34;
 	
 &gt;
 所以会调用挂起函数的create方法：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/28a3a35ff103492294ac41d17e0a8651~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=z16GFSimPUho4TpfPhmPQuRl76M%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/create.png&#34;
+	width=&#34;1982&#34;
+	height=&#34;252&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/create_hu17254302941091053781.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/create_hu4109423128277940046.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;786&#34;
+		data-flex-basis=&#34;1887px&#34;
 	
 &gt;
 父类中要求子类必须重写该方法，我们看CoroutineActivity$onCreate$1的create方法：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/9ac375aab22342d49b1bf981519f8a9a~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=%2F9DuEXZaxaTF8sSAdNmyP6vxMfI%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1%E7%9A%84create%E6%96%B9%E6%B3%95.png&#34;
+	width=&#34;1570&#34;
+	height=&#34;152&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1%E7%9A%84create%E6%96%B9%E6%B3%95_hu1493749643918257189.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1%E7%9A%84create%E6%96%B9%E6%B3%95_hu11851528321127195555.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;1032&#34;
+		data-flex-basis=&#34;2478px&#34;
 	
 &gt;
 此时重新new了一个CoroutineActivity$onCreate$1，并把completion传入其中，而此处的completion就是上面的CoroutineActivity$onCreate$2，它是一个Continuation。而开端在分析createCoroutine的时候，创建CoroutineActivity$onCreate$1传入的Continuation是null。&lt;/p&gt;
@@ -443,25 +515,33 @@ minusKey：如果传进来的key和自己相同，则返回EmptyCoroutineContext
 &lt;/blockquote&gt;
 &lt;p&gt;我们再来看intercepted方法。&lt;/p&gt;
 &lt;h4 id=&#34;intercepted&#34;&gt;intercepted
-&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/994872414b974ea0ac6caf1e379b7c08~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=88N6EJZnoYFb3RLwaIgVaDuH2CM%3D&#34;
-	
-	
-	
+&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/intercepted.png&#34;
+	width=&#34;1780&#34;
+	height=&#34;748&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/intercepted_hu3839909464271033655.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/intercepted_hu15833475015402205408.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;237&#34;
+		data-flex-basis=&#34;571px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;是Continueation的扩展方法，当然了，刚刚create创建的CoroutineActivity$onCreate$1是一个suspendLambda对象，所以它也是ContinueationImpl，所以会走ContinueationImpl的intercepted方法：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/fc44578dfef64dfa94f0d510cc434f14~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=KJ37z6LhaGXADB5goYP5DW29pp4%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/ContinueationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95.png&#34;
+	width=&#34;2048&#34;
+	height=&#34;990&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/ContinueationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu7925993854635734873.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/ContinueationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu940625654783991224.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;206&#34;
+		data-flex-basis=&#34;496px&#34;
 	
 &gt;
 此处看context中有没有ContinuationInterceptor类型的Element，如果没有则返回自己，我们只要知道先返回自己。因为这个涉及到context的结构，后面再讲。&lt;/p&gt;
@@ -472,37 +552,49 @@ minusKey：如果传进来的key和自己相同，则返回EmptyCoroutineContext
 &lt;/blockquote&gt;
 &lt;h3 id=&#34;协程执行&#34;&gt;协程执行
 &lt;/h3&gt;&lt;p&gt;CoroutineActivity$onCreate$1继承自SuspendLambda，最终会继承自BaseContinuationImpl，来看下它的resumeWith：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/bcc4959c5e36488a871349eecb51feb2~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=b1zKJZNBeniBeKdsMcHBqiK8EMw%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95.png&#34;
+	width=&#34;2400&#34;
+	height=&#34;1808&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu13767287833176473319.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu7336875486880149131.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;132&#34;
+		data-flex-basis=&#34;318px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;resumeWith中首先调用invokeSuspend方法，如果invokeSuspend方法返回COROUTINE_SUSPENDED，则resumeWith直接不往下执行。否则看comppletion是不是BaseContinuationImpl，是的话，则继续轮训，直到comppletion不是BaseContinuationImpl，则执行它的resumeWith方法。此处的completion实际是CoroutineActivity$onCreate$2，所以会执行它的resumeWith方法。我们看下CoroutineActivity$onCreate$1的invokeSuspend方法：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/34b9ebe99928490dbbca9058c770227d~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=PHZe7TpUJAwPEqoX28A%2BGP%2FDeEs%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/invokeSuspend.png&#34;
+	width=&#34;1396&#34;
+	height=&#34;446&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/invokeSuspend_hu6092574313257794024.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/invokeSuspend_hu920990581141760749.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;313&#34;
+		data-flex-basis=&#34;751px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;它的返回值不是COROUTINE_SUSPENDED，所有上面的invokeSuspend方法还会继续往下执行。所以最终会执行了CoroutineActivity$onCreate$2，也就是例子中的匿名内部类的resumeWith方法。&lt;/p&gt;
 &lt;p&gt;此时我们再分析例子中日志的打印：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/955f0d8cd6e1495caf2c1418ba1f094b~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=SdFhpXqEUXCIyRbpFT6NcBC8nXI%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SafeContinuation%E7%9A%84resumeWith%E6%96%B9%E6%B3%95.png&#34;
+	width=&#34;2574&#34;
+	height=&#34;984&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SafeContinuation%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu5066432224240922016.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SafeContinuation%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu270478109847141729.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;261&#34;
+		data-flex-basis=&#34;627px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;blockquote&gt;
@@ -510,14 +602,18 @@ minusKey：如果传进来的key和自己相同，则返回EmptyCoroutineContext
 &lt;/blockquote&gt;
 &lt;h3 id=&#34;类图总结&#34;&gt;类图总结
 &lt;/h3&gt;&lt;p&gt;最后输出此次的类图结构，以作回顾：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/537427d906684dc089e71780ac5cd1d1~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=1IgSK7bFRma3lcyfPXqEY87kDN0%3D&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E7%B1%BB%E5%9B%BE.png&#34;
+	width=&#34;737&#34;
+	height=&#34;788&#34;
+	srcset=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E7%B1%BB%E5%9B%BE_hu12035595649759449504.png 480w, https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E7%B1%BB%E5%9B%BE_hu4538701071498676197.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;协程类图.png&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;93&#34;
+		data-flex-basis=&#34;224px&#34;
 	
 &gt;&lt;/p&gt;
 </description>

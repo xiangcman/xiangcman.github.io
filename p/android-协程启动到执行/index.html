@@ -421,119 +421,159 @@
 </span></span><span class="line"><span class="cl"><span class="nc">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s2">&#34;onCreate&#34;</span><span class="p">)</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/2ac9bf267b5a42289712b51ae1cf13e9~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&rk3s=f64ab15b&x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&x-orig-expires=1731291187&x-orig-sign=PW1P6V3JMXnpkAqKC%2BThlLLuBrw%3D" width="40%">
+</div><img src="事例日志.png" width="40%">
 <p>上面日志先打印suspend中的代码块，然后执行Continuation的resumeWith，最后执行主线程的代码。</p>
 <h4 id="createcoroutine">createCoroutine
-</h4><p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/4ff85ec0898e4ee184a9d32ace3a4e9f~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=RkKvmtlUq5g5XI1zSI4TDJOP8O0%3D"
-	
-	
-	
+</h4><p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutine.png"
+	width="1988"
+	height="246"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutine_hu17353243712076936128.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutine_hu9867042398564460185.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="808"
+		data-flex-basis="1939px"
 	
 ></p>
 <p>是挂起函数的扩展方法，方法参数是Continuation类型，对应上面的匿名内部类。创建了一个SafeContinuation对象，它也是一个Continuation类型，并传递两个参数。</p>
 <h4 id="resume">resume
-</h4><p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/891b845f013b44dd8283df97c5cd36d5~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=nZFujwWSsoL%2BTnkqIjlQZPceqyM%3D"
-	
-	
-	
+</h4><p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resume.png"
+	width="1434"
+	height="150"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resume_hu4104536995059056195.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resume_hu9889674969297594195.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="956"
+		data-flex-basis="2294px"
 	
 ></p>
 <p>resume方法会调用resumeWith，看下SafeContinuation的resumeWith方法：
-<img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/ad05cfb8a9db40a2919d34f78bd408b0~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=uVAj5ehCFZLQytPxrUwG3yTSxVU%3D"
-	
-	
-	
+<img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resumeWith.png"
+	width="2552"
+	height="932"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resumeWith_hu8003343872576880167.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resumeWith_hu1114294976415646936.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="273"
+		data-flex-basis="657px"
 	
 ></p>
 <p>此处提醒下，kotlin的源码需要到对应的** <strong>Jvm</strong>类下找，要不然方法只是一个申明。此处的result是构造SafeContinuation传递进来的COROUTINE_SUSPENDED，因此会执行delegate.resumeWith(result)，此处的delegate是createCoroutineUnintercepted(completion).intercepted()创建的。</p>
 <h4 id="createcoroutineunintercepted">createCoroutineUnintercepted
 </h4><p>它是挂起函数的扩展方法：</p>
-<p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/660459489ac841d9994ee7a7d351b709~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=KFjkJerrOsz0WpZENS3r%2BY728cg%3D"
-	
-	
-	
+<p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutineUnintercepted.png"
+	width="1836"
+	height="930"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutineUnintercepted_hu15635087535112369954.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutineUnintercepted_hu3032104325456931809.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="197"
+		data-flex-basis="473px"
 	
 >
 判断当前挂起函数是不是BaseContinuationImpl类型，如果是则调用create方法。</p>
 <p>此时可以打开字节码，看下上面的(suspend () -&gt; T)是什么对象？</p>
-<p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/49543d5e13f140c791d3c53bfd804a37~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=7CfjTF7cfQ8wPXqSPcvpwTa8g70%3D"
-	
-	
-	
+<p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E4%BA%8B%E4%BE%8B%E7%9A%84class%E6%96%87%E4%BB%B6.png"
+	width="3932"
+	height="1304"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E4%BA%8B%E4%BE%8B%E7%9A%84class%E6%96%87%E4%BB%B6_hu5585946001264839434.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E4%BA%8B%E4%BE%8B%E7%9A%84class%E6%96%87%E4%BB%B6_hu12809399808810934867.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="301"
+		data-flex-basis="723px"
 	
 >
 可以看到createCoroutine方法传入了两个参数，我们都知道扩展函数最终编译出来的方法第一个参数是被扩展对象，所以此处的CoroutineActivity$onCreate$1就是(suspend () -&gt; T)，CoroutineActivity$onCreate$2对应的是例子中的Continuation匿名内部类。我们注意下，此时传入CoroutineActivity$onCreate$1中的Continuation参数是null。</p>
-<p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/494b843f1f0847858a19c492c9592aab~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=Qad3B0hesbSl0dsBr75SjIDdTs4%3D"
-	
-	
-	
+<p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1.png"
+	width="2060"
+	height="1234"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1_hu13609711794502215322.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1_hu5950224694337833121.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="166"
+		data-flex-basis="400px"
 	
 ></p>
-<p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/bd79307170654f74a9ccb4dd9c629a25~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=ik1SPca6CRVs81Zw6dA7B6PzE78%3D"
-	
-	
-	
+<p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$2.png"
+	width="1376"
+	height="614"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$2_hu7562899221193942890.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$2_hu11783159877060174879.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="224"
+		data-flex-basis="537px"
 	
 >
 而SuspendLambda的继承关系如下：</p>
-<p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/94d6c736ab064399b6c23efb1a3959a2~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=dZcQLzMPRpuVMinGwGflWnQ7ZD8%3D"
-	
-	
-	
+<p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SuspendLambda%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB.png"
+	width="2796"
+	height="1268"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SuspendLambda%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB_hu13029852010876743680.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SuspendLambda%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB_hu4528197366431948351.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="220"
+		data-flex-basis="529px"
 	
 >
 所以会调用挂起函数的create方法：</p>
-<p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/28a3a35ff103492294ac41d17e0a8651~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=z16GFSimPUho4TpfPhmPQuRl76M%3D"
-	
-	
-	
+<p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/create.png"
+	width="1982"
+	height="252"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/create_hu17254302941091053781.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/create_hu4109423128277940046.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="786"
+		data-flex-basis="1887px"
 	
 >
 父类中要求子类必须重写该方法，我们看CoroutineActivity$onCreate$1的create方法：</p>
-<p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/9ac375aab22342d49b1bf981519f8a9a~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=%2F9DuEXZaxaTF8sSAdNmyP6vxMfI%3D"
-	
-	
-	
+<p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1%E7%9A%84create%E6%96%B9%E6%B3%95.png"
+	width="1570"
+	height="152"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1%E7%9A%84create%E6%96%B9%E6%B3%95_hu1493749643918257189.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1%E7%9A%84create%E6%96%B9%E6%B3%95_hu11851528321127195555.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="1032"
+		data-flex-basis="2478px"
 	
 >
 此时重新new了一个CoroutineActivity$onCreate$1，并把completion传入其中，而此处的completion就是上面的CoroutineActivity$onCreate$2，它是一个Continuation。而开端在分析createCoroutine的时候，创建CoroutineActivity$onCreate$1传入的Continuation是null。</p>
@@ -542,25 +582,33 @@
 </blockquote>
 <p>我们再来看intercepted方法。</p>
 <h4 id="intercepted">intercepted
-</h4><p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/994872414b974ea0ac6caf1e379b7c08~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=88N6EJZnoYFb3RLwaIgVaDuH2CM%3D"
-	
-	
-	
+</h4><p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/intercepted.png"
+	width="1780"
+	height="748"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/intercepted_hu3839909464271033655.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/intercepted_hu15833475015402205408.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="237"
+		data-flex-basis="571px"
 	
 ></p>
 <p>是Continueation的扩展方法，当然了，刚刚create创建的CoroutineActivity$onCreate$1是一个suspendLambda对象，所以它也是ContinueationImpl，所以会走ContinueationImpl的intercepted方法：</p>
-<p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/fc44578dfef64dfa94f0d510cc434f14~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=KJ37z6LhaGXADB5goYP5DW29pp4%3D"
-	
-	
-	
+<p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/ContinueationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95.png"
+	width="2048"
+	height="990"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/ContinueationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu7925993854635734873.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/ContinueationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu940625654783991224.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="206"
+		data-flex-basis="496px"
 	
 >
 此处看context中有没有ContinuationInterceptor类型的Element，如果没有则返回自己，我们只要知道先返回自己。因为这个涉及到context的结构，后面再讲。</p>
@@ -571,37 +619,49 @@
 </blockquote>
 <h3 id="协程执行">协程执行
 </h3><p>CoroutineActivity$onCreate$1继承自SuspendLambda，最终会继承自BaseContinuationImpl，来看下它的resumeWith：</p>
-<p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/bcc4959c5e36488a871349eecb51feb2~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=b1zKJZNBeniBeKdsMcHBqiK8EMw%3D"
-	
-	
-	
+<p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95.png"
+	width="2400"
+	height="1808"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu13767287833176473319.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu7336875486880149131.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="132"
+		data-flex-basis="318px"
 	
 ></p>
 <p>resumeWith中首先调用invokeSuspend方法，如果invokeSuspend方法返回COROUTINE_SUSPENDED，则resumeWith直接不往下执行。否则看comppletion是不是BaseContinuationImpl，是的话，则继续轮训，直到comppletion不是BaseContinuationImpl，则执行它的resumeWith方法。此处的completion实际是CoroutineActivity$onCreate$2，所以会执行它的resumeWith方法。我们看下CoroutineActivity$onCreate$1的invokeSuspend方法：</p>
-<p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/34b9ebe99928490dbbca9058c770227d~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=PHZe7TpUJAwPEqoX28A%2BGP%2FDeEs%3D"
-	
-	
-	
+<p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/invokeSuspend.png"
+	width="1396"
+	height="446"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/invokeSuspend_hu6092574313257794024.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/invokeSuspend_hu920990581141760749.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="313"
+		data-flex-basis="751px"
 	
 ></p>
 <p>它的返回值不是COROUTINE_SUSPENDED，所有上面的invokeSuspend方法还会继续往下执行。所以最终会执行了CoroutineActivity$onCreate$2，也就是例子中的匿名内部类的resumeWith方法。</p>
 <p>此时我们再分析例子中日志的打印：</p>
-<p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/955f0d8cd6e1495caf2c1418ba1f094b~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=SdFhpXqEUXCIyRbpFT6NcBC8nXI%3D"
-	
-	
-	
+<p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SafeContinuation%E7%9A%84resumeWith%E6%96%B9%E6%B3%95.png"
+	width="2574"
+	height="984"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SafeContinuation%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu5066432224240922016.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SafeContinuation%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu270478109847141729.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="261"
+		data-flex-basis="627px"
 	
 ></p>
 <blockquote>
@@ -609,14 +669,18 @@
 </blockquote>
 <h3 id="类图总结">类图总结
 </h3><p>最后输出此次的类图结构，以作回顾：</p>
-<p><img src="https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/537427d906684dc089e71780ac5cd1d1~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=1IgSK7bFRma3lcyfPXqEY87kDN0%3D"
-	
-	
-	
+<p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E7%B1%BB%E5%9B%BE.png"
+	width="737"
+	height="788"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E7%B1%BB%E5%9B%BE_hu12035595649759449504.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E7%B1%BB%E5%9B%BE_hu4538701071498676197.png 1024w"
 	loading="lazy"
 	
 		alt="协程类图.png"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="93"
+		data-flex-basis="224px"
 	
 ></p>
 
