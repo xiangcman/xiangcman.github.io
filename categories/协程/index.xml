@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>协程 on xiangcman</title>
+        <link>https://example.com/categories/%E5%8D%8F%E7%A8%8B/</link>
+        <description>Recent content in 协程 on xiangcman</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en-us</language>
+        <copyright>Example Person</copyright>
+        <lastBuildDate>Sat, 02 Nov 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/categories/%E5%8D%8F%E7%A8%8B/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Android 协程启动到执行</title>
+        <link>https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/</link>
+        <pubDate>Sat, 02 Nov 2024 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/</guid>
+        <description>&lt;h3 id=&#34;协程创建&#34;&gt;协程创建
+&lt;/h3&gt;&lt;h4 id=&#34;demo&#34;&gt;demo
+&lt;/h4&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-kotlin&#34; data-lang=&#34;kotlin&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;suspend&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nc&#34;&gt;Log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;d&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TAG&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;suspend block:&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;s2&#34;&gt;&amp;#34;123&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;createCoroutine&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;object&lt;/span&gt; &lt;span class=&#34;err&#34;&gt;: &lt;/span&gt;&lt;span class=&#34;nc&#34;&gt;Continuation&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;String&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;override&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;val&lt;/span&gt; &lt;span class=&#34;py&#34;&gt;context&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CoroutineContext&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;k&#34;&gt;get&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;EmptyCoroutineContext&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;override&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;fun&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;resumeWith&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;result&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Result&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;String&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;&amp;gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;k&#34;&gt;val&lt;/span&gt; &lt;span class=&#34;py&#34;&gt;value&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;result&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;getOrNull&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nc&#34;&gt;Log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;d&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TAG&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;resumeWith:&lt;/span&gt;&lt;span class=&#34;si&#34;&gt;$value&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}).&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;resume&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Unit&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nc&#34;&gt;Log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;d&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TAG&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;onCreate&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/2ac9bf267b5a42289712b51ae1cf13e9~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;rk3s=f64ab15b&amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;x-orig-expires=1731291187&amp;x-orig-sign=PW1P6V3JMXnpkAqKC%2BThlLLuBrw%3D&#34; width=&#34;40%&#34;&gt;
+&lt;p&gt;上面日志先打印suspend中的代码块，然后执行Continuation的resumeWith，最后执行主线程的代码。&lt;/p&gt;
+&lt;h4 id=&#34;createcoroutine&#34;&gt;createCoroutine
+&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/4ff85ec0898e4ee184a9d32ace3a4e9f~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=RkKvmtlUq5g5XI1zSI4TDJOP8O0%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;是挂起函数的扩展方法，方法参数是Continuation类型，对应上面的匿名内部类。创建了一个SafeContinuation对象，它也是一个Continuation类型，并传递两个参数。&lt;/p&gt;
+&lt;h4 id=&#34;resume&#34;&gt;resume
+&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/891b845f013b44dd8283df97c5cd36d5~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=nZFujwWSsoL%2BTnkqIjlQZPceqyM%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;resume方法会调用resumeWith，看下SafeContinuation的resumeWith方法：
+&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/ad05cfb8a9db40a2919d34f78bd408b0~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=uVAj5ehCFZLQytPxrUwG3yTSxVU%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;此处提醒下，kotlin的源码需要到对应的** &lt;strong&gt;Jvm&lt;/strong&gt;类下找，要不然方法只是一个申明。此处的result是构造SafeContinuation传递进来的COROUTINE_SUSPENDED，因此会执行delegate.resumeWith(result)，此处的delegate是createCoroutineUnintercepted(completion).intercepted()创建的。&lt;/p&gt;
+&lt;h4 id=&#34;createcoroutineunintercepted&#34;&gt;createCoroutineUnintercepted
+&lt;/h4&gt;&lt;p&gt;它是挂起函数的扩展方法：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/660459489ac841d9994ee7a7d351b709~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=KFjkJerrOsz0WpZENS3r%2BY728cg%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;
+判断当前挂起函数是不是BaseContinuationImpl类型，如果是则调用create方法。&lt;/p&gt;
+&lt;p&gt;此时可以打开字节码，看下上面的(suspend () -&amp;gt; T)是什么对象？&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/49543d5e13f140c791d3c53bfd804a37~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=7CfjTF7cfQ8wPXqSPcvpwTa8g70%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;
+可以看到createCoroutine方法传入了两个参数，我们都知道扩展函数最终编译出来的方法第一个参数是被扩展对象，所以此处的CoroutineActivity$onCreate$1就是(suspend () -&amp;gt; T)，CoroutineActivity$onCreate$2对应的是例子中的Continuation匿名内部类。我们注意下，此时传入CoroutineActivity$onCreate$1中的Continuation参数是null。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/494b843f1f0847858a19c492c9592aab~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=Qad3B0hesbSl0dsBr75SjIDdTs4%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/bd79307170654f74a9ccb4dd9c629a25~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=ik1SPca6CRVs81Zw6dA7B6PzE78%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;
+而SuspendLambda的继承关系如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/94d6c736ab064399b6c23efb1a3959a2~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=dZcQLzMPRpuVMinGwGflWnQ7ZD8%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;
+所以会调用挂起函数的create方法：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/28a3a35ff103492294ac41d17e0a8651~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=z16GFSimPUho4TpfPhmPQuRl76M%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;
+父类中要求子类必须重写该方法，我们看CoroutineActivity$onCreate$1的create方法：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/9ac375aab22342d49b1bf981519f8a9a~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=%2F9DuEXZaxaTF8sSAdNmyP6vxMfI%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;
+此时重新new了一个CoroutineActivity$onCreate$1，并把completion传入其中，而此处的completion就是上面的CoroutineActivity$onCreate$2，它是一个Continuation。而开端在分析createCoroutine的时候，创建CoroutineActivity$onCreate$1传入的Continuation是null。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;不太明白，为什么不在createCoroutine时候直接直接把CoroutineActivity$onCreate$2传入到CoroutineActivity$onCreate$1中，而非要通过create方法再创建一个CoroutineActivity$onCreate$1。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我们再来看intercepted方法。&lt;/p&gt;
+&lt;h4 id=&#34;intercepted&#34;&gt;intercepted
+&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/994872414b974ea0ac6caf1e379b7c08~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=88N6EJZnoYFb3RLwaIgVaDuH2CM%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;是Continueation的扩展方法，当然了，刚刚create创建的CoroutineActivity$onCreate$1是一个suspendLambda对象，所以它也是ContinueationImpl，所以会走ContinueationImpl的intercepted方法：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/fc44578dfef64dfa94f0d510cc434f14~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=KJ37z6LhaGXADB5goYP5DW29pp4%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;
+此处看context中有没有ContinuationInterceptor类型的Element，如果没有则返回自己，我们只要知道先返回自己。因为这个涉及到context的结构，后面再讲。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;小节：&lt;br/&gt;
+①、createCoroutine创建了一个SafeContinuation，并把CoroutineActivity$onCreate$1和一个标志位COROUTINE_SUSPENDED传入其中。CoroutineActivity$onCreate$1继承自SuspendLambda，并且是一个Function接口的实例。SuspendLambda继承自ContinuationImpl，ContinuationImpl继承自BaseContinuationImpl，BaseContinuationImpl继承自Continuation，CoroutineActivity$onCreate$1继承自SuspendLambda，也就是上面的协成要执行的闭包。CoroutineActivity$onCreate$1持有了CoroutineActivity$onCreate$2，它实现了Continuation。CoroutineActivity$onCreate$1重写了create方法，返回了一个新的CoroutineActivity$onCreate$1对象。&lt;br/&gt;
+②、resume方法中会调用到SafeContinuation的resumeWith方法，最终会触发CoroutineActivity$onCreate$1的resumeWith方法。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;协程执行&#34;&gt;协程执行
+&lt;/h3&gt;&lt;p&gt;CoroutineActivity$onCreate$1继承自SuspendLambda，最终会继承自BaseContinuationImpl，来看下它的resumeWith：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/bcc4959c5e36488a871349eecb51feb2~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=b1zKJZNBeniBeKdsMcHBqiK8EMw%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;resumeWith中首先调用invokeSuspend方法，如果invokeSuspend方法返回COROUTINE_SUSPENDED，则resumeWith直接不往下执行。否则看comppletion是不是BaseContinuationImpl，是的话，则继续轮训，直到comppletion不是BaseContinuationImpl，则执行它的resumeWith方法。此处的completion实际是CoroutineActivity$onCreate$2，所以会执行它的resumeWith方法。我们看下CoroutineActivity$onCreate$1的invokeSuspend方法：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/34b9ebe99928490dbbca9058c770227d~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=PHZe7TpUJAwPEqoX28A%2BGP%2FDeEs%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;它的返回值不是COROUTINE_SUSPENDED，所有上面的invokeSuspend方法还会继续往下执行。所以最终会执行了CoroutineActivity$onCreate$2，也就是例子中的匿名内部类的resumeWith方法。&lt;/p&gt;
+&lt;p&gt;此时我们再分析例子中日志的打印：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/955f0d8cd6e1495caf2c1418ba1f094b~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=SdFhpXqEUXCIyRbpFT6NcBC8nXI%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image.png&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;可以看到执行SafeContinuation的resumeWith的时候是一个while(true)，传入的this.resume是一个COROUTINE_SUSPENDED标志位，所以会把CoroutineActivity$onCreate$1的resumeWith执行完后，才跳出while循环。因此日志最后输出协成外的代码。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;类图总结&#34;&gt;类图总结
+&lt;/h3&gt;&lt;p&gt;最后输出此次的类图结构，以作回顾：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/537427d906684dc089e71780ac5cd1d1~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgeGlhbmdjbWFu:q75.awebp?policy=eyJ2bSI6MywidWlkIjoiMzI0NTQxNDA1NDYzNTY2MiJ9&amp;amp;rk3s=f64ab15b&amp;amp;x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&amp;amp;x-orig-expires=1731291187&amp;amp;x-orig-sign=1IgSK7bFRma3lcyfPXqEY87kDN0%3D&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;协程类图.png&#34;
+	
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>
