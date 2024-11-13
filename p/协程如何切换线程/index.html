@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。\nCoroutineScope(协程作用域) CoroutineScope组成 可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：\nCoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它 Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob CoroutineName：用来给协程起名字的作用 CoroutineExceptionHandler：它是用来捕捉协程异常的回调器 所以完整的CoroutineContext组成部分如下： job+dispatchers+CoroutineName+CoroutineExceptionHandler\nCoroutineScope分类 目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别\nGlobalScope 上面用到的GlobalScope就是一个协程作用域： 可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它\n">
+<title>协程如何切换线程</title>
+
+<link rel='canonical' href='https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程如何切换线程">
+<meta property='og:description' content="在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。\nCoroutineScope(协程作用域) CoroutineScope组成 可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：\nCoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它 Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob CoroutineName：用来给协程起名字的作用 CoroutineExceptionHandler：它是用来捕捉协程异常的回调器 所以完整的CoroutineContext组成部分如下： job+dispatchers+CoroutineName+CoroutineExceptionHandler\nCoroutineScope分类 目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别\nGlobalScope 上面用到的GlobalScope就是一个协程作用域： 可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它\n">
+<meta property='og:url' content='https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-11-04T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-04T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="协程如何切换线程">
+<meta name="twitter:description" content="在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。\nCoroutineScope(协程作用域) CoroutineScope组成 可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：\nCoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它 Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob CoroutineName：用来给协程起名字的作用 CoroutineExceptionHandler：它是用来捕捉协程异常的回调器 所以完整的CoroutineContext组成部分如下： job+dispatchers+CoroutineName+CoroutineExceptionHandler\nCoroutineScope分类 目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别\nGlobalScope 上面用到的GlobalScope就是一个协程作用域： 可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它\n">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/_index.zh-cn/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#coroutinescope协程作用域">CoroutineScope(协程作用域)</a>
+      <ol>
+        <li><a href="#coroutinescope组成">CoroutineScope组成</a></li>
+        <li><a href="#coroutinescope分类">CoroutineScope分类</a>
+          <ol>
+            <li><a href="#globalscope">GlobalScope</a></li>
+            <li><a href="#runblocking">runBlocking</a></li>
+            <li><a href="#mainscope">MainScope</a></li>
+            <li><a href="#coroutinescope顶级方法">CoroutineScope顶级方法</a></li>
+            <li><a href="#coroutinescope顶级方法-1">coroutineScope顶级方法</a></li>
+            <li><a href="#supervisorscope顶级方法">supervisorScope顶级方法</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#job">Job</a></li>
+    <li><a href="#线程例子">线程例子</a></li>
+    <li><a href="#coroutinescopelanuch">CoroutineScope.lanuch</a></li>
+    <li><a href="#总结">总结</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%BA%90%E7%A0%81/" >
+                源码
+            </a>
+        
+            <a href="/categories/kotin/" >
+                Kotin
+            </a>
+        
+            <a href="/categories/%E5%8D%8F%E7%A8%8B/" >
+                协程
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/">协程如何切换线程</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Nov 04, 2024</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    1 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。</p>
+<h2 id="coroutinescope协程作用域">CoroutineScope(协程作用域)
+</h2><h3 id="coroutinescope组成">CoroutineScope组成
+</h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope.png"
+	width="1378"
+	height="374"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope_hu10515070486545298200.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope_hu9693859680287893447.png 1024w"
+	loading="lazy"
+	
+		alt="CoroutineScope"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="368"
+		data-flex-basis="884px"
+	
+>
+可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：</br></p>
+<ul>
+<li>CoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它</br></li>
+<li>Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob</br></li>
+<li>CoroutineName：用来给协程起名字的作用</br></li>
+<li>CoroutineExceptionHandler：它是用来捕捉协程异常的回调器</br></li>
+</ul>
+<blockquote>
+<p>所以完整的CoroutineContext组成部分如下：</br>
+job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
+</blockquote>
+<h3 id="coroutinescope分类">CoroutineScope分类
+</h3><p>目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别</p>
+<h4 id="globalscope">GlobalScope
+</h4><p>上面用到的GlobalScope就是一个协程作用域：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/GlobalScope%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class.png"
+	width="1316"
+	height="682"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/GlobalScope%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class_hu8203666247243285961.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/GlobalScope%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class_hu15699466784984887439.png 1024w"
+	loading="lazy"
+	
+		alt="GlobalScope编译后的class"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="192"
+		data-flex-basis="463px"
+	
+>
+可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它</p>
+<h4 id="runblocking">runBlocking
+</h4><p>是一个阻塞式的协程作用域，会阻塞协程外面的线程，内部是通过java的LockSupport.park阻塞住线程来实现的。
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B.png"
+	width="1228"
+	height="376"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B_hu6633060864144420853.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B_hu15727827750802902641.png 1024w"
+	loading="lazy"
+	
+		alt="runBlocking事例"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="326"
+		data-flex-basis="783px"
+	
+>
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B%E6%97%A5%E5%BF%97.png"
+	width="2332"
+	height="128"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B%E6%97%A5%E5%BF%97_hu1419401693410403504.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B%E6%97%A5%E5%BF%97_hu14344192372589501213.png 1024w"
+	loading="lazy"
+	
+		alt="runBlocking事例日志"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="1821"
+		data-flex-basis="4372px"
+	
+></p>
+<h4 id="mainscope">MainScope
+</h4><p>它是一个指定协程分发在主线程中，并且使用到的Job是SupervisorJob，它的作用是当子协程出错的时候，不影响到父协程中的其他子协程
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/MainScope.png"
+	width="1846"
+	height="68"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/MainScope_hu2650145257960126316.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/MainScope_hu14566258088185660321.png 1024w"
+	loading="lazy"
+	
+		alt="MainScope"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="2714"
+		data-flex-basis="6515px"
+	
+>
+它是一个ContextScope，继承自CoroutineScope，并且它的context是由SupervisorJob()和Dispatchers.Main组成的一个context。我们一般自定义CoroutineScope的时候也是定义一个ContextScope，他的构造方法需要传入一个CoroutineContext。
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContextScope.png"
+	width="1690"
+	height="286"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContextScope_hu5904792650026458433.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContextScope_hu11244608147019618049.png 1024w"
+	loading="lazy"
+	
+		alt="ContextScope"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="590"
+		data-flex-basis="1418px"
+	
+></p>
+<h4 id="coroutinescope顶级方法">CoroutineScope顶级方法
+</h4><p><img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95.png"
+	width="1332"
+	height="122"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95_hu15491615658799400581.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95_hu11094062684700260274.png 1024w"
+	loading="lazy"
+	
+		alt="CoroutineScope顶级方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="1091"
+		data-flex-basis="2620px"
+	
+>
+它也是一个ContextScope，它的上下文先看传进来的context中的job是否为空，如果为空，则初始化一个job。如果不为空，则使用传进来的context。</p>
+<h4 id="coroutinescope顶级方法-1">coroutineScope顶级方法
+</h4><p><img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7.png"
+	width="1498"
+	height="482"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7_hu2384519224697842459.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7_hu1738105744462854734.png 1024w"
+	loading="lazy"
+	
+		alt="coroutineScope顶级"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="310"
+		data-flex-basis="745px"
+	
+>
+它是一个suspend方法，它是通过闭包的形式返回一个CoroutineScope，对应的字节码如下：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95%E5%AF%B9%E5%BA%94%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81.png"
+	width="1646"
+	height="476"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95%E5%AF%B9%E5%BA%94%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu3580153989874363924.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95%E5%AF%B9%E5%BA%94%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu5783132045477592587.png 1024w"
+	loading="lazy"
+	
+		alt="coroutineScope顶级方法对应的字节码"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="345"
+		data-flex-basis="829px"
+	
+>
+会将ScopeCoroutine给到block，也就是闭包中的CoroutineScope，接着会调用UndispatchedKt.startUndispatchedOrReturn:
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UndispatchedKt.startUndispatchedOrReturn%E7%9A%84%E8%B0%83%E7%94%A8.png"
+	width="3006"
+	height="1614"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UndispatchedKt.startUndispatchedOrReturn%E7%9A%84%E8%B0%83%E7%94%A8_hu9382291955095618687.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UndispatchedKt.startUndispatchedOrReturn%E7%9A%84%E8%B0%83%E7%94%A8_hu17061662428155340183.png 1024w"
+	loading="lazy"
+	
+		alt="UndispatchedKt.startUndispatchedOrReturn的调用"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="186"
+		data-flex-basis="446px"
+	
+>
+最终调用了block.invoke方法，写个demo看下效果：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8.png"
+	width="552"
+	height="197"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8_hu13475430610481151502.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8_hu1205718284101671899.png 1024w"
+	loading="lazy"
+	
+		alt="coroutineScope使用"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="280"
+		data-flex-basis="672px"
+	
+></br>
+日志如下：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8%E7%9A%84%E6%97%A5%E5%BF%97.png"
+	width="1189"
+	height="62"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8%E7%9A%84%E6%97%A5%E5%BF%97_hu823353845382947140.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8%E7%9A%84%E6%97%A5%E5%BF%97_hu16621909048894641806.png 1024w"
+	loading="lazy"
+	
+		alt="coroutineScope使用的日志"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="1917"
+		data-flex-basis="4602px"
+	
+>
+从日志可以看出来，它是先等到coroutineScope里面delay执行完了，才执行外面的逻辑。在字节码层面，它会把coroutineScope外面的代码编译成SuspendLambda，它也是个Continuation，等到执行完了coroutineScope内部的代码，才会回调到coroutineScope外面的SuspendLambda中来：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81.png"
+	width="1796"
+	height="1530"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu4832081726369057974.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu1365193881422392735.png 1024w"
+	loading="lazy"
+	
+		alt="coroutineScope事例编译后的字节码"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="117"
+		data-flex-basis="281px"
+	
+>
+上面分析过UndispatchedKt.startUndispatchedOrReturn中调用了block的invoke方法，此处的block正对应了CoroutineDispatchersActivity$demo7$1这个SuspendLambda对象：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/demo7%E4%B8%AD%E7%9A%84continuation%E4%BC%A0%E9%80%92.png"
+	width="1618"
+	height="1476"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/demo7%E4%B8%AD%E7%9A%84continuation%E4%BC%A0%E9%80%92_hu4372493753038637836.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/demo7%E4%B8%AD%E7%9A%84continuation%E4%BC%A0%E9%80%92_hu817652179057638967.png 1024w"
+	loading="lazy"
+	
+		alt="demo7中的continuation传递"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="109"
+		data-flex-basis="263px"
+	
+>
+在demo7中将CoroutineDispatchersActivity$demo7$1这个continuation传递到coroutineScope中，而它的invoke方法如下：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81.png"
+	width="1796"
+	height="1530"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu4832081726369057974.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu1365193881422392735.png 1024w"
+	loading="lazy"
+	
+		alt="coroutineScope事例编译后的字节码"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="117"
+		data-flex-basis="281px"
+	
+>
+创建了CoroutineDispatchersActivity$demo7$1后，继而调用了invokeSuspend方法，而invokeSuspend里面是要等到coroutineScope闭包中的delay挂起结束后，才会再次回到invokeSuspend方法，最后才会输出「demo7: coroutineScope outside」的日志，这也是协程挂起的调用顺序。</p>
+<h4 id="supervisorscope顶级方法">supervisorScope顶级方法
+</h4><p>它和上面的coroutineScope顶级方法差不多，也是先调用完闭包中的逻辑，然后才执行supervisorScope外面的代码。看下它的实现就知道区别了：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E5%AE%9E%E7%8E%B0.png"
+	width="1678"
+	height="1106"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E5%AE%9E%E7%8E%B0_hu8407134942574158311.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E5%AE%9E%E7%8E%B0_hu11898583491231899997.png 1024w"
+	loading="lazy"
+	
+		alt="supervisorScope实现"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="151"
+		data-flex-basis="364px"
+	
+>
+他所使用的CoroutineScope是一个SupervisorCoroutine，它和上面用到的ScopeCoroutine区别是重写了childCancelled方法，并返回false，此方法是子协程发生异常后，该不该取消其它的子协程，下面来验证下：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8.png"
+	width="1618"
+	height="858"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8_hu7684433086447637883.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8_hu1690630912590362899.png 1024w"
+	loading="lazy"
+	
+		alt="supervisorScope中子协程发生异常"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="188"
+		data-flex-basis="452px"
+	
+>
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8.png"
+	width="1580"
+	height="856"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8_hu10866282615193727810.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8_hu11646905280443896393.png 1024w"
+	loading="lazy"
+	
+		alt="coroutineScope子协程发生异常"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="184"
+		data-flex-basis="442px"
+	
+>
+在supervisorScope闭包中launch1发生异常了，由于supervisorScope不会去处理异常，将异常交给了launch1处理，所以launch2中的代码能继续执行。而在coroutineScope中，当launch1发生异常的时候，会将异常交给了coroutineScope，最终导致launch2的协程无法继续执行。</p>
+<h2 id="job">Job
+</h2><p>Job实现了CoroutineContext.Element，可以用来取消、启动一个协程，并且和父协程绑定了关系：
+<img src="/Job%e7%bb%93%e6%9e%84%e5%9b%be.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="Job结构图"
+	
+	
+>
+它下面有几个关键的子类：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%90%E7%B1%BB.png"
+	width="1088"
+	height="940"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%90%E7%B1%BB_hu13526632218070048829.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%90%E7%B1%BB_hu16929618538592697605.png 1024w"
+	loading="lazy"
+	
+		alt="Job的关键子类"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="115"
+		data-flex-basis="277px"
+	
+>
+从图上可以看出来前面分析的coroutineScope和supervisorScope两个顶级方法所使用的作用域ScopeCoroutine最终也是一个Job。</p>
+<h2 id="线程例子">线程例子
+</h2><p>先看一个例子：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E4%BE%8B%E5%AD%90.png"
+	width="1672"
+	height="892"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E4%BE%8B%E5%AD%90_hu17337118227619651397.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E4%BE%8B%E5%AD%90_hu553287269408731359.png 1024w"
+	loading="lazy"
+	
+		alt="例子"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="187"
+		data-flex-basis="449px"
+	
+></p>
+<p>分别指定了四种线程的用法，日志如下：</br>
+第一次： </br>
+<img src="第一次日志.png" width="60%"/></br>
+第二次：</br>
+<img src="第二次日志.png" width="60%"/></p>
+<blockquote>
+<p>Dispatchers.Main.immediate：指定的主线程会最先执行<br/>
+Dispatchers.Main：指定的主线程会晚于协程外面的主线程<br/>
+Dispatchers.IO和Dispatchers.Default：指定的线程没有先后之分<br/></p>
+</blockquote>
+<h2 id="coroutinescopelanuch">CoroutineScope.lanuch
+</h2><p>lanuch方法是协程作用域的扩展方法，比如上面例子中的GlobalScope它就是继承自CoroutineScope:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="n">CoroutineScope</span><span class="p">.</span><span class="na">launch</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="n">CoroutineContext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">EmptyCoroutineContext</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">start</span><span class="p">:</span><span class="w"> </span><span class="n">CoroutineStart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CoroutineStart</span><span class="p">.</span><span class="na">DEFAULT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">block</span><span class="p">:</span><span class="w"> </span><span class="n">suspend</span><span class="w"> </span><span class="n">CoroutineScope</span><span class="p">.()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Unit</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">):</span><span class="w"> </span><span class="n">Job</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//①</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">newContext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newCoroutineContext</span><span class="p">(</span><span class="n">context</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//②</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">coroutine</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">start</span><span class="p">.</span><span class="na">isLazy</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">LazyStandaloneCoroutine</span><span class="p">(</span><span class="n">newContext</span><span class="p">,</span><span class="w"> </span><span class="n">block</span><span class="p">)</span><span class="w"> </span><span class="k">else</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">StandaloneCoroutine</span><span class="p">(</span><span class="n">newContext</span><span class="p">,</span><span class="w"> </span><span class="n">active</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//③</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">coroutine</span><span class="p">.</span><span class="na">start</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">coroutine</span><span class="p">,</span><span class="w"> </span><span class="n">block</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//④</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">coroutine</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>参数：
+<ul>
+<li>context：launc传进来的context，比如上面例子中传进来的Dispatchers.Main、Dispatchers.IO这些都是CoroutineContext。如果没传就用EmptyCoroutineContext。</li>
+<li>start：CoroutineStart的枚举类，表示启动模式，默认是DEFAULT</li>
+<li>block：协程代码块，是一个CoroutineScope的扩展挂起函数</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ol>
+<li>将外界传进来的context和当前CoroutineScope的context进行合并处理<br/></li>
+<li>默认是DEFAULT模式，所以会初始化一个StandaloneCoroutine，会把newContext作为自己的parentContext，它既是一个Continuation，也是一个CoroutineScope<br/></li>
+<li>调用StandaloneCoroutine的start方法，并把启动模式，StandaloneCoroutine，协程挂起函数传进去了<br/></li>
+<li>StandaloneCoroutine作为lauch的返回值<br/></li>
+</ol>
+</blockquote>
+<p>StandaloneCoroutine它是一个Job类型，也是继承自AbstractCoroutine，看下它的start方法：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84start%E6%96%B9%E6%B3%95.png"
+	width="1602"
+	height="166"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84start%E6%96%B9%E6%B3%95_hu2385019956047133295.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84start%E6%96%B9%E6%B3%95_hu16951205477294670412.png 1024w"
+	loading="lazy"
+	
+		alt="AbstractCoroutine的start方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="965"
+		data-flex-basis="2316px"
+	
+>
+这里调用了start变量的invoke方法，因为CoroutineStart重写了invoke方法，所以能直接这么调，相当于是一个闭包的调用方式，这里调用了三参的invoke：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineStart%E7%9A%84invoke%E6%96%B9%E6%B3%95.png"
+	width="2066"
+	height="430"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineStart%E7%9A%84invoke%E6%96%B9%E6%B3%95_hu5959275550047201512.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineStart%E7%9A%84invoke%E6%96%B9%E6%B3%95_hu6805083386775693098.png 1024w"
+	loading="lazy"
+	
+		alt="CoroutineStart的invoke方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="480"
+		data-flex-basis="1153px"
+	
+></p>
+<ul>
+<li>第一个参数：挂起函数闭包，也就是协程要执行的代码块</li>
+<li>第二个参数：start方法传进来的StandaloneCoroutine</li>
+<li>第三个参数：start方法传进来的this，也是StandaloneCoroutine</li>
+</ul>
+<p>CoroutineStart是DEFAULT类型，所以会调用挂起函数的startCoroutineCancellable方法：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable%E6%96%B9%E6%B3%95.png"
+	width="2466"
+	height="398"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable%E6%96%B9%E6%B3%95_hu17186429614307135800.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable%E6%96%B9%E6%B3%95_hu448124321977532596.png 1024w"
+	loading="lazy"
+	
+		alt="挂起函数的startCoroutineCancellable方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="619"
+		data-flex-basis="1487px"
+	
+>
+在上面分析createCoroutine时候也是通过createCoroutineUnintercepted(receiver, completion).intercepted()，创建了delegate，最终是一个Continuation，也是一个suspendLambda。我们直接看ContinuationImpl的intercepted方法：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContinuationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95.png"
+	width="1836"
+	height="864"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContinuationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu4336296675113343457.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContinuationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu18438232634827292976.png 1024w"
+	loading="lazy"
+	
+		alt="ContinuationImpl的intercepted方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="212"
+		data-flex-basis="510px"
+	
+>
+intercepted方法里面取context变量中的key为ContinuationInterceptor的context，而context最终是completion的context，completion是前面start方法传进来的StandaloneCoroutine，它是继承自AbstractCoroutine：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine.png"
+	width="1562"
+	height="1116"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine_hu14231270573080683048.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine_hu15049815017369954498.png 1024w"
+	loading="lazy"
+	
+		alt="AbstractCoroutine"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="139"
+		data-flex-basis="335px"
+	
+>
+parentContext是launch方法传进来的context+CoroutineScope自己的context拼接的一个context</br>
+this：AbstractCoroutine实现了job接口，job也是一个CoroutineContext</br>
+在上面例子中lauch方法是通过GlobalScope启动的，它的context是一个EmptyCoroutineContext，所以传给AbstractCoroutine的parentContext其实就是launch方法传进去的context，也就是Dispatchers.io、Dispatchers.main等。</br>
+回到ContinuationImpl的intercepted方法，取context的ContinuationInterceptor,然后调用interceptContinuation方法，看下Dispatchers.io，它最终继承自CoroutineDispatcher：</br>
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineDispatcher%E7%9A%84interceptContinuation%E6%96%B9%E6%B3%95.png"
+	width="1880"
+	height="130"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineDispatcher%E7%9A%84interceptContinuation%E6%96%B9%E6%B3%95_hu18001666239388207925.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineDispatcher%E7%9A%84interceptContinuation%E6%96%B9%E6%B3%95_hu11804013529792046915.png 1024w"
+	loading="lazy"
+	
+		alt="CoroutineDispatcher的interceptContinuation方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="1446"
+		data-flex-basis="3470px"
+	
+>
+结论：
+如果lauch传的是Dispatchers.io，则lauch先创建DispatchedContinuation，然后调用resumeCancellableWith方法：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedContinuation%E7%9A%84resumeCancellableWith%E6%96%B9%E6%B3%95.png"
+	width="1148"
+	height="898"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedContinuation%E7%9A%84resumeCancellableWith%E6%96%B9%E6%B3%95_hu13206942740980082187.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedContinuation%E7%9A%84resumeCancellableWith%E6%96%B9%E6%B3%95_hu4930282993920454948.png 1024w"
+	loading="lazy"
+	
+		alt="DispatchedContinuation的resumeCancellableWith方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="127"
+		data-flex-basis="306px"
+	
+>
+如果dispatcher.isDispatchNeeded（默认是true），才会进入到dispatch逻辑，看下dispatchers.io：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95.png"
+	width="1816"
+	height="1286"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95_hu8403619297634966989.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95_hu8350517073580662725.png 1024w"
+	loading="lazy"
+	
+		alt="DefaultIoScheduler的dispatch方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="141"
+		data-flex-basis="338px"
+	
+>
+调用了default.dispatch方法，diefault是由UnlimitedIoScheduler.limitedParallelism创建的LimitedDispatcher，最终会执行到UnlimitedIoScheduler.dispatch方法：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UnlimitedIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95.png"
+	width="1590"
+	height="186"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UnlimitedIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95_hu3423051884872648517.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UnlimitedIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95_hu15704900135410725670.png 1024w"
+	loading="lazy"
+	
+		alt="UnlimitedIoScheduler的dispatch方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="854"
+		data-flex-basis="2051px"
+	
+>
+DefaultScheduler的dispatchWithContext方法如下：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultScheduler%E7%9A%84dispatchWithContext%E6%96%B9%E6%B3%95.png"
+	width="1802"
+	height="194"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultScheduler%E7%9A%84dispatchWithContext%E6%96%B9%E6%B3%95_hu5477308402990905241.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultScheduler%E7%9A%84dispatchWithContext%E6%96%B9%E6%B3%95_hu5434347950090076247.png 1024w"
+	loading="lazy"
+	
+		alt="DefaultScheduler的dispatchWithContext"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="928"
+		data-flex-basis="2229px"
+	
+>
+coroutineScheduler创建如下：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScheduler%E7%9A%84%E5%88%9B%E5%BB%BA.png"
+	width="1654"
+	height="224"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScheduler%E7%9A%84%E5%88%9B%E5%BB%BA_hu9783744180214531165.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScheduler%E7%9A%84%E5%88%9B%E5%BB%BA_hu1790058845328857383.png 1024w"
+	loading="lazy"
+	
+		alt="coroutineScheduler的创建"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="738"
+		data-flex-basis="1772px"
+	
+>
+最终会执行到CoroutineScheduler的dispatch方法，里面的代码就不细看了，是线程池部分执行block，关于这部分后面可以深究下，而block是在DispatchedContinuation中resumeCancellableWith方法里面把this给到了dispatcher的dispatch方法，说明DispatchedContinuation实现了Runnable接口，直接看它的run方法，该方法定义在它的父类DispatchedTask中：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95.png"
+	width="1001"
+	height="976"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95_hu13702227487613152692.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95_hu10856747154020235078.png 1024w"
+	loading="lazy"
+	
+		alt="DispatchedTask的run方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="102"
+		data-flex-basis="246px"
+	
+>
+此处执行了delegate的resume方法，resume方法执行了resumeWith，注意此处的delegate是DispatchedContinuation中传进来的continuation，它是createCoroutineUnintercepted(receiver, completion).intercepted()创建的delegate，是一个continuation对象，也是suspendlambda，在上面创建协程分析过baseContinuationImpl的resumeWith方法，里面会执行协程的invokeSuspend方法，也就是我们的协程执行代码。执行完了后会执行complete的resumeWith，而通过lauch创建的协程，此处的complete是launch方法构造的StandaloneCoroutine对象，它的resumeWith方法定义在AbstractCoroutine中：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E4%B8%AD%E7%9A%84resumeWith%E6%96%B9%E6%B3%95.png"
+	width="1550"
+	height="730"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E4%B8%AD%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu2428648398246169480.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E4%B8%AD%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu12246288167136455501.png 1024w"
+	loading="lazy"
+	
+		alt="AbstractCoroutine中的resumeWith方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="212"
+		data-flex-basis="509px"
+	
+>
+AbstractCoroutine的afterCompletion：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84afterCompletion%E6%96%B9%E6%B3%95.png"
+	width="1018"
+	height="94"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84afterCompletion%E6%96%B9%E6%B3%95_hu14820723451743709595.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84afterCompletion%E6%96%B9%E6%B3%95_hu8849401298563670511.png 1024w"
+	loading="lazy"
+	
+		alt="AbstractCoroutine的afterCompletion方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="1082"
+		data-flex-basis="2599px"
+	
+>
+此处没有逻辑执行。</br>
+我们注意到在讲解协程启动的时候，创建delegate的continuation时候调用createCoroutineUnintercepted只传了complete，没有传receiver。而在launch启动协程时候，将StandaloneCoroutine作为receiver传给了createCoroutineUnintercepted方法：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84createCoroutineUnintercepted%E6%96%B9%E6%B3%95.png"
+	width="1556"
+	height="694"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84createCoroutineUnintercepted%E6%96%B9%E6%B3%95_hu17050012182861041299.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84createCoroutineUnintercepted%E6%96%B9%E6%B3%95_hu9421584298643481085.png 1024w"
+	loading="lazy"
+	
+		alt="挂起函数的createCoroutineUnintercepted方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="224"
+		data-flex-basis="538px"
+	
+>
+默认的挂起函数的create方法是抛异常的，需要SuspendLambda的子类自己去实现：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/SuspendLambda%E9%BB%98%E8%AE%A4%E7%9A%84create%E6%96%B9%E6%B3%95.png"
+	width="1726"
+	height="190"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/SuspendLambda%E9%BB%98%E8%AE%A4%E7%9A%84create%E6%96%B9%E6%B3%95_hu9943885230134530173.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/SuspendLambda%E9%BB%98%E8%AE%A4%E7%9A%84create%E6%96%B9%E6%B3%95_hu15254487373604861991.png 1024w"
+	loading="lazy"
+	
+		alt="SuspendLambda默认的create方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="908"
+		data-flex-basis="2180px"
+	
+>
+编译后的SuspendLambda的子类create实现：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E7%BC%96%E8%AF%91%E5%90%8ESuspendLamda%E7%9A%84%E5%AD%90%E7%B1%BB%E7%9A%84create%E6%96%B9%E6%B3%95.png"
+	width="1700"
+	height="1554"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E7%BC%96%E8%AF%91%E5%90%8ESuspendLamda%E7%9A%84%E5%AD%90%E7%B1%BB%E7%9A%84create%E6%96%B9%E6%B3%95_hu18226079645214200200.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E7%BC%96%E8%AF%91%E5%90%8ESuspendLamda%E7%9A%84%E5%AD%90%E7%B1%BB%E7%9A%84create%E6%96%B9%E6%B3%95_hu5632307504937424671.png 1024w"
+	loading="lazy"
+	
+		alt="编译后SuspendLamda的子类的create方法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="109"
+		data-flex-basis="262px"
+	
+>
+此处将receiver传到create中没有用到，所以其实跟单参没有什么区别啊。</p>
+<h2 id="总结">总结
+</h2><blockquote>
+<p>结论：协程在启动过程中会取CoroutineContext中的ContinuationInterceptor，然后执行interceptContinuation。而此时如果是一个Dispatchers.IO，它又是继承自CoroutineDispatcher，所以会执行到了CoroutineDispatcher的interceptContinuation。此时得到的是一个DispatchedContinuation对象，并把当前的CoroutineDispatcher和协程启动过程中创建的StandaloneCoroutine传给了。接着会执行DispatchedContinuation的resumeCancellableWith方法，在该方法里面会判断CoroutineDispatcher.isDispatchNeeded，如果是的话，会调用CoroutineDispatcher的dispatch方法，最终会通过线程池会执行到DispatchedContinuation的run方法，因为它是一个Runnable对象。在run方法里面，会执行continuation的resume方法，而此处的continuation是编译器给我们创建的SuspendLambda的子类，最终会执行它的invokeSuspend方法。执行完后会执行协程启动过程中的StandaloneCoroutine的resumeWith方法。</br>
+时序图:
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E5%8D%8F%E7%A8%8B%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%97%B6%E5%BA%8F%E5%9B%BE.png"
+	width="1862"
+	height="1347"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E5%8D%8F%E7%A8%8B%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%97%B6%E5%BA%8F%E5%9B%BE_hu9346735665133454039.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E5%8D%8F%E7%A8%8B%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%97%B6%E5%BA%8F%E5%9B%BE_hu9538128425541646936.png 1024w"
+	loading="lazy"
+	
+		alt="协程线程调度时序图"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="138"
+		data-flex-basis="331px"
+	
+></p>
+</blockquote>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2024 Example Person
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.29.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
