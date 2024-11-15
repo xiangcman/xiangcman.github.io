@@ -7,7 +7,271 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
         <copyright>Example Person</copyright>
-        <lastBuildDate>Mon, 04 Nov 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/categories/kotin/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 15 Nov 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/categories/kotin/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>协程挂起原理</title>
+        <link>https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/</link>
+        <pubDate>Fri, 15 Nov 2024 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/</guid>
+        <description>&lt;p&gt;先来一个例子：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E4%BE%8B%E5%AD%90.png&#34;
+	width=&#34;853&#34;
+	height=&#34;239&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E4%BE%8B%E5%AD%90_hu15288217339875534617.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E4%BE%8B%E5%AD%90_hu15039319306276177835.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;挂起例子&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;356&#34;
+		data-flex-basis=&#34;856px&#34;
+	
+&gt;
+日志如下：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E6%97%A5%E5%BF%97.png&#34;
+	width=&#34;497&#34;
+	height=&#34;75&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E6%97%A5%E5%BF%97_hu1883043286148996173.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E6%97%A5%E5%BF%97_hu16917771289284893893.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;协程挂起日志&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;662&#34;
+		data-flex-basis=&#34;1590px&#34;
+	
+&gt;
+可以看到上面先是执行了withContext中的代码，然后执行了launch中的代码，注意到launch中也是在单独线程中执行的，其中launch中使用的Dispatcher是Dispatchers.Default类型的。前面分析过launch调度情况，最后会执行到continuation的resumeWith，然后调用它的invokeSuspend方法：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/launch%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84suspendLamda.png&#34;
+	width=&#34;1836&#34;
+	height=&#34;1030&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/launch%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84suspendLamda_hu5099044005919235273.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/launch%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84suspendLamda_hu8144029306657370419.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;launch编译完后的suspendLamda&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;178&#34;
+		data-flex-basis=&#34;427px&#34;
+	
+&gt;
+可以看到先执行withContext，因为withContext启动的时候，默认的状态是COROUTINE_SUSPENDED，所以退出了，返回了var2，此时的label=1了。当执行完withContext的时候，会通知传给withContext的continuation，也就是上面的&lt;strong&gt;CoroutineDispatchersActivity$demo2$1&lt;/strong&gt;这个SuspendLambda。所以会再次执行它的invokeSuspend方法，此时lable=1，所以最后返回了Unit.INSTANCE，整个invokeSuspend结束，这就是挂起的原因。
+至于为什么在&lt;strong&gt;CoroutineDispatchersActivity$demo2$1&lt;/strong&gt;中遇到了返回值为COROUTINE_SUSPENDED时候，不会继续执行了呢？看下BaseContinuationImpl中的resumeWith逻辑：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95.png&#34;
+	width=&#34;1089&#34;
+	height=&#34;896&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu12868998692388343703.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu6580899275096290406.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;BaseContinuationImpl的resumeWith方法&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;121&#34;
+		data-flex-basis=&#34;291px&#34;
+	
+&gt;
+在BaseContinuationImpl中的resumeWith中，如果invokeSuspend返回值是COROUTINE_SUSPENDED，则直接return了，不往上层的continuation调用了。&lt;/p&gt;
+&lt;p&gt;至于再次执行&lt;strong&gt;CoroutineDispatchersActivity$demo2$1&lt;/strong&gt;的invokeSuspend方法是在什么时候，可以追溯到withContext中：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/withContext%E5%90%AF%E5%8A%A8%E5%8D%8F%E7%A8%8B.png&#34;
+	width=&#34;1109&#34;
+	height=&#34;944&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/withContext%E5%90%AF%E5%8A%A8%E5%8D%8F%E7%A8%8B_hu13126482021011100926.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/withContext%E5%90%AF%E5%8A%A8%E5%8D%8F%E7%A8%8B_hu8713362010937282250.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;withContext启动协程&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;117&#34;
+		data-flex-basis=&#34;281px&#34;
+	
+&gt;
+执行了block的startCoroutineCancellable：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable.png&#34;
+	width=&#34;1215&#34;
+	height=&#34;208&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable_hu4119518107152568018.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable_hu13895880010902596000.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;挂起函数的startCoroutineCancellable&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;584&#34;
+		data-flex-basis=&#34;1401px&#34;
+	
+&gt;
+此处很熟悉啊，这不又启动了一个协程吗？协程套协程啊。好吧，我们直接看completion的回调，在协程挂起函数执行完后，会执行complete的resumeWith方法，此处是DispatchedCoroutine对象，继承自ScopeCoroutine：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/ScopeCoroutine%E7%9A%84afterResume%E6%96%B9%E6%B3%95.png&#34;
+	width=&#34;962&#34;
+	height=&#34;708&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/ScopeCoroutine%E7%9A%84afterResume%E6%96%B9%E6%B3%95_hu14219842005018483106.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/ScopeCoroutine%E7%9A%84afterResume%E6%96%B9%E6%B3%95_hu15463126126243052121.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;ScopeCoroutine的afterResume方法&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;135&#34;
+		data-flex-basis=&#34;326px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;withcontext执行完了后会执行外面协程的resumeWith，所以launch的invokeSuspend再次执行。再次执行的时候会回到自己的线程。真相大白了！&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>协程中的线程</title>
+        <link>https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/</link>
+        <pubDate>Wed, 13 Nov 2024 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/</guid>
+        <description>&lt;p&gt;在上一节介绍过Dispatchers.IO，它是一个CoroutineDispatcher对象，CoroutineDispatcher的执行是在DispatchedContinuation中的resumeCancellableWith方法，如果CoroutineDispatcher的isDispatchNeeded返回true，则会执行CoroutineDispatcher的dispatch方法。否则直接执行该runnable。&lt;/p&gt;
+&lt;h2 id=&#34;dispatchersmain&#34;&gt;Dispatchers.Main
+&lt;/h2&gt;&lt;p&gt;在安卓平台下，它其实是一个HandlerContext对象：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/HandlerContext%E5%88%9B%E5%BB%BA.png&#34;
+	width=&#34;2280&#34;
+	height=&#34;696&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/HandlerContext%E5%88%9B%E5%BB%BA_hu12275470180790120800.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/HandlerContext%E5%88%9B%E5%BB%BA_hu7930816600724172914.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;HandlerContext创建&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;327&#34;
+		data-flex-basis=&#34;786px&#34;
+	
+&gt;
+看下它的isDispatchNeeded和dispatch方法：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/HandlerContext%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%96%B9%E6%B3%95.png&#34;
+	width=&#34;1392&#34;
+	height=&#34;526&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/HandlerContext%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%96%B9%E6%B3%95_hu12361296945546102053.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/HandlerContext%E7%9A%84%E4%B8%A4%E4%B8%AA%E6%96%B9%E6%B3%95_hu12254506602205313064.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;HandlerContext的两个方法&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;264&#34;
+		data-flex-basis=&#34;635px&#34;
+	
+&gt;
+此时invokeImmediately默认是false，因此isDispatchNeeded返回true。所以会执行它的dispatch方法。在dispatch方法中将runnable给到了主线程的消息队列中，然后等主线程从消息队列中取该runnable。所以在上一节例子中它是晚于onCreate方法执行的。&lt;/p&gt;
+&lt;h2 id=&#34;dispatchersmainimmediate&#34;&gt;Dispatchers.Main.immediate
+&lt;/h2&gt;&lt;p&gt;它是HandlerContext中的immediate变量:
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/HandlerContext%E4%B8%AD%E7%9A%84immediate%E5%88%9B%E5%BB%BA.png&#34;
+	width=&#34;1534&#34;
+	height=&#34;310&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/HandlerContext%E4%B8%AD%E7%9A%84immediate%E5%88%9B%E5%BB%BA_hu13727539959266150244.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/HandlerContext%E4%B8%AD%E7%9A%84immediate%E5%88%9B%E5%BB%BA_hu7871957390586308121.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;HandlerContext中的immediate创建&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;494&#34;
+		data-flex-basis=&#34;1187px&#34;
+	
+&gt;
+可以看到它是新创建了一个HandlerContext，并且invokeImmediately是true。在上一节的例子中，它的isDispatchNeeded返回false。所以它是直接执行SuspendLambda的resumeWith方法，因此上一节例子中它是要早于Dispatchs.Main执行的。&lt;/p&gt;
+&lt;h2 id=&#34;dispatchersio&#34;&gt;Dispatchers.IO
+&lt;/h2&gt;&lt;p&gt;看下它的CoroutineDispatcher，对应的子类是DefaultIoScheduler，CoroutineDispatcher的isDispatchNeeded方法默认返回true，所以会执行它的dispatch方法：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/DefaultIoScheduler.png&#34;
+	width=&#34;1908&#34;
+	height=&#34;1300&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/DefaultIoScheduler_hu16413187051627916210.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/DefaultIoScheduler_hu1519536816675212800.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;DefaultIoScheduler&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;146&#34;
+		data-flex-basis=&#34;352px&#34;
+	
+&gt;
+在dispatch方法中调用了default的dispatch方法，default实际是一个LimitedDispatcher方法，看下它的dispatch方法：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/LimiteDispatcher.png&#34;
+	width=&#34;2144&#34;
+	height=&#34;1536&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/LimiteDispatcher_hu5180766052067267042.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/LimiteDispatcher_hu414100176871484877.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;LimitedDispatcher&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;139&#34;
+		data-flex-basis=&#34;335px&#34;
+	
+&gt;
+在上面2处，判断当前runningWokers的数量，如果大于parallelism的时候，则不创建Worker，此处的parallelism的大小是64。从此处也能看出来Dispatchers.IO的线程数量不会超过64个。
+最终该方法里面会通过DefaultScheduler.dispatchWithContext来创建CoroutineScheduler，来看下创建线程池的几个参数：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/%E5%88%9B%E5%BB%BA%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%8F%82%E6%95%B0.png&#34;
+	width=&#34;1298&#34;
+	height=&#34;252&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/%E5%88%9B%E5%BB%BA%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%8F%82%E6%95%B0_hu4631778987722393017.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/%E5%88%9B%E5%BB%BA%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%8F%82%E6%95%B0_hu14991259787336888600.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;创建线程池的参数&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;515&#34;
+		data-flex-basis=&#34;1236px&#34;
+	
+&gt;
+核心线程数：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/%E6%A0%B8%E5%BF%83%E7%BA%BF%E7%A8%8B%E6%95%B0.png&#34;
+	width=&#34;1202&#34;
+	height=&#34;276&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/%E6%A0%B8%E5%BF%83%E7%BA%BF%E7%A8%8B%E6%95%B0_hu6717920016969366926.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/%E6%A0%B8%E5%BF%83%E7%BA%BF%E7%A8%8B%E6%95%B0_hu18074483835265759496.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;核心线程数&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;435&#34;
+		data-flex-basis=&#34;1045px&#34;
+	
+&gt;
+最小2个，最大是cpu的核数
+最大线程数：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/%E6%9C%80%E5%A4%A7%E7%BA%BF%E7%A8%8B%E6%95%B0.png&#34;
+	width=&#34;1218&#34;
+	height=&#34;284&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/%E6%9C%80%E5%A4%A7%E7%BA%BF%E7%A8%8B%E6%95%B0_hu9873094071305706375.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/%E6%9C%80%E5%A4%A7%E7%BA%BF%E7%A8%8B%E6%95%B0_hu10787743716997924132.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;最大线程数&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;428&#34;
+		data-flex-basis=&#34;1029px&#34;
+	
+&gt;
+最大线程数取值(1 shl BLOCKING_SHIFT) - 2：最终得到的值是2^21-2 = 2097150。
+非核心线程空闲时间是60s。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;结论：Dispatchers.IO创建的最大的线程个数为:Math.max(64,cpu核数)&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;dispatchersdefault&#34;&gt;Dispatchers.Default
+&lt;/h2&gt;&lt;p&gt;它是由DefaultScheduler构建的线程池，它所创建的最大的线程个数为:Math.max(2,cpu核数)&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Dispatchers.IO和Dispatchers.Default都是由DefaultScheduler构建的，而DefaultScheduler其实是一个单例，因此不难看出它两是共用一个线程池的，只不过当Dispatchers.IO时候，最大线程个数控制在Math.min(64,cpu核数)，最多不会超过64个，Dispatchers.Default控制在cpu核数个数上。Dispatchers.Default常用作cpu密集型的任务，比如图片模糊处理、繁杂的计算型可以用这种类型的线程池。Dispatchers.IO由于它的线程数量多，并且它不能消耗cpu资源，因此常用作io处理，文件读写等操作上。
+关于这点，可以看这篇文章：&lt;a class=&#34;link&#34; href=&#34;https://ntutn.top/posts/dispatcher%E6%8B%86%E8%A7%A3/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;dispatcher拆解&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+        </item>
+        <item>
         <title>协程上下文</title>
         <link>https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/</link>
         <pubDate>Mon, 04 Nov 2024 00:00:00 +0000</pubDate>
