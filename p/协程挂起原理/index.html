@@ -358,7 +358,7 @@
 		data-flex-grow="356"
 		data-flex-basis="856px"
 	
->
+></br>
 日志如下：</br>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E6%97%A5%E5%BF%97.png"
 	width="497"
@@ -373,7 +373,7 @@
 		data-flex-grow="662"
 		data-flex-basis="1590px"
 	
->
+></br>
 可以看到上面先是执行了withContext中的代码，然后执行了launch中的代码，注意到launch中也是在单独线程中执行的，其中launch中使用的Dispatcher是Dispatchers.Default类型的。前面分析过launch调度情况，最后会执行到continuation的resumeWith，然后调用它的invokeSuspend方法：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/launch%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84suspendLamda.png"
 	width="1836"
@@ -388,7 +388,7 @@
 		data-flex-grow="178"
 		data-flex-basis="427px"
 	
->
+></br>
 可以看到先执行withContext，因为withContext启动的时候，默认的状态是COROUTINE_SUSPENDED，所以退出了，返回了var2，此时的label=1了。当执行完withContext的时候，会通知传给withContext的continuation，也就是上面的<strong>CoroutineDispatchersActivity$demo2$1</strong>这个SuspendLambda。所以会再次执行它的invokeSuspend方法，此时lable=1，所以最后返回了Unit.INSTANCE，整个invokeSuspend结束，这就是挂起的原因。
 至于为什么在<strong>CoroutineDispatchersActivity$demo2$1</strong>中遇到了返回值为COROUTINE_SUSPENDED时候，不会继续执行了呢？看下BaseContinuationImpl中的resumeWith逻辑：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95.png"
@@ -404,7 +404,7 @@
 		data-flex-grow="121"
 		data-flex-basis="291px"
 	
->
+></br>
 在BaseContinuationImpl中的resumeWith中，如果invokeSuspend返回值是COROUTINE_SUSPENDED，则直接return了，不往上层的continuation调用了。</p>
 <p>至于再次执行<strong>CoroutineDispatchersActivity$demo2$1</strong>的invokeSuspend方法是在什么时候，可以追溯到withContext中：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/withContext%E5%90%AF%E5%8A%A8%E5%8D%8F%E7%A8%8B.png"
@@ -420,7 +420,7 @@
 		data-flex-grow="117"
 		data-flex-basis="281px"
 	
->
+> </br>
 执行了block的startCoroutineCancellable：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable.png"
 	width="1215"
@@ -435,7 +435,7 @@
 		data-flex-grow="584"
 		data-flex-basis="1401px"
 	
->
+></br>
 此处很熟悉啊，这不又启动了一个协程吗？协程套协程啊。好吧，我们直接看completion的回调，在协程挂起函数执行完后，会执行complete的resumeWith方法，此处是DispatchedCoroutine对象，继承自ScopeCoroutine：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/ScopeCoroutine%E7%9A%84afterResume%E6%96%B9%E6%B3%95.png"
 	width="962"
@@ -450,7 +450,7 @@
 		data-flex-grow="135"
 		data-flex-basis="326px"
 	
-></p>
+></br></p>
 <p>withcontext执行完了后会执行外面协程的resumeWith，所以launch的invokeSuspend再次执行。再次执行的时候会回到自己的线程。真相大白了！</p>
 
 </section>
