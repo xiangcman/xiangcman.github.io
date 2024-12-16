@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="invokeOnCompletion监听协程状态 在了解协程的异常处理之前，先来熟悉下协程之间job是如何绑定关系，还是通过一个例子来熟悉他们之间的关系：\n1 2 3 4 5 6 7 8 private fun demo(){ val job = GlobalScope.launch { Log.d(TAG, &#34;demo: launch代码&#34;) } job.invokeOnCompletion { Log.d(TAG, &#34;demo: invokeOnCompletion&#34;) } } ">
+<title>协程的异常处理</title>
+
+<link rel='canonical' href='https://example.com/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程的异常处理">
+<meta property='og:description' content="invokeOnCompletion监听协程状态 在了解协程的异常处理之前，先来熟悉下协程之间job是如何绑定关系，还是通过一个例子来熟悉他们之间的关系：\n1 2 3 4 5 6 7 8 private fun demo(){ val job = GlobalScope.launch { Log.d(TAG, &#34;demo: launch代码&#34;) } job.invokeOnCompletion { Log.d(TAG, &#34;demo: invokeOnCompletion&#34;) } } ">
+<meta property='og:url' content='https://example.com/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-12-16T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-12-16T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="协程的异常处理">
+<meta name="twitter:description" content="invokeOnCompletion监听协程状态 在了解协程的异常处理之前，先来熟悉下协程之间job是如何绑定关系，还是通过一个例子来熟悉他们之间的关系：\n1 2 3 4 5 6 7 8 private fun demo(){ val job = GlobalScope.launch { Log.d(TAG, &#34;demo: launch代码&#34;) } job.invokeOnCompletion { Log.d(TAG, &#34;demo: invokeOnCompletion&#34;) } } ">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/_index.zh-cn/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#invokeoncompletion监听协程状态">invokeOnCompletion监听协程状态</a></li>
+        <li><a href="#invokeoncompletion监听job的异常">invokeOnCompletion监听job的异常</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%BA%90%E7%A0%81/" >
+                源码
+            </a>
+        
+            <a href="/categories/kotin/" >
+                Kotin
+            </a>
+        
+            <a href="/categories/%E5%8D%8F%E7%A8%8B/" >
+                协程
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/">协程的异常处理</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2024-12-16</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    3 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h3 id="invokeoncompletion监听协程状态">invokeOnCompletion监听协程状态
+</h3><p>在了解协程的异常处理之前，先来熟悉下协程之间job是如何绑定关系，还是通过一个例子来熟悉他们之间的关系：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">private fun demo(){
+</span></span><span class="line"><span class="cl">    val job = GlobalScope.launch {
+</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;demo: launch代码&#34;)
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">    job.invokeOnCompletion {
+</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;demo: invokeOnCompletion&#34;)
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>执行结果：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">CoroutineJobActivity    com.example.coroutinescopedemo       D  demo: launch代码
+</span></span><span class="line"><span class="cl">CoroutineJobActivity    com.example.coroutinescopedemo       D  demo: invokeOnCompletion
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>可以看出来invokeOnCompletion是job执行完毕的回调。</p>
+</blockquote>
+<p>通过launch创建协程内部会构造一个StandaloneCoroutine，它就是一个job，并且launch返回的就是该job：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81.png"
+	width="1338"
+	height="670"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81_hu12390856992509383489.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81_hu1115891652662574519.png 1024w"
+	loading="lazy"
+	
+		alt="launch执行代码.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="199"
+		data-flex-basis="479px"
+	
+>
+StandaloneCoroutine继承自AbstractCoroutine：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/AbstractCoroutine%E6%9E%84%E9%80%A0%E5%99%A8%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81.png"
+	width="1904"
+	height="872"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/AbstractCoroutine%E6%9E%84%E9%80%A0%E5%99%A8%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81_hu12033594672800403326.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/AbstractCoroutine%E6%9E%84%E9%80%A0%E5%99%A8%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81_hu11122120103143826030.png 1024w"
+	loading="lazy"
+	
+		alt="AbstractCoroutine构造器执行代码.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="524px"
+	
+></p>
+<p><img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/initParentJob.png"
+	width="1720"
+	height="854"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/initParentJob_hu15115013380148282422.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/initParentJob_hu5325312372490179630.png 1024w"
+	loading="lazy"
+	
+		alt="initParentJob.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="201"
+		data-flex-basis="483px"
+	
+>
+因此parentHandle为NonDisposableHandle，然后方法结束。
+此时执行完launch后，继续执行了job的invokeOnCompletion方法，它是一个抽象方法，实现方法在jobSupport类：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/JobSupport%E4%B8%8B%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95.png"
+	width="2800"
+	height="124"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/JobSupport%E4%B8%8B%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95_hu13151292981316171316.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/JobSupport%E4%B8%8B%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95_hu17365294587815558098.png 1024w"
+	loading="lazy"
+	
+		alt="JobSupport下的invokeOnCompletion方法.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="2258"
+		data-flex-basis="5419px"
+	
+>
+<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E4%B8%89%E4%B8%AA%E5%8F%82%E6%95%B0%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95.png"
+	width="2080"
+	height="1426"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E4%B8%89%E4%B8%AA%E5%8F%82%E6%95%B0%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95_hu11497432006843081940.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E4%B8%89%E4%B8%AA%E5%8F%82%E6%95%B0%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95_hu7757718997044286171.png 1024w"
+	loading="lazy"
+	
+		alt="三个参数的invokeOnCompletion方法.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="145"
+		data-flex-basis="350px"
+	
+></p>
+<p>我们看下makeNode方法实现：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/makeNode%E7%9A%84%E5%AE%9E%E7%8E%B0.png"
+	width="1568"
+	height="646"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/makeNode%E7%9A%84%E5%AE%9E%E7%8E%B0_hu12020501936751908219.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/makeNode%E7%9A%84%E5%AE%9E%E7%8E%B0_hu15521599246059739868.png 1024w"
+	loading="lazy"
+	
+		alt="makeNode的实现.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="242"
+		data-flex-basis="582px"
+	
+>
+从调用链上看onCancelling传进来的是false，并且此时的handler还不是一个JobNode节点，所以会创建了一个InvokeOnCompletion对象，并把外面传进来的ComppletionHandler传到InvokeOnCompletion中，看下InvokeOnCompletion对象：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">private class InvokeOnCompletion(
+</span></span><span class="line"><span class="cl">    private val handler: CompletionHandler
+</span></span><span class="line"><span class="cl">) : JobNode()  {
+</span></span><span class="line"><span class="cl">    override fun invoke(cause: Throwable?) = handler.invoke(cause)
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>InvokeOnCompletion是一个JobNode节点：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">internal</span> <span class="n">abstract</span> <span class="k">class</span> <span class="n">JobNode</span> <span class="p">:</span> <span class="n">CompletionHandlerBase</span><span class="p">(),</span> <span class="n">DisposableHandle</span><span class="p">,</span> <span class="n">Incomplete</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="o">/**</span>
+</span></span><span class="line"><span class="cl">     <span class="o">*</span> <span class="n">Initialized</span> <span class="n">by</span> <span class="p">[</span><span class="n">JobSupport</span><span class="o">.</span><span class="n">makeNode</span><span class="p">]</span><span class="o">.</span>
+</span></span><span class="line"><span class="cl">     <span class="o">*/</span>
+</span></span><span class="line"><span class="cl">    <span class="n">lateinit</span> <span class="k">var</span> <span class="n">job</span><span class="p">:</span> <span class="n">JobSupport</span>
+</span></span><span class="line"><span class="cl">    <span class="n">override</span> <span class="n">val</span> <span class="n">isActive</span><span class="p">:</span> <span class="n">Boolean</span> <span class="n">get</span><span class="p">()</span> <span class="o">=</span> <span class="bp">true</span>
+</span></span><span class="line"><span class="cl">    <span class="n">override</span> <span class="n">val</span> <span class="n">list</span><span class="p">:</span> <span class="n">NodeList</span><span class="err">?</span> <span class="n">get</span><span class="p">()</span> <span class="o">=</span> <span class="n">null</span>
+</span></span><span class="line"><span class="cl">    <span class="n">override</span> <span class="n">fun</span> <span class="n">dispose</span><span class="p">()</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">removeNode</span><span class="p">(</span><span class="n">this</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">override</span> <span class="n">fun</span> <span class="n">toString</span><span class="p">()</span> <span class="o">=</span> <span class="s2">&#34;$classSimpleName@$hexAddress[job@${job.hexAddress}]&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>JobNode实现了CompletionHandlerBase抽象类：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">internal</span> <span class="n">actual</span> <span class="n">abstract</span> <span class="k">class</span> <span class="n">CompletionHandlerBase</span> <span class="n">actual</span> <span class="n">constructor</span><span class="p">()</span> <span class="p">:</span> <span class="n">LockFreeLinkedListNode</span><span class="p">(),</span> <span class="n">CompletionHandler</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">actual</span> <span class="n">abstract</span> <span class="n">override</span> <span class="n">fun</span> <span class="n">invoke</span><span class="p">(</span><span class="n">cause</span><span class="p">:</span> <span class="n">Throwable</span><span class="err">?</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>它也是实现了CompletionHandler接口，CompletionHandler是一个闭包，从上面继承以及JobNode实现来看，在它的invoke实现里面，会触发传进来的CompletionHandler的invoke实现，从实现来看其实这就是个静态代理的模式。</p>
+<blockquote>
+<p>结论：
+makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节点。</br></p>
+</blockquote>
+<p>回到上面的invokeOnComletion的实现，创建了InvokeOnCompletion后，会走到loopOnState的函数，它是遍历state，它的初始状态是一个Empty状态，并且state.isActive=true。所以最终把刚才创建的InvokeOnCompletion设置到了state上，并且返回了该InvokeOnCompletion。</p>
+<blockquote>
+<p>结论：
+当调用了job的invokeOnCompletion方法后，会把外界创建好的CompletionHandler传给了InvokeCompletion，InvokeCompletion是一个JobNode，在它的invoke实现中，会回调到外界的CompletionHandler中。并且把创建的InvokeCompletion设置到当前job的state上了。</p>
+</blockquote>
+<p>协程体执行完job的执行：
+在之前分析协程体其实是一个SuspendLambda，在它的invokeSuspend调用完后，会执行它的continuation的resumeWith方法，在上面例子中其实是StandaloneCoroutine，它是一个job，所以看下它的resumeWith实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">public final override fun resumeWith(result: Result&lt;T&gt;) {
+</span></span><span class="line"><span class="cl">    val state = makeCompletingOnce(result.toState())
+</span></span><span class="line"><span class="cl">    if (state === COMPLETING_WAITING_CHILDREN) return
+</span></span><span class="line"><span class="cl">    afterResume(state)
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>将协程体的结果传到了makeCompletingOnce方法中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">internal fun makeCompletingOnce(proposedUpdate: Any?): Any? {
+</span></span><span class="line"><span class="cl">    loopOnState { state -&gt;
+</span></span><span class="line"><span class="cl">        val finalState = tryMakeCompleting(state, proposedUpdate)
+</span></span><span class="line"><span class="cl">        when {
+</span></span><span class="line"><span class="cl">            finalState === COMPLETING_ALREADY -&gt;
+</span></span><span class="line"><span class="cl">                throw IllegalStateException(
+</span></span><span class="line"><span class="cl">                    &#34;Job $this is already complete or completing, &#34; +
+</span></span><span class="line"><span class="cl">                        &#34;but is being completed with $proposedUpdate&#34;, proposedUpdate.exceptionOrNull
+</span></span><span class="line"><span class="cl">                )
+</span></span><span class="line"><span class="cl">            finalState === COMPLETING_RETRY -&gt; return@loopOnState
+</span></span><span class="line"><span class="cl">            else -&gt; return finalState // COMPLETING_WAITING_CHILDREN or final state
+</span></span><span class="line"><span class="cl">        }
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>轮训获取state，并调用了tryMakeCompleting方法：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryMakeCompleting%E5%AE%9E%E7%8E%B0.png"
+	width="2314"
+	height="1002"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryMakeCompleting%E5%AE%9E%E7%8E%B0_hu11423810802926591286.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryMakeCompleting%E5%AE%9E%E7%8E%B0_hu15587123441217731922.png 1024w"
+	loading="lazy"
+	
+		alt="tryMakeCompleting实现.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="230"
+		data-flex-basis="554px"
+	
+>
+从上面的分析知道state它是一个JobNode，它是一个InvokeCompletion，它不是一个ChildHandleNode，并且proposedUpdate不是CompletedExceptionally，所以会执行tryFinalizeSimpleState：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryFinalizeSimpleState%E5%AE%9E%E7%8E%B0.png"
+	width="2242"
+	height="478"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryFinalizeSimpleState%E5%AE%9E%E7%8E%B0_hu10630186520723620128.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryFinalizeSimpleState%E5%AE%9E%E7%8E%B0_hu2160643778422037512.png 1024w"
+	loading="lazy"
+	
+		alt="tryFinalizeSimpleState实现.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="469"
+		data-flex-basis="1125px"
+	
+>
+内部调用了completeStateFinalization方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">private</span> <span class="n">fun</span> <span class="n">completeStateFinalization</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">Incomplete</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">Any</span><span class="err">?</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="o">/*</span>
+</span></span><span class="line"><span class="cl">     <span class="o">*</span> <span class="n">Now</span> <span class="n">the</span> <span class="n">job</span> <span class="ow">in</span> <span class="n">THE</span> <span class="n">FINAL</span> <span class="n">state</span><span class="o">.</span> <span class="n">We</span> <span class="n">need</span> <span class="n">to</span> <span class="n">properly</span> <span class="n">handle</span> <span class="n">the</span> <span class="n">resulting</span> <span class="n">state</span><span class="o">.</span>
+</span></span><span class="line"><span class="cl">     <span class="o">*</span> <span class="n">Order</span> <span class="n">of</span> <span class="n">various</span> <span class="n">invocations</span> <span class="n">here</span> <span class="n">is</span> <span class="n">important</span><span class="o">.</span>
+</span></span><span class="line"><span class="cl">     <span class="o">*</span>
+</span></span><span class="line"><span class="cl">     <span class="o">*</span> <span class="mi">1</span><span class="p">)</span> <span class="n">Unregister</span> <span class="n">from</span> <span class="n">parent</span> <span class="n">job</span><span class="o">.</span>
+</span></span><span class="line"><span class="cl">     <span class="o">*/</span>
+</span></span><span class="line"><span class="cl">    <span class="n">parentHandle</span><span class="err">?</span><span class="o">.</span><span class="n">let</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">it</span><span class="o">.</span><span class="n">dispose</span><span class="p">()</span> <span class="o">//</span> <span class="n">volatile</span> <span class="n">read</span> <span class="n">parentHandle</span> <span class="n">_after_</span> <span class="n">state</span> <span class="n">was</span> <span class="n">updated</span>
+</span></span><span class="line"><span class="cl">        <span class="n">parentHandle</span> <span class="o">=</span> <span class="n">NonDisposableHandle</span> <span class="o">//</span> <span class="n">release</span> <span class="n">it</span> <span class="n">just</span> <span class="ow">in</span> <span class="k">case</span><span class="p">,</span> <span class="n">to</span> <span class="n">aid</span> <span class="n">GC</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">val</span> <span class="n">cause</span> <span class="o">=</span> <span class="p">(</span><span class="n">update</span> <span class="n">as</span><span class="err">?</span> <span class="n">CompletedExceptionally</span><span class="p">)</span><span class="err">?</span><span class="o">.</span><span class="n">cause</span>
+</span></span><span class="line"><span class="cl">    <span class="o">/*</span>
+</span></span><span class="line"><span class="cl">     <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="n">Invoke</span> <span class="n">completion</span> <span class="n">handlers</span><span class="p">:</span> <span class="o">.</span><span class="n">join</span><span class="p">(),</span> <span class="n">callbacks</span> <span class="n">etc</span><span class="o">.</span>
+</span></span><span class="line"><span class="cl">     <span class="o">*</span>    <span class="n">It</span><span class="s1">&#39;s important to invoke them only AFTER exception handling and everything else, see #208</span>
+</span></span><span class="line"><span class="cl">     <span class="o">*/</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">state</span> <span class="n">is</span> <span class="n">JobNode</span><span class="p">)</span> <span class="p">{</span> <span class="o">//</span> <span class="n">SINGLE</span><span class="o">/</span><span class="n">SINGLE</span><span class="o">+</span> <span class="n">state</span> <span class="o">--</span> <span class="n">one</span> <span class="n">completion</span> <span class="n">handler</span> <span class="p">(</span><span class="n">common</span> <span class="k">case</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">try</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">state</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="n">catch</span> <span class="p">(</span><span class="n">ex</span><span class="p">:</span> <span class="n">Throwable</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">handleOnCompletionException</span><span class="p">(</span><span class="n">CompletionHandlerException</span><span class="p">(</span><span class="s2">&#34;Exception in completion handler $state for $this&#34;</span><span class="p">,</span> <span class="n">ex</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">state</span><span class="o">.</span><span class="n">list</span><span class="err">?</span><span class="o">.</span><span class="n">notifyCompletion</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>该方法中判断state是否是JobNode，如果是的话，会调用invoke方法。在上面分析过state是一个InvokeOnCompletion对象，在它的invoke里面会回调到传进来的CompletionHandler的invoke中，所以在上面例子中打印了job执行完成的日志。</p>
+<h3 id="invokeoncompletion监听job的异常">invokeOnCompletion监听job的异常
+</h3><p>还是通过一个例子来分析下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">private fun demo3(){
+</span></span><span class="line"><span class="cl">    val exceptionHandler =CoroutineExceptionHandler{ coroutineContext, throwable -&gt;
+</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;demo3: CoroutineExceptionHandler--异常信息：${throwable?.message}&#34;)
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">    val job = GlobalScope.launch(exceptionHandler) {
+</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;demo3: launch代码&#34;)
+</span></span><span class="line"><span class="cl">        throw RuntimeException(&#34;协程体里面发生异常了&#34;)
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">    job.invokeOnCompletion {
+</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;demo3: invokeOnCompletion--异常信息：${it?.message}&#34;)
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>此处用了一个CoroutineExceptionHandler方法，来创建CoroutineExceptionHandler对象来拦截异常的，这块先不用管，我们看下日志：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">com.example.coroutinescopedemo       D  demo3: launch代码
+</span></span><span class="line"><span class="cl">com.example.coroutinescopedemo       D  demo3: CoroutineExceptionHandler--异常信息：协程体里面发生异常了
+</span></span><span class="line"><span class="cl">com.example.coroutinescopedemo       D  demo3: invokeOnCompletion--异常信息：协程体里面发生异常了
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以看出来，invokeOnCompletion中也能收到异常的消息。</p>
+<p>其实在上面也分析过，invokeOnCompletion最终也会收到Throwable对象，并把该异常传给CompletionHandler。</p>
+<p>协程异常try住：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">private fun demo4() {
+</span></span><span class="line"><span class="cl">    val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable -&gt;
+</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;demo4: CoroutineExceptionHandler--异常信息：${throwable?.message}&#34;)
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">    val job = GlobalScope.launch(exceptionHandler) {
+</span></span><span class="line"><span class="cl">        try {
+</span></span><span class="line"><span class="cl">            Log.d(TAG, &#34;demo4: launch代码&#34;)
+</span></span><span class="line"><span class="cl">            throw RuntimeException(&#34;协程体里面发生异常了&#34;)
+</span></span><span class="line"><span class="cl">        } catch (e: Exception) {
+</span></span><span class="line"><span class="cl">            Log.d(TAG, &#34;demo4: catch中代码&#34;)
+</span></span><span class="line"><span class="cl">        }
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">    job.invokeOnCompletion {
+</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;demo4: invokeOnCompletion--异常信息：${it?.message}&#34;)
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>日志如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">com.example.coroutinescopedemo       D  demo4: launch代码
+</span></span><span class="line"><span class="cl">com.example.coroutinescopedemo       D  demo4: catch中代码
+</span></span><span class="line"><span class="cl">com.example.coroutinescopedemo       D  demo4: invokeOnCompletion--异常信息：null
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>从日志中看，此处的CoroutineExceptionHandler不回调，并且invokeOnCompletion收不到异常信息。
+我们通过字节码可以看到原因：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%ADtry%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81.png"
+	width="1406"
+	height="862"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%ADtry%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu9250226129753474924.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%ADtry%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu17965867237583825733.png 1024w"
+	loading="lazy"
+	
+		alt="协程中try后的字节码.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="163"
+		data-flex-basis="391px"
+	
+>
+此处的异常catch住后，给到JobSupport就不是异常了，所以按照成功的处理方式一样。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2024 Example Person
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.29.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
