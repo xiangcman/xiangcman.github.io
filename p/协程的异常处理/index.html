@@ -762,8 +762,71 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 </span></span><span class="line"><span class="cl">com.example.coroutinescopedemo       D  demo3: invokeOnCompletion--异常信息：协程体里面发生异常了
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>可以看出来，invokeOnCompletion中也能收到异常的消息。</p>
-<p>其实在上面也分析过，invokeOnCompletion最终也会收到Throwable对象，并把该异常传给CompletionHandler。</p>
+</div><p>可以看出来，invokeOnCompletion中也能收到异常的消息。
+但是异常和正常收数据可能不太一样，主要区别是在resumeWith之后的处理不太一样：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/resumeWith%E4%B9%8B%E5%90%8E%E5%BC%82%E5%B8%B8%E7%9A%84%E6%B5%81%E7%A8%8B.png"
+	width="2388"
+	height="1028"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/resumeWith%E4%B9%8B%E5%90%8E%E5%BC%82%E5%B8%B8%E7%9A%84%E6%B5%81%E7%A8%8B_hu4603273407275704131.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/resumeWith%E4%B9%8B%E5%90%8E%E5%BC%82%E5%B8%B8%E7%9A%84%E6%B5%81%E7%A8%8B_hu16795624713117450585.png 1024w"
+	loading="lazy"
+	
+		alt="resumeWith之后异常的流程.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="232"
+		data-flex-basis="557px"
+	
+>
+如果是非异常的话，会走tryFinalizeSimpleState；如果是异常的时候会走tryMakeCompletingSlowPath，在该方法里面会触发finalizeFinishingState方法，该方法有个很重要逻辑：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E4%B8%BB%E8%A6%81%E9%80%BB%E8%BE%91.png"
+	width="2274"
+	height="1434"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E4%B8%BB%E8%A6%81%E9%80%BB%E8%BE%91_hu17517826257319846876.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E4%B8%BB%E8%A6%81%E9%80%BB%E8%BE%91_hu9526593194401546048.png 1024w"
+	loading="lazy"
+	
+		alt="finalizeFinishingState主要逻辑.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="158"
+		data-flex-basis="380px"
+	
+>
+由于cancelParent返回false，所以会触发handleJobException，StandaloneCoroutine重写了该方法：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/StandaloneCoroutine%E9%87%8D%E5%86%99handleJobException%E6%96%B9%E6%B3%95.png"
+	width="1580"
+	height="484"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/StandaloneCoroutine%E9%87%8D%E5%86%99handleJobException%E6%96%B9%E6%B3%95_hu17075837658011964929.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/StandaloneCoroutine%E9%87%8D%E5%86%99handleJobException%E6%96%B9%E6%B3%95_hu10702216456365766716.png 1024w"
+	loading="lazy"
+	
+		alt="StandaloneCoroutine重写handleJobException方法.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="326"
+		data-flex-basis="783px"
+	
+></p>
+<p>handleCoroutineException：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/CoroutineExceptionHandler%E7%9A%84handleCoroutineException%E6%96%B9%E6%B3%95.png"
+	width="2116"
+	height="976"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/CoroutineExceptionHandler%E7%9A%84handleCoroutineException%E6%96%B9%E6%B3%95_hu2637752680679235144.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/CoroutineExceptionHandler%E7%9A%84handleCoroutineException%E6%96%B9%E6%B3%95_hu12191934445295765583.png 1024w"
+	loading="lazy"
+	
+		alt="CoroutineExceptionHandler的handleCoroutineException方法.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="216"
+		data-flex-basis="520px"
+	
+></p>
+<blockquote>
+<p>如果context中CoroutineExceptionHandler不为空，则异常不会往上抛了，所以此例中定义了context的CoroutineExceptionHandler程序不会崩溃。
+回到上面再来看invokeOnCompletion的CompletionHandler触发时机，它是在finalizeFinishingState中触发，接着会调用到completeStateFinalization，最终在里面触发了invokeOnCompletion传进来的CompletionHandler。</p>
+</blockquote>
 <p>协程异常try住：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">

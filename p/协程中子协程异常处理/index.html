@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="先来一个例子： 日志如下： 可以看到上面先是执行了withContext中的代码，然后执行了launch中的代码，注意到launch中也是在单独线程中执行的，其中launch中使用的Dispatcher是Dispatchers.Default类型的。前面分析过launch调度情况，最后会执行到continuation的resumeWith，然后调用它的invokeSuspend方法： 可以看到先执行withContext，因为withContext启动的时候，默认的状态是COROUTINE_SUSPENDED，所以退出了，返回了var2，此时的label=1了。当执行完withContext的时候，会通知传给withContext的continuation，也就是上面的CoroutineDispatchersActivity$demo2$1这个SuspendLambda。所以会再次执行它的invokeSuspend方法，此时lable=1，所以最后返回了Unit.INSTANCE，整个invokeSuspend结束，这就是挂起的原因。 至于为什么在CoroutineDispatchersActivity$demo2$1中遇到了返回值为COROUTINE_SUSPENDED时候，不会继续执行了呢？看下BaseContinuationImpl中的resumeWith逻辑： 在BaseContinuationImpl中的resumeWith中，如果invokeSuspend返回值是COROUTINE_SUSPENDED，则直接return了，不往上层的continuation调用了。\n">
-<title>协程挂起原理</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="案例一 1 2 3 4 5 6 7 8 9 10 11 12 13 14 private fun demo1() { val handler = CoroutineExceptionHandler { coroutineContext, throwable -&gt; Log.d(TAG, &#34;onCreate: CoroutineExceptionHandler:${throwable.message}&#34;) } GlobalScope.launch(handler) { Log.d(TAG, &#34;onCreate: parentJob start&#34;) withContext(Dispatchers.IO) { throw RuntimeException(&#34;runtime exception&#34;) delay(1000) Log.d(TAG, &#34;onCreate: withContext end&#34;) } Log.d(TAG, &#34;onCreate: parentJob end&#34;) } } ">
+<title>协程中子协程异常处理</title>
 
-<link rel='canonical' href='https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/'>
+<link rel='canonical' href='https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程挂起原理">
-<meta property='og:description' content="先来一个例子： 日志如下： 可以看到上面先是执行了withContext中的代码，然后执行了launch中的代码，注意到launch中也是在单独线程中执行的，其中launch中使用的Dispatcher是Dispatchers.Default类型的。前面分析过launch调度情况，最后会执行到continuation的resumeWith，然后调用它的invokeSuspend方法： 可以看到先执行withContext，因为withContext启动的时候，默认的状态是COROUTINE_SUSPENDED，所以退出了，返回了var2，此时的label=1了。当执行完withContext的时候，会通知传给withContext的continuation，也就是上面的CoroutineDispatchersActivity$demo2$1这个SuspendLambda。所以会再次执行它的invokeSuspend方法，此时lable=1，所以最后返回了Unit.INSTANCE，整个invokeSuspend结束，这就是挂起的原因。 至于为什么在CoroutineDispatchersActivity$demo2$1中遇到了返回值为COROUTINE_SUSPENDED时候，不会继续执行了呢？看下BaseContinuationImpl中的resumeWith逻辑： 在BaseContinuationImpl中的resumeWith中，如果invokeSuspend返回值是COROUTINE_SUSPENDED，则直接return了，不往上层的continuation调用了。\n">
-<meta property='og:url' content='https://example.com/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/'>
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程中子协程异常处理">
+<meta property='og:description' content="案例一 1 2 3 4 5 6 7 8 9 10 11 12 13 14 private fun demo1() { val handler = CoroutineExceptionHandler { coroutineContext, throwable -&gt; Log.d(TAG, &#34;onCreate: CoroutineExceptionHandler:${throwable.message}&#34;) } GlobalScope.launch(handler) { Log.d(TAG, &#34;onCreate: parentJob start&#34;) withContext(Dispatchers.IO) { throw RuntimeException(&#34;runtime exception&#34;) delay(1000) Log.d(TAG, &#34;onCreate: withContext end&#34;) } Log.d(TAG, &#34;onCreate: parentJob end&#34;) } } ">
+<meta property='og:url' content='https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/'>
 <meta property='og:site_name' content='xiangcman'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-11-15T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-15T00:00:00&#43;00:00'/>
-<meta name="twitter:title" content="协程挂起原理">
-<meta name="twitter:description" content="先来一个例子： 日志如下： 可以看到上面先是执行了withContext中的代码，然后执行了launch中的代码，注意到launch中也是在单独线程中执行的，其中launch中使用的Dispatcher是Dispatchers.Default类型的。前面分析过launch调度情况，最后会执行到continuation的resumeWith，然后调用它的invokeSuspend方法： 可以看到先执行withContext，因为withContext启动的时候，默认的状态是COROUTINE_SUSPENDED，所以退出了，返回了var2，此时的label=1了。当执行完withContext的时候，会通知传给withContext的continuation，也就是上面的CoroutineDispatchersActivity$demo2$1这个SuspendLambda。所以会再次执行它的invokeSuspend方法，此时lable=1，所以最后返回了Unit.INSTANCE，整个invokeSuspend结束，这就是挂起的原因。 至于为什么在CoroutineDispatchersActivity$demo2$1中遇到了返回值为COROUTINE_SUSPENDED时候，不会继续执行了呢？看下BaseContinuationImpl中的resumeWith逻辑： 在BaseContinuationImpl中的resumeWith中，如果invokeSuspend返回值是COROUTINE_SUSPENDED，则直接return了，不往上层的continuation调用了。\n">
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-12-17T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-12-17T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="协程中子协程异常处理">
+<meta name="twitter:description" content="案例一 1 2 3 4 5 6 7 8 9 10 11 12 13 14 private fun demo1() { val handler = CoroutineExceptionHandler { coroutineContext, throwable -&gt; Log.d(TAG, &#34;onCreate: CoroutineExceptionHandler:${throwable.message}&#34;) } GlobalScope.launch(handler) { Log.d(TAG, &#34;onCreate: parentJob start&#34;) withContext(Dispatchers.IO) { throw RuntimeException(&#34;runtime exception&#34;) delay(1000) Log.d(TAG, &#34;onCreate: withContext end&#34;) } Log.d(TAG, &#34;onCreate: parentJob end&#34;) } } ">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -265,7 +265,42 @@
     </ol>
 </aside>
 
-    
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#案例一">案例一</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
 
             <main class="main full-width">
     <article class="main-article">
@@ -292,7 +327,7 @@
 
     <div class="article-title-wrapper">
         <h2 class="article-title">
-            <a href="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/">协程挂起原理</a>
+            <a href="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/">协程中子协程异常处理</a>
         </h2>
     
         
@@ -314,7 +349,7 @@
   <path d="M3 11h16" />
   <path d="M18 16.496v1.504l1 1" />
 </svg>
-                <time class="article-time--published">2024-11-15</time>
+                <time class="article-time--published">2024-12-17</time>
             </div>
         
 
@@ -344,115 +379,135 @@
     <section class="article-content">
     
     
-    <p>先来一个例子：</br>
-<img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E4%BE%8B%E5%AD%90.png"
-	width="853"
-	height="239"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E4%BE%8B%E5%AD%90_hu15288217339875534617.png 480w, /p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E4%BE%8B%E5%AD%90_hu15039319306276177835.png 1024w"
+    <h3 id="案例一">案例一
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">private fun demo1() {
+</span></span><span class="line"><span class="cl">    val handler = CoroutineExceptionHandler { coroutineContext, throwable -&gt;
+</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;onCreate: CoroutineExceptionHandler:${throwable.message}&#34;)
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">    GlobalScope.launch(handler) {
+</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;onCreate: parentJob start&#34;)
+</span></span><span class="line"><span class="cl">        withContext(Dispatchers.IO) {
+</span></span><span class="line"><span class="cl">            throw RuntimeException(&#34;runtime exception&#34;)
+</span></span><span class="line"><span class="cl">            delay(1000)
+</span></span><span class="line"><span class="cl">            Log.d(TAG, &#34;onCreate: withContext end&#34;)
+</span></span><span class="line"><span class="cl">        }
+</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;onCreate: parentJob end&#34;)
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>先上日志：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">com.example.coroutinescopedemo       D  onCreate: parentJob start
+</span></span><span class="line"><span class="cl">com.example.coroutinescopedemo       D  onCreate: CoroutineExceptionHandler:withContext runtime exception
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>异常能被launch指定的handler所捕捉。
+分析：
+launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withContext启动的协程对应的coroutineScope是一个DispatchedCoroutine。
+在withContext中发生异常的时候，首先会回调到DispatchedCoroutine的resumeWith，最终会走到finalizeFinishingState方法，该方法里面会判断是否存在异常，如果有异常会调用cancelParent方法：</p>
+<p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E5%88%A4%E6%96%AD%E5%BC%82%E5%B8%B8%E7%9A%84%E9%80%BB%E8%BE%91.png"
+	width="1860"
+	height="852"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E5%88%A4%E6%96%AD%E5%BC%82%E5%B8%B8%E7%9A%84%E9%80%BB%E8%BE%91_hu2471317401933107831.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E5%88%A4%E6%96%AD%E5%BC%82%E5%B8%B8%E7%9A%84%E9%80%BB%E8%BE%91_hu4018059375934370584.png 1024w"
 	loading="lazy"
 	
-		alt="挂起例子"
+		alt="finalizeFinishingState判断异常的逻辑.png"
 	
 	
 		class="gallery-image" 
-		data-flex-grow="356"
-		data-flex-basis="856px"
-	
-></br>
-日志如下：</br>
-<img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E6%97%A5%E5%BF%97.png"
-	width="497"
-	height="75"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E6%97%A5%E5%BF%97_hu1883043286148996173.png 480w, /p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E6%97%A5%E5%BF%97_hu16917771289284893893.png 1024w"
-	loading="lazy"
-	
-		alt="协程挂起日志"
-	
-	
-		class="gallery-image" 
-		data-flex-grow="662"
-		data-flex-basis="1590px"
-	
-></br>
-可以看到上面先是执行了withContext中的代码，然后执行了launch中的代码，注意到launch中也是在单独线程中执行的，其中launch中使用的Dispatcher是Dispatchers.Default类型的。前面分析过launch调度情况，最后会执行到continuation的resumeWith，然后调用它的invokeSuspend方法：
-<img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/launch%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84suspendLamda.png"
-	width="1836"
-	height="1030"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/launch%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84suspendLamda_hu5099044005919235273.png 480w, /p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/launch%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84suspendLamda_hu8144029306657370419.png 1024w"
-	loading="lazy"
-	
-		alt="launch编译完后的suspendLamda"
-	
-	
-		class="gallery-image" 
-		data-flex-grow="178"
-		data-flex-basis="427px"
-	
-></br>
-可以看到先执行withContext，因为withContext启动的时候，默认的状态是COROUTINE_SUSPENDED，所以退出了，返回了var2，此时的label=1了。当执行完withContext的时候，会通知传给withContext的continuation，也就是上面的<strong>CoroutineDispatchersActivity$demo2$1</strong>这个SuspendLambda。所以会再次执行它的invokeSuspend方法，此时lable=1，所以最后返回了Unit.INSTANCE，整个invokeSuspend结束，这就是挂起的原因。
-至于为什么在<strong>CoroutineDispatchersActivity$demo2$1</strong>中遇到了返回值为COROUTINE_SUSPENDED时候，不会继续执行了呢？看下BaseContinuationImpl中的resumeWith逻辑：
-<img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95.png"
-	width="1089"
-	height="896"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu12868998692388343703.png 480w, /p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu6580899275096290406.png 1024w"
-	loading="lazy"
-	
-		alt="BaseContinuationImpl的resumeWith方法"
-	
-	
-		class="gallery-image" 
-		data-flex-grow="121"
-		data-flex-basis="291px"
-	
-></br>
-在BaseContinuationImpl中的resumeWith中，如果invokeSuspend返回值是COROUTINE_SUSPENDED，则直接return了，不往上层的continuation调用了。</p>
-<p>至于再次执行<strong>CoroutineDispatchersActivity$demo2$1</strong>的invokeSuspend方法是在什么时候，可以追溯到withContext中：
-<img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/withContext%E5%90%AF%E5%8A%A8%E5%8D%8F%E7%A8%8B.png"
-	width="1109"
-	height="944"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/withContext%E5%90%AF%E5%8A%A8%E5%8D%8F%E7%A8%8B_hu13126482021011100926.png 480w, /p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/withContext%E5%90%AF%E5%8A%A8%E5%8D%8F%E7%A8%8B_hu8713362010937282250.png 1024w"
-	loading="lazy"
-	
-		alt="withContext启动协程"
-	
-	
-		class="gallery-image" 
-		data-flex-grow="117"
-		data-flex-basis="281px"
-	
-> </br>
-执行了block的startCoroutineCancellable：
-<img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable.png"
-	width="1215"
-	height="208"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable_hu4119518107152568018.png 480w, /p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable_hu13895880010902596000.png 1024w"
-	loading="lazy"
-	
-		alt="挂起函数的startCoroutineCancellable"
-	
-	
-		class="gallery-image" 
-		data-flex-grow="584"
-		data-flex-basis="1401px"
-	
-></br>
-此处很熟悉啊，这不又启动了一个协程吗？协程套协程啊。好吧，我们直接看completion的回调，在协程挂起函数执行完后，会执行complete的resumeWith方法，此处是DispatchedCoroutine对象，继承自ScopeCoroutine：
-<img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/DispatchedContinuatine%E7%9A%84afterResume%E6%96%B9%E6%B3%95.png"
-	width="2038"
-	height="1104"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/DispatchedContinuatine%E7%9A%84afterResume%E6%96%B9%E6%B3%95_hu1207025838216172664.png 480w, /p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/DispatchedContinuatine%E7%9A%84afterResume%E6%96%B9%E6%B3%95_hu877560543706229725.png 1024w"
-	loading="lazy"
-	
-		alt="DispatchedContinuate的afterResume方法"
-	
-	
-		class="gallery-image" 
-		data-flex-grow="184"
-		data-flex-basis="443px"
+		data-flex-grow="218"
+		data-flex-basis="523px"
 	
 >
-它是先取continuation中context的ContinuationInterceptor，也就是上面launch启动的dispatchers，对应的是Dispatchers.Default，最终执行Dispatchers的resumeCancellableWith方法，在该方法里面最终会在协程指定的线程中执行协程代码块。所以在上面日志中能看到withContext执行完后，launch之后的代码能回到指定的线程中执行。</p>
-<p>withcontext执行完了后会执行外面协程的resumeWith，所以launch的invokeSuspend再次执行。再次执行的时候会回到自己的线程。真相大白了！</p>
+<img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cancelParent%E5%A4%84%E7%90%86%E7%BB%93%E6%9E%9C.png"
+	width="2126"
+	height="972"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cancelParent%E5%A4%84%E7%90%86%E7%BB%93%E6%9E%9C_hu10996717946073602004.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cancelParent%E5%A4%84%E7%90%86%E7%BB%93%E6%9E%9C_hu7283344256636440523.png 1024w"
+	loading="lazy"
+	
+		alt="cancelParent处理结果.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="524px"
+	
+></p>
+<blockquote>
+<p>可以看到如果isScopedCoroutine为true的时候，cancelParent直接返回true，如果返回true，那么就不触发自己的上面的handleJobException，也就是把异常继续往上抛了。例子中也就是launch对应的StandaloneCoroutine。而在StandaloneCoroutine中不会去cancelParent，所以会把异常交给了handleJobException了，所以上面的launch中传入的CoroutineExceptionHandler能捕获到该异常。</p>
+</blockquote>
+<blockquote>
+<p>总结：如果子job中在处理异常的时候，cancelParent中如果isScopedCoroutine为true的时候，则不触发自己的handleJobException，也就是把异常交给了父job，如果父job不处理该异常，则会程序崩溃。</p>
+</blockquote>
+<p>上面代码如果把withContext中的异常通过try-catch住，父job就收不到该异常了：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry-catch%E4%BD%8F%E7%9A%84%E4%BE%8B%E5%AD%90.png"
+	width="1700"
+	height="1512"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry-catch%E4%BD%8F%E7%9A%84%E4%BE%8B%E5%AD%90_hu6057706211218211667.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry-catch%E4%BD%8F%E7%9A%84%E4%BE%8B%E5%AD%90_hu12425237139876032559.png 1024w"
+	loading="lazy"
+	
+		alt="子协程try-catch住的例子.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="112"
+		data-flex-basis="269px"
+	
+>
+<img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry%E4%BD%8F%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97.png"
+	width="2700"
+	height="300"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry%E4%BD%8F%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97_hu3174166662571977716.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry%E4%BD%8F%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97_hu9773031642937130551.png 1024w"
+	loading="lazy"
+	
+		alt="子协程try住后的日志.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="900"
+		data-flex-basis="2160px"
+	
+>
+子携程把异常catch住后，父协程的handler捕捉不到异常，并且父协程的invokeOnCompletion收不到异常，并且父协程之后的代码也能正常执行。</p>
+<p>子协程给context传递coroutineExceptionHandler：
+<img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84context%E4%BC%A0%E9%80%92handler%E7%9A%84%E4%BE%8B%E5%AD%90.png"
+	width="1888"
+	height="1642"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84context%E4%BC%A0%E9%80%92handler%E7%9A%84%E4%BE%8B%E5%AD%90_hu16986401170852377650.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84context%E4%BC%A0%E9%80%92handler%E7%9A%84%E4%BE%8B%E5%AD%90_hu12195155145508134238.png 1024w"
+	loading="lazy"
+	
+		alt="子协程中的context传递handler的例子.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="114"
+		data-flex-basis="275px"
+	
+></p>
 
 </section>
 
