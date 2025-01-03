@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="初始化过程 当我们app收到choregrapher的vsync信号的时候，会给主线程发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的message设置一个callback（runnable），所以会触发handler的dispatchmessage-&gt;handleCallback，接着就是触发FrameDisplayEventReceiver的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。\ntrace图如下： 接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren\n有动画的条件是： 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。 调用链如下： linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;recycler.getviewforposition-&gt;recycler.tryGeyViewHolderForPostionByDeadline-&gt;adapter.createViewHolder-&gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。 上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。\n">
+<title>RecyclerView源码走读</title>
+
+<link rel='canonical' href='https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="RecyclerView源码走读">
+<meta property='og:description' content="初始化过程 当我们app收到choregrapher的vsync信号的时候，会给主线程发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的message设置一个callback（runnable），所以会触发handler的dispatchmessage-&gt;handleCallback，接着就是触发FrameDisplayEventReceiver的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。\ntrace图如下： 接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren\n有动画的条件是： 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。 调用链如下： linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;recycler.getviewforposition-&gt;recycler.tryGeyViewHolderForPostionByDeadline-&gt;adapter.createViewHolder-&gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。 上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。\n">
+<meta property='og:url' content='https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-01-02T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-01-02T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="RecyclerView源码走读">
+<meta name="twitter:description" content="初始化过程 当我们app收到choregrapher的vsync信号的时候，会给主线程发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的message设置一个callback（runnable），所以会触发handler的dispatchmessage-&gt;handleCallback，接着就是触发FrameDisplayEventReceiver的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。\ntrace图如下： 接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren\n有动画的条件是： 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。 调用链如下： linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;recycler.getviewforposition-&gt;recycler.tryGeyViewHolderForPostionByDeadline-&gt;adapter.createViewHolder-&gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。 上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。\n">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/_index.zh-cn/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#初始化过程">初始化过程</a></li>
+        <li><a href="#滑动过程">滑动过程</a></li>
+        <li><a href="#更新表项">更新表项</a></li>
+        <li><a href="#dispatchlayoutstep1">dispatchLayoutStep1</a></li>
+        <li><a href="#dispatchlayoutstep2">dispatchLayoutStep2</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%BA%90%E7%A0%81/" >
+                源码
+            </a>
+        
+            <a href="/categories/ui/" >
+                Ui
+            </a>
+        
+            <a href="/categories/recyclerview/" >
+                RecyclerView
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/">RecyclerView源码走读</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2025-01-02</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    1 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h3 id="初始化过程">初始化过程
+</h3><p>当我们app收到choregrapher的vsync信号的时候，会给主线程发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的message设置一个callback（runnable），所以会触发handler的dispatchmessage-&gt;handleCallback，接着就是触发FrameDisplayEventReceiver的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。</p>
+<p>trace图如下：
+<img src ="调用recyclerview的onMeasure调用链.png" width =700/></p>
+<p>接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren</p>
+<img src ="recyclerview在dispatchLayoutStep1.png" width =700/>
+<p>有动画的条件是：
+<img src ="recyclerview动画判断.png" width =700/>
+有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onLayoutChildren%E8%B0%83%E7%94%A8%E9%93%BE.png"
+	width="730"
+	height="310"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onLayoutChildren%E8%B0%83%E7%94%A8%E9%93%BE_hu5828821809185960976.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onLayoutChildren%E8%B0%83%E7%94%A8%E9%93%BE_hu8187109392892001354.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="235"
+		data-flex-basis="565px"
+	
+>
+调用链如下：
+linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;recycler.getviewforposition-&gt;recycler.tryGeyViewHolderForPostionByDeadline-&gt;adapter.createViewHolder-&gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/layoutChunk%E8%B0%83%E7%94%A8.png"
+	width="960"
+	height="112"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/layoutChunk%E8%B0%83%E7%94%A8_hu18152347720928290541.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/layoutChunk%E8%B0%83%E7%94%A8_hu6142699420215196773.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="857"
+		data-flex-basis="2057px"
+	
+>
+上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。</p>
+<p>接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E5%9C%A8dispatchLayoutStep3.png"
+	width="790"
+	height="452"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E5%9C%A8dispatchLayoutStep3_hu7512520137607188626.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E5%9C%A8dispatchLayoutStep3_hu10306827451365754912.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="174"
+		data-flex-basis="419px"
+	
+>
+到这里，测量和layout已经梳理完了，最后就剩draw了：
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E7%9A%84draw%E6%96%B9%E6%B3%95.png"
+	width="896"
+	height="344"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E7%9A%84draw%E6%96%B9%E6%B3%95_hu15709130609700736038.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E7%9A%84draw%E6%96%B9%E6%B3%95_hu15576703910561250186.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="260"
+		data-flex-basis="625px"
+	
+>
+draw里面基本没干什么，还是沿用了viewgroup的drawchild方法，绿色表示非系统方法，因此可以看出来recyclerview是重写了该方法：
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E9%87%8D%E5%86%99drawChild%E6%96%B9%E6%B3%95.png"
+	width="1986"
+	height="870"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E9%87%8D%E5%86%99drawChild%E6%96%B9%E6%B3%95_hu6175052918576826346.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E9%87%8D%E5%86%99drawChild%E6%96%B9%E6%B3%95_hu13262063013138657709.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="228"
+		data-flex-basis="547px"
+	
+></p>
+<blockquote>
+<p>总结：
+初始化分为onmeasure阶段：如果recyclerview设置了固定宽高，则直接跳过测量，调用到mLayout中，如果不是固定宽高，则会走dispatchLayoutStep1，dispatchLayoutStep2。其中dispatchLayoutStep1是预布局处理，如果有动画要处理才会在该阶段调用到layout的onLayoutChildren。在dispatchLayoutStep2中处理表项的测量。
+在onlayout阶段：会判断step还是不是start状态，如果是的话，则再次执行dispatchLayoutStep1和dispatchLayoutStep2。最后调用dispatchLayoutStep3用来做动画执行并释放相关资源。
+在draw阶段基本什么都没做，dispatchDraw本身会调用到drawChild，recyclerview只是重写了该方法。</p>
+</blockquote>
+<h3 id="滑动过程">滑动过程
+</h3><p>滑动过程中会调用到scrollByInternal-&gt;layoutmanager.scrollBy-&gt;fill-&gt;layoutchunck</p>
+<p>layoutchunck里面会从缓存中取数据，如果有则命中，没有则走create和bind，接着划出屏幕的表项会先加入到cache缓存中，如果cache缓存满了，则重置该表项，加入到recyclerpool中，下次所以取的时候从recyclerpool根据viewtype取需要重新bind，不需要create，所以在滑动过程中create的次数是cache的大小次数，等到recyclerpool中有缓存的时候就不需要create了。</p>
+<p>在fill过程中，会找到划出屏幕的表项，然后先调用recycleByLayoutState，接着调用到了Linearlayoutmanager.recycleChildren，接着会触发recyclerview.removeAndRecycleViewAt方法，接着就触发了adapter.onViewDetachedFromWindow(viewHolder)，接着就把viewholder缓存到cache和recyclerpool中，对应的方法是recycler.recycleView-&gt;recycleViewHolderInternal,其中cache缓存中默认是2个，如果大于2的话，会把最前面的那个给放到recyclerpool中，接着再把新的viewholder放进来。</p>
+<p>在fiil过程中，会通过LayoutState.next从缓存中获取viewholder，获取的时候会先判断是不是preLayout状态，如果是则从changeScrap缓存中获取，从changeScrap中获取缓存先通过position获取，如果用position获取不到，则再用id去获取（必须adapter设置setHasStableIds为true，并且adapter重写了getItemId）。如果没获取到则从attacheScrap和cache中获取，如果从attach和cache中找不到，则继续通过id从attachScrap中获取，如果还没获取到则从viewcacheExtension中去获取，如果还获取不到则再从recyclerpool中去获取，如果还获取不到则通过create来创建viewholder，接着走bind逻辑。</p>
+<p>所以整个缓存获取顺序：
+changeScrap(preLayout状态，先通过position获取，没获取到再通过id获取)-&gt;attacheScrap-&gt;cache-&gt;attachScrap(id方式获取)-&gt;viewcacheExtension-&gt;recyclerpool-&gt;createholder-&gt;bindholder</p>
+<p>这就是layoutstate.next获取viewholder整个逻辑，上面哪些会触发createholder和bindholder</p>
+<p>如果从几个缓存中都拿不到viewholder，则会走createholder的逻辑。</p>
+<p>什么情况下会调用onBindViewHolder？
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onBindViewHolder%E5%89%8D%E7%BD%AE%E6%9D%A1%E4%BB%B6.png"
+	width="1884"
+	height="500"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onBindViewHolder%E5%89%8D%E7%BD%AE%E6%9D%A1%E4%BB%B6_hu10681849255634320567.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onBindViewHolder%E5%89%8D%E7%BD%AE%E6%9D%A1%E4%BB%B6_hu13857616217112637933.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="376"
+		data-flex-basis="904px"
+	
+></p>
+<ul>
+<li>
+<p>不是bound状态
+bound标志位：是在bindViewHolder的时候设置的，因此不是bound表示没有bind过。没有bind过有：1，createholder；2，从recyclerpool取的viewholder。
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/bindViewHolder%E5%90%8E%E8%AE%BE%E7%BD%AEbound%E7%8A%B6%E6%80%81.png"
+	width="1756"
+	height="630"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/bindViewHolder%E5%90%8E%E8%AE%BE%E7%BD%AEbound%E7%8A%B6%E6%80%81_hu16526521526694848863.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/bindViewHolder%E5%90%8E%E8%AE%BE%E7%BD%AEbound%E7%8A%B6%E6%80%81_hu9180695930292097991.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="278"
+		data-flex-basis="668px"
+	
+></p>
+</li>
+<li>
+<p>needsUpdate：该状态表示什么？什么时候才会是needUpdate()呢？</p>
+</li>
+<li>
+<p><img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/needsUpdate%E6%BA%90%E7%A0%81.png"
+	width="810"
+	height="220"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/needsUpdate%E6%BA%90%E7%A0%81_hu16745625206395077354.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/needsUpdate%E6%BA%90%E7%A0%81_hu9313751603204677791.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="368"
+		data-flex-basis="883px"
+	
+></p>
+</li>
+<li>
+<p><img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0update%E6%A0%87%E5%BF%97%E4%BD%8D.png"
+	width="1876"
+	height="1254"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0update%E6%A0%87%E5%BF%97%E4%BD%8D_hu15558857031045118622.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0update%E6%A0%87%E5%BF%97%E4%BD%8D_hu1326698609201363619.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="149"
+		data-flex-basis="359px"
+	
+></p>
+</li>
+</ul>
+<p>在viewRangeUpdate设置的。猜测是在viewholder发生变化的时候设置的，验证猜想：
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/viewRangeUpdate%E8%B0%83%E7%94%A8%E9%93%BE.png"
+	width="1022"
+	height="564"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/viewRangeUpdate%E8%B0%83%E7%94%A8%E9%93%BE_hu17190880417699981030.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/viewRangeUpdate%E8%B0%83%E7%94%A8%E9%93%BE_hu15352844701357235208.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="181"
+		data-flex-basis="434px"
+	
+>
+recyclerview.processAdapterUpdatesAndSetAnimationFlags-&gt;AdapterHelper.preProcess-&gt;applyUpdate-&gt;postponeAndUpdateViewHolders
+-&gt;markViewHoldersUpdated-&gt;viewRangeUpdate，所以在dispatchLayout1过程中给flag设置了update状态</p>
+<ul>
+<li>isInvalid：表示什么状态？什么时候赋值的？
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0invalid%E6%A0%87%E5%BF%97%E4%BD%8D.png"
+	width="1816"
+	height="1336"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0invalid%E6%A0%87%E5%BF%97%E4%BD%8D_hu16950391817488934260.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0invalid%E6%A0%87%E5%BF%97%E4%BD%8D_hu10367533619850967308.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="135"
+		data-flex-basis="326px"
+	
+>
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%8B%BF%E5%88%B0viewholder%E5%90%8E%E9%AA%8C%E8%AF%81viewtype%E6%88%96id.png"
+	width="1884"
+	height="1456"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%8B%BF%E5%88%B0viewholder%E5%90%8E%E9%AA%8C%E8%AF%81viewtype%E6%88%96id_hu918169050588587341.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%8B%BF%E5%88%B0viewholder%E5%90%8E%E9%AA%8C%E8%AF%81viewtype%E6%88%96id_hu7861640089052609632.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="129"
+		data-flex-basis="310px"
+	
+>
+从缓存（attachScrap、cacheview）中获取viewholder的时候，如果发现type和holder的type不一致，则会校验不通过。或者设置了stableids为true的时候，如果adapter中的id和holder的id一致，则也通过。
+所以结论就是，需要bound的条件：没有bound过（createholder的holder还没有bound过）；needupdate的，holder发生更新了。invalid，从attachscrap、cache获取后， 如果type不一致也需要重新bound。</li>
+</ul>
+<h3 id="更新表项">更新表项
+</h3><p>notifyItemChange(0)：更新表项第0的位置</p>
+<p><img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5recyclerview%E7%9A%84%E6%97%A5%E5%BF%97.png"
+	width="2478"
+	height="1172"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5recyclerview%E7%9A%84%E6%97%A5%E5%BF%97_hu91514335887064232.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5recyclerview%E7%9A%84%E6%97%A5%E5%BF%97_hu6938636746900088994.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="211"
+		data-flex-basis="507px"
+	
+>
+首先是进入页面创建了10个表项，然后更新后日志如下：
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B90%E7%9A%84%E6%97%A5%E5%BF%97.png"
+	width="2440"
+	height="244"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B90%E7%9A%84%E6%97%A5%E5%BF%97_hu15013294563690583670.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B90%E7%9A%84%E6%97%A5%E5%BF%97_hu871190689318315447.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="1000"
+		data-flex-basis="2400px"
+	
+>
+首先给我创建了索引为10的表项，也就是屏幕上不可见的，接着又创建了表项0，通过traceview分析：
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B9%E7%BB%8F%E5%8E%86%E4%BA%86dispatchLayout%E6%96%B9%E6%B3%95.png"
+	width="2560"
+	height="670"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B9%E7%BB%8F%E5%8E%86%E4%BA%86dispatchLayout%E6%96%B9%E6%B3%95_hu124744611528498832.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B9%E7%BB%8F%E5%8E%86%E4%BA%86dispatchLayout%E6%96%B9%E6%B3%95_hu2147917480937809368.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="382"
+		data-flex-basis="917px"
+	
+>
+整体看经历了rv的layout过程，分别对应了dispatchLayoutStep1、dispatchLayoutStep2、dispatchLayoutStep3。</p>
+<h3 id="dispatchlayoutstep1">dispatchLayoutStep1
+</h3><ul>
+<li>detachAndScrapAttachedViews
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E8%B0%83%E7%94%A8%E5%9B%BE.png"
+	width="1116"
+	height="402"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E8%B0%83%E7%94%A8%E5%9B%BE_hu7324296050700314140.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E8%B0%83%E7%94%A8%E5%9B%BE_hu4239267430507870126.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="277"
+		data-flex-basis="666px"
+	
+>
+共经历了10次scrapOrRecycleView：
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews%E6%BA%90%E7%A0%81.png"
+	width="1448"
+	height="434"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews%E6%BA%90%E7%A0%81_hu13513585749035787664.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews%E6%BA%90%E7%A0%81_hu14328154479888032833.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="333"
+		data-flex-basis="800px"
+	
+>
+它是反向遍历页面上的view，然后添加到srap缓存中：
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E6%BA%90%E7%A0%81.png"
+	width="1602"
+	height="1060"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E6%BA%90%E7%A0%81_hu4952515986636910101.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E6%BA%90%E7%A0%81_hu2737012357838191121.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="151"
+		data-flex-basis="362px"
+	
+>
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E7%9A%84trace%E8%B0%83%E7%94%A8.png"
+	width="726"
+	height="74"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E7%9A%84trace%E8%B0%83%E7%94%A8_hu10016181308022056134.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E7%9A%84trace%E8%B0%83%E7%94%A8_hu10819192399364155107.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="981"
+		data-flex-basis="2354px"
+	
+>
+从scrapOrRecycleView的调用栈来看，是走了else部分，也就是往scrap缓存中加入viewholder。由于viewHolder的isInvalid为false，所以会走else。
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapeView%E6%BA%90%E7%A0%81.png"
+	width="1966"
+	height="1094"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapeView%E6%BA%90%E7%A0%81_hu10187188417008490168.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapeView%E6%BA%90%E7%A0%81_hu6404884140834061296.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="179"
+		data-flex-basis="431px"
+	
+>
+scrap缓存分两种，attachScrap和changeScrap。不是update的会放到attachScrap中，所以我们更新第0个的时候会放到changeScrap中，在detach的时候由于是反向加入到scrap缓存中的，因此我们看第10个的trace调用：
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84scrapOrRecycleView%E8%B0%83%E7%94%A8%E9%93%BE.png"
+	width="2852"
+	height="1030"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84scrapOrRecycleView%E8%B0%83%E7%94%A8%E9%93%BE_hu1007847353858532735.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84scrapOrRecycleView%E8%B0%83%E7%94%A8%E9%93%BE_hu2341111996943070772.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="276"
+		data-flex-basis="664px"
+	
+>
+从这里看第0个表项在detach的时候会加入到changeScrap中。</li>
+</ul>
+<blockquote>
+<p>结论：在dispatchLayout1中，先将页面上可见的viewholder从页面上分离，然后将update的viewholder放入到changeScrap中，把非update的viewholder放入到attachScrap中。</p>
+</blockquote>
+<ul>
+<li>fill
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/fill%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE.png"
+	width="2024"
+	height="624"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/fill%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu6293445583858693448.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/fill%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu17315454615200976220.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="324"
+		data-flex-basis="778px"
+	
+>
+fill阶段发生了layoutChunk11次，而我们刚开始列表是初始化了10个表项，那么说明dispatchLayout1阶段添加了一个新的viewholder，关于这块我们可以给出结论，如果viewhodler被设置了remove或者update标记的时候，则会给列表添加一个新的viewholder。关于这块可以看：<a class="link" href="https://juejin.cn/post/6890288761783975950"  target="_blank" rel="noopener"
+    >https://juejin.cn/post/6890288761783975950</a>
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%A4%9A%E6%B7%BB%E5%8A%A0%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84%E9%80%BB%E8%BE%91%E5%A4%84%E7%90%86.png"
+	width="1924"
+	height="392"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%A4%9A%E6%B7%BB%E5%8A%A0%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84%E9%80%BB%E8%BE%91%E5%A4%84%E7%90%86_hu7686239755621698600.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%A4%9A%E6%B7%BB%E5%8A%A0%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84%E9%80%BB%E8%BE%91%E5%A4%84%E7%90%86_hu3522024776232266067.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="490"
+		data-flex-basis="1177px"
+	
+>
+在fill的while循环中会判断remainingSpace时候大于0，而每次layoutChunk过程中会将remainingSpace减小，而layoutChunkResult.mIgnoreConsumed就是判断是否要减小，意思是如果不忽略才会减小，那什么时候会忽略呢？
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%BF%BD%E7%95%A5%E7%9A%84%E6%9D%A1%E4%BB%B6.png"
+	width="1312"
+	height="182"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%BF%BD%E7%95%A5%E7%9A%84%E6%9D%A1%E4%BB%B6_hu11796148271956042158.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%BF%BD%E7%95%A5%E7%9A%84%E6%9D%A1%E4%BB%B6_hu1743069324301611932.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="720"
+		data-flex-basis="1730px"
+	
+>
+layoutChunk中判断viewholder如果是remove或者是change时候，才会忽略减小。所以我们会有11次的layoutChunk，而最后一次的layoutChunk会走createViewHolder，也就对应了上面的日志先添加了position=10的viewholder。从trace上看下：
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0create%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE.png"
+	width="1652"
+	height="470"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0create%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu10236812452427939999.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0create%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu9359342499526153522.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="351"
+		data-flex-basis="843px"
+	
+></li>
+</ul>
+<blockquote>
+<p>结论：
+dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了attacheScrap中，并且创建了索引为10的viewhodler。</p>
+</blockquote>
+<p>注意：
+在dispatchLayout1过程中，如果viewholder经过了addView之后，则会把它从changescrap或者是attachscrap缓存中移除，所以在dispatchlayout2过程中change和attach的缓存为空的。
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%BB%8Escrap%E7%BC%93%E5%AD%98%E4%B8%AD%E7%A7%BB%E9%99%A4%E7%9A%84%E9%80%BB%E8%BE%91.png"
+	width="2938"
+	height="1200"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%BB%8Escrap%E7%BC%93%E5%AD%98%E4%B8%AD%E7%A7%BB%E9%99%A4%E7%9A%84%E9%80%BB%E8%BE%91_hu6948141193760266227.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%BB%8Escrap%E7%BC%93%E5%AD%98%E4%B8%AD%E7%A7%BB%E9%99%A4%E7%9A%84%E9%80%BB%E8%BE%91_hu6558568232153135207.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="244"
+		data-flex-basis="587px"
+	
+>
+其实在dispatchLayout2过程中添加viewholder的view时候也是要从scrap缓存中移除。</p>
+<h3 id="dispatchlayoutstep2">dispatchLayoutStep2
+</h3><ul>
+<li>
+<p>detachAndScrapAttachedViews
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews11%E6%AC%A1scrap%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE.png"
+	width="1556"
+	height="424"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews11%E6%AC%A1scrap%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu14586035892234685750.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews11%E6%AC%A1scrap%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu17397155685038326043.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="366"
+		data-flex-basis="880px"
+	
+>
+由于在dispatchLayout1过程中创建了position=10的viewholder，因此会有11次，这11个里面第0个还是添加到了changeScrap中，1-10是添加到attachScrap中。</p>
+</li>
+<li>
+<p>fill
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%BA%8C%E6%AC%A1fill%E8%B0%83%E7%94%A8%E9%93%BE.png"
+	width="1542"
+	height="890"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%BA%8C%E6%AC%A1fill%E8%B0%83%E7%94%A8%E9%93%BE_hu10441854612835266796.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%BA%8C%E6%AC%A1fill%E8%B0%83%E7%94%A8%E9%93%BE_hu9741231612223222767.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="173"
+		data-flex-basis="415px"
+	
+>
+为什么此过程只有10次layoutChunck呢？这块其实还是回到remainingSpace的计算说起：
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%B8%8D%E6%98%AFpre%E9%98%B6%E6%AE%B5%E7%9B%B4%E6%8E%A5%E5%87%8F%E5%B0%8FremainingSpace%E5%80%BC.png"
+	width="1866"
+	height="402"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%B8%8D%E6%98%AFpre%E9%98%B6%E6%AE%B5%E7%9B%B4%E6%8E%A5%E5%87%8F%E5%B0%8FremainingSpace%E5%80%BC_hu10998018353477114851.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%B8%8D%E6%98%AFpre%E9%98%B6%E6%AE%B5%E7%9B%B4%E6%8E%A5%E5%87%8F%E5%B0%8FremainingSpace%E5%80%BC_hu461246108867776147.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="464"
+		data-flex-basis="1114px"
+	
+>
+所以在dispatchLayout2过程中当添加到索引等于9的时候remainingSpace就为0了，所以索引等于10的时候添加不上，因此只会有10次layoutChunck。</p>
+</li>
+<li>
+<p>layoutChunck
+我们可以看到第0个走了createViewholder和bindViewholder：
+<img src="/%e5%9c%a8post-layout%e8%bf%87%e7%a8%8b%e4%b8%ad%e7%ac%ac0%e4%b8%aa%e8%a1%a8%e9%a1%b9%e8%b5%b0%e4%ba%86create%e5%92%8cbind-1.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+>
+是由于第0个viewholder被添加到了changeScrap缓存中，而1-9的viewholder添加到了attachScrap中，而changeScrap只会在pre-layout过程中才会生效：
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/changeScrap%E5%8F%AA%E5%9C%A8pre-layout%E7%94%9F%E6%95%88.png"
+	width="1700"
+	height="814"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/changeScrap%E5%8F%AA%E5%9C%A8pre-layout%E7%94%9F%E6%95%88_hu5303461125221831714.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/changeScrap%E5%8F%AA%E5%9C%A8pre-layout%E7%94%9F%E6%95%88_hu6895378180604863517.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="208"
+		data-flex-basis="501px"
+	
+>
+所以可以看到上面日志中会走了position=0的createViewHolder和bindViewHolder。</p>
+</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Example Person
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.29.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
