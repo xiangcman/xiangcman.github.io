@@ -53,8 +53,8 @@ linearlayoutmanager.fill-&amp;gt;layoutmanager.layoutChunk-&amp;gt;layoutstate.n
 	
 &gt;
 上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。&lt;/p&gt;
-&lt;p&gt;接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行
-&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E5%9C%A8dispatchLayoutStep3.png&#34;
+&lt;p&gt;接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E5%9C%A8dispatchLayoutStep3.png&#34;
 	width=&#34;790&#34;
 	height=&#34;452&#34;
 	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E5%9C%A8dispatchLayoutStep3_hu7512520137607188626.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E5%9C%A8dispatchLayoutStep3_hu10306827451365754912.png 1024w&#34;
@@ -516,14 +516,18 @@ dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了at
 &lt;li&gt;
 &lt;p&gt;layoutChunck
 我们可以看到第0个走了createViewholder和bindViewholder：
-&lt;img src=&#34;https://example.com/%e5%9c%a8post-layout%e8%bf%87%e7%a8%8b%e4%b8%ad%e7%ac%ac0%e4%b8%aa%e8%a1%a8%e9%a1%b9%e8%b5%b0%e4%ba%86create%e5%92%8cbind-1.png&#34;
-	
-	
-	
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%9C%A8post-layout%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%AC%AC0%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0%E4%BA%86create%E5%92%8Cbind.png&#34;
+	width=&#34;2884&#34;
+	height=&#34;1250&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%9C%A8post-layout%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%AC%AC0%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0%E4%BA%86create%E5%92%8Cbind_hu8801799141734457681.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%9C%A8post-layout%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%AC%AC0%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0%E4%BA%86create%E5%92%8Cbind_hu5081780588629873050.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;230&#34;
+		data-flex-basis=&#34;553px&#34;
 	
 &gt;
 是由于第0个viewholder被添加到了changeScrap缓存中，而1-9的viewholder添加到了attachScrap中，而changeScrap只会在pre-layout过程中才会生效：
@@ -544,6 +548,13 @@ dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了at
 所以可以看到上面日志中会走了position=0的createViewHolder和bindViewHolder。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;总结:
+更新表项的时候，会经历dispatchLayout1，dispatchLayout2，其中在dispatchLayout1（pre-layout阶段）会先把可见的表项给回收到scrap缓存中，回收后，会把可见的表项从recyclerview中分离，其中需要变化的表项会加入到
+changeScrap中（第1个表项），不变化的加入到attachScrap中（第2个到第10个表项）。接着在fill阶段会从scrap缓存中取表项，由于有表项更新，所以此时会去创建不可见的表项（第11个表项），最后会添加到recyclerview上。
+在dispatchLayout2（post-layout阶段）同样会把dispatchLayout1添加进来的表项给添加到changeScrap（第1个表项）和attachScrap（第2个到第11个表项）缓存中，注意此时的表项会是11个表项。在fill阶段会去创建表项0，
+因为post-layout阶段不会去取changeScrap中的viewholder，所以表项0会经历创建。&lt;/p&gt;
+&lt;/blockquote&gt;
 </description>
         </item>
         <item>
