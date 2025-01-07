@@ -280,8 +280,8 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&amp;gt;AdapterHelper.pre
 	
 &gt;
 整体看经历了rv的layout过程，分别对应了dispatchLayoutStep1、dispatchLayoutStep2、dispatchLayoutStep3。&lt;/p&gt;
-&lt;h3 id=&#34;dispatchlayoutstep1&#34;&gt;dispatchLayoutStep1
-&lt;/h3&gt;&lt;ul&gt;
+&lt;h4 id=&#34;dispatchlayoutstep1&#34;&gt;dispatchLayoutStep1
+&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;detachAndScrapAttachedViews
 &lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E8%B0%83%E7%94%A8%E5%9B%BE.png&#34;
 	width=&#34;1116&#34;
@@ -460,8 +460,8 @@ dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了at
 	
 &gt;
 其实在dispatchLayout2过程中添加viewholder的view时候也是要从scrap缓存中移除。&lt;/p&gt;
-&lt;h3 id=&#34;dispatchlayoutstep2&#34;&gt;dispatchLayoutStep2
-&lt;/h3&gt;&lt;ul&gt;
+&lt;h4 id=&#34;dispatchlayoutstep2&#34;&gt;dispatchLayoutStep2
+&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;detachAndScrapAttachedViews
 &lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews11%E6%AC%A1scrap%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE.png&#34;
@@ -555,6 +555,485 @@ changeScrap中（第1个表项），不变化的加入到attachScrap中（第2�
 在dispatchLayout2（post-layout阶段）同样会把dispatchLayout1添加进来的表项给添加到changeScrap（第1个表项）和attachScrap（第2个到第11个表项）缓存中，注意此时的表项会是11个表项。在fill阶段会去创建表项0，
 因为post-layout阶段不会去取changeScrap中的viewholder，所以表项0会经历创建。&lt;/p&gt;
 &lt;/blockquote&gt;
+&lt;h3 id=&#34;删除表项&#34;&gt;删除表项
+&lt;/h3&gt;&lt;p&gt;notifyItemRemove(0)&lt;/p&gt;
+&lt;h4 id=&#34;dispatchlayout1&#34;&gt;dispatchLayout1
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;detachAndScrapAttachedViews
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6detachAndScrapAttachedViews.png&#34;
+	width=&#34;2006&#34;
+	height=&#34;140&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6detachAndScrapAttachedViews_hu15559714083964177442.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6detachAndScrapAttachedViews_hu3558814002079755925.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;1432&#34;
+		data-flex-basis=&#34;3438px&#34;
+	
+&gt;
+调用了10次scrapOrRecycleView
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9scrapView%E8%B0%83%E7%94%A8%E9%93%BE.png&#34;
+	width=&#34;1530&#34;
+	height=&#34;600&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9scrapView%E8%B0%83%E7%94%A8%E9%93%BE_hu13335460596666919717.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9scrapView%E8%B0%83%E7%94%A8%E9%93%BE_hu6133566821039666233.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;255&#34;
+		data-flex-basis=&#34;612px&#34;
+	
+&gt;
+第0个调用scrapView添加到attachScrap缓存中
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E8%B0%83%E7%94%A8%E7%9A%84scrapView%E6%96%B9%E6%B3%95.png&#34;
+	width=&#34;1886&#34;
+	height=&#34;1124&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E8%B0%83%E7%94%A8%E7%9A%84scrapView%E6%96%B9%E6%B3%95_hu1966757282013689752.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E8%B0%83%E7%94%A8%E7%9A%84scrapView%E6%96%B9%E6%B3%95_hu13840855879849957773.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;167&#34;
+		data-flex-basis=&#34;402px&#34;
+	
+&gt;
+1-9的表项也是添加到attachScrap缓存中，这个可以从trace中看到。&lt;/li&gt;
+&lt;li&gt;fill
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9layoutChunk%E8%B0%83%E7%94%A8%E6%AC%A1%E6%95%B0.png&#34;
+	width=&#34;1118&#34;
+	height=&#34;556&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9layoutChunk%E8%B0%83%E7%94%A8%E6%AC%A1%E6%95%B0_hu14181821887712644263.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9layoutChunk%E8%B0%83%E7%94%A8%E6%AC%A1%E6%95%B0_hu12238187118200893387.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;201&#34;
+		data-flex-basis=&#34;482px&#34;
+	
+&gt;
+和update过程一样，在dispatchlayout1有11次layoutChunk，delete和update的viewholder不作为消费remainingSpace。
+接着调用layoutstate.next获取viewholder，此时只有索引等于10的时候会去创建viewholder。注意了：此时创建完viewholder后，bind过程传的position=9：
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E6%97%B6bind%E8%BF%87%E7%A8%8Bposition%E8%AE%A1%E7%AE%97.png&#34;
+	width=&#34;2268&#34;
+	height=&#34;1372&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E6%97%B6bind%E8%BF%87%E7%A8%8Bposition%E8%AE%A1%E7%AE%97_hu6531937130357433727.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E6%97%B6bind%E8%BF%87%E7%A8%8Bposition%E8%AE%A1%E7%AE%97_hu11031882881033833206.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;165&#34;
+		data-flex-basis=&#34;396px&#34;
+	
+&gt;
+在bind过程中会传入postion=10，而此时的mPostponedList中有一个op是remove类型的，所以postion会减一，因此它的postion是9：
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E7%9A%84create%E5%92%8Cbind%E6%97%A5%E5%BF%97.png&#34;
+	width=&#34;2762&#34;
+	height=&#34;1038&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E7%9A%84create%E5%92%8Cbind%E6%97%A5%E5%BF%97_hu1187624272639721065.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E7%9A%84create%E5%92%8Cbind%E6%97%A5%E5%BF%97_hu8025288239082785719.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;266&#34;
+		data-flex-basis=&#34;638px&#34;
+	
+&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;dispatchlayout2&#34;&gt;dispatchLayout2
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;detachAndScrapAttachedViews
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6post-layout%E8%B0%83%E7%94%A8detachAndScrapAttachedViews.png&#34;
+	width=&#34;1092&#34;
+	height=&#34;398&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6post-layout%E8%B0%83%E7%94%A8detachAndScrapAttachedViews_hu11849760230423166667.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6post-layout%E8%B0%83%E7%94%A8detachAndScrapAttachedViews_hu12534804983501352838.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;274&#34;
+		data-flex-basis=&#34;658px&#34;
+	
+&gt;
+此处scrapOrRecyclerview发生了11次，因为在dispatchLayout1创建了一个新的viewholder，11个viewholder都加入到了attachScrap缓存中。&lt;/li&gt;
+&lt;li&gt;fill
+layoutChunk调用了10次：
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9post-layout%E7%9A%84fill%E9%98%B6%E6%AE%B5.png&#34;
+	width=&#34;1290&#34;
+	height=&#34;396&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9post-layout%E7%9A%84fill%E9%98%B6%E6%AE%B5_hu4015001145168480306.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9post-layout%E7%9A%84fill%E9%98%B6%E6%AE%B5_hu11184435817882272445.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;325&#34;
+		data-flex-basis=&#34;781px&#34;
+	
+&gt;
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/debug%E4%B8%8B%E8%A1%A8%E9%A1%B9%E7%9A%84%E4%BF%A1%E6%81%AF.png&#34;
+	width=&#34;2322&#34;
+	height=&#34;918&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/debug%E4%B8%8B%E8%A1%A8%E9%A1%B9%E7%9A%84%E4%BF%A1%E6%81%AF_hu4090402503977829258.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/debug%E4%B8%8B%E8%A1%A8%E9%A1%B9%E7%9A%84%E4%BF%A1%E6%81%AF_hu13894348912378565212.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;252&#34;
+		data-flex-basis=&#34;607px&#34;
+	
+&gt;
+在第一个viewholder获取的时候获取到原来的第二个表项了，原来的第一个表项的position被置为-1了，所以我们0-9的表项都不会重新创建viewholder。也就对应上面的日志。
+疑问：
+此处的position赋值貌似都重新赋值了，因此我们看下是哪里重新赋值了：
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/position%E9%87%8D%E6%96%B0%E8%B5%8B%E5%80%BC%E7%9A%84%E5%9C%B0%E6%96%B9.png&#34;
+	width=&#34;2672&#34;
+	height=&#34;1242&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/position%E9%87%8D%E6%96%B0%E8%B5%8B%E5%80%BC%E7%9A%84%E5%9C%B0%E6%96%B9_hu18302557035837899842.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/position%E9%87%8D%E6%96%B0%E8%B5%8B%E5%80%BC%E7%9A%84%E5%9C%B0%E6%96%B9_hu10553134707112358411.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;215&#34;
+		data-flex-basis=&#34;516px&#34;
+	
+&gt;
+当调用notifyItemRemove(0)的时候，在dispatchlayout1过程中会触发offsetPositionRecordsForRemove方法，该方法会通过remove的itemCount数重新给每一个页面上的viewhodler重新给赋上position的值，所以会看到上面的attachScrap缓存中最后一个viewholder的postion=-1了。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;scrap缓存&#34;&gt;scrap缓存
+&lt;/h3&gt;&lt;p&gt;在fill之前会把页面上的viewholder先detach掉，最终会调用到viewgroup的detachViewFromParent方法，removeView也会调用该方法，只不过viewholder的detach不会立马requestLayout。接着就是调用scrapView。
+scrap缓存分两种，一种是attach、另外一种是change，如果viewholder是发生了变化（notifyItemChange），则会加入到change中，否则加入到attach中。接着在layoutChunk过程中，会从scrap缓存中找viewholder。
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA.png&#34;
+	width=&#34;1840&#34;
+	height=&#34;1580&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA_hu2062606384590137876.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA_hu5533808204089803104.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;116&#34;
+		data-flex-basis=&#34;279px&#34;
+	
+&gt;
+在dispatchLayout3过程中，会调用layout.removeAndRecycleScrapInt方法：
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E6%B8%85%E7%A9%BA%E6%97%B6%E6%9C%BA.png&#34;
+	width=&#34;1494&#34;
+	height=&#34;552&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E6%B8%85%E7%A9%BA%E6%97%B6%E6%9C%BA_hu17972904002480082676.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E6%B8%85%E7%A9%BA%E6%97%B6%E6%9C%BA_hu4993562920150645737.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;270&#34;
+		data-flex-basis=&#34;649px&#34;
+	
+&gt;
+里面会调用recycler.clearScrap：
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/clearScrap.png&#34;
+	width=&#34;1006&#34;
+	height=&#34;408&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/clearScrap_hu15526074584371715853.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/clearScrap_hu11797324585153395010.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;246&#34;
+		data-flex-basis=&#34;591px&#34;
+	
+&gt;
+会清空scrap缓存。
+总结：scrap缓存在每次layoutChild之前会先把页面的viewholder先放到scrap缓存中，在dispatchLayout3的时候，会把该缓存清空掉。&lt;/p&gt;
+&lt;h3 id=&#34;adapteronviewattachedtowindow&#34;&gt;Adapter.onViewAttachedToWindow
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5%E5%B1%8F%E5%B9%95onViewAttachedToWindow%E8%B0%83%E7%94%A8%E6%97%A5%E5%BF%97.png&#34;
+	width=&#34;2704&#34;
+	height=&#34;1272&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5%E5%B1%8F%E5%B9%95onViewAttachedToWindow%E8%B0%83%E7%94%A8%E6%97%A5%E5%BF%97_hu2627668828657398580.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5%E5%B1%8F%E5%B9%95onViewAttachedToWindow%E8%B0%83%E7%94%A8%E6%97%A5%E5%BF%97_hu16691033016759521706.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;212&#34;
+		data-flex-basis=&#34;510px&#34;
+	
+&gt;
+刚进入屏幕会触发onViewAttachedToWindow，从0-9都打印了。
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onViewAttachedToWindow%E7%9A%84trace%E8%B0%83%E7%94%A8.png&#34;
+	width=&#34;1768&#34;
+	height=&#34;810&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onViewAttachedToWindow%E7%9A%84trace%E8%B0%83%E7%94%A8_hu12049605815002463942.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onViewAttachedToWindow%E7%9A%84trace%E8%B0%83%E7%94%A8_hu10079197346103463146.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;218&#34;
+		data-flex-basis=&#34;523px&#34;
+	
+&gt;
+从trace来看，初次每个viewholder都会经历onViewAttachedToWindow方法。&lt;/p&gt;
+&lt;p&gt;下面看看什么时候不会调用onViewAttachedToWindow方法？
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/addViewInt%E9%80%BB%E8%BE%91.png&#34;
+	width=&#34;2100&#34;
+	height=&#34;1924&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/addViewInt%E9%80%BB%E8%BE%91_hu18038378171916241379.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/addViewInt%E9%80%BB%E8%BE%91_hu4756128976929391908.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;109&#34;
+		data-flex-basis=&#34;261px&#34;
+	
+&gt;
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%86%85%E9%83%A8%E7%B1%BB%E7%9A%84addView%E5%9B%9E%E8%B0%83.png&#34;
+	width=&#34;1998&#34;
+	height=&#34;1218&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%86%85%E9%83%A8%E7%B1%BB%E7%9A%84addView%E5%9B%9E%E8%B0%83_hu17379212811394676140.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%86%85%E9%83%A8%E7%B1%BB%E7%9A%84addView%E5%9B%9E%E8%B0%83_hu2944803961004124996.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;164&#34;
+		data-flex-basis=&#34;393px&#34;
+	
+&gt;
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E7%BB%88%E8%B0%83%E7%94%A8onViewAttachedToWindow%E6%96%B9%E6%B3%95.png&#34;
+	width=&#34;1792&#34;
+	height=&#34;774&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E7%BB%88%E8%B0%83%E7%94%A8onViewAttachedToWindow%E6%96%B9%E6%B3%95_hu9651110142362696518.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E7%BB%88%E8%B0%83%E7%94%A8onViewAttachedToWindow%E6%96%B9%E6%B3%95_hu8075067365225143754.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;231&#34;
+		data-flex-basis=&#34;555px&#34;
+	
+&gt;
+每次在layoutChunk的时候，从缓存中去拿viewholder，如果从scrap缓存中拿到了，则不触发childHelper的addView，也就不会触发adapter.onViewAttachedToWindow；如果当前view的parent是当前recyclerview的时候，也不触发childhelper的addview。如果都不满足则触发adapter.onViewAttachedToWindow。&lt;/p&gt;
+&lt;p&gt;滑动的时候是否触发？
+滑动过程中表项从不可见到可见会触发onViewAttachedToWindow，因为它不是从scrap缓存中获取到的，它是从cache缓存或者是recyclerpool中获取的。onViewAttachedToWindow触发不一定会触发oncreateViewHolder，也不一定会触发onBindViewholder。如果cache缓存和pool缓存中都没有该viewholder，则会触发oncreateViewHolder和onBindViewholder。如cache中有，则只触发onViewAttachedToWindow。如果从pool中拿到缓存，则会触发onBindViewholder和onViewAttachedToWindow。&lt;/p&gt;
+&lt;p&gt;更新列表是否会触发？
+拿上面更新表项0来看，由于在dispatchLayout1(pre-layout)过程中会创建表项10，所以会经历表项10的oncreate和onbind，并且把它添加到rv中，所以会有一次的表项10的onViewAttachedToWindow，接着会在dispatchLayout2过程中会创建表项0（因为表项0存在了changeScrap缓存中），所以会走表项0的onViewAttachedToWindow。&lt;/p&gt;
+&lt;h3 id=&#34;adapteronviewdetachedfromwindow&#34;&gt;Adapter.onViewDetachedFromWindow
+&lt;/h3&gt;&lt;p&gt;滑动过程中，划出屏幕的表项会调用onViewDetachedFromWindow。&lt;/p&gt;
+&lt;h3 id=&#34;findviewholderforadapterposition和findviewholderforlayoutposition区别&#34;&gt;findViewHolderForAdapterPosition和findViewHolderForLayoutPosition区别：
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E4%BE%8B%E5%AD%90.png&#34;
+	width=&#34;2332&#34;
+	height=&#34;876&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E4%BE%8B%E5%AD%90_hu7949142580440661419.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E4%BE%8B%E5%AD%90_hu10979427111021457477.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;266&#34;
+		data-flex-basis=&#34;638px&#34;
+	
+&gt;
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E6%97%A5%E5%BF%97.png&#34;
+	width=&#34;2642&#34;
+	height=&#34;412&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E6%97%A5%E5%BF%97_hu12858756624761729791.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E6%97%A5%E5%BF%97_hu13409576118497864789.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;641&#34;
+		data-flex-basis=&#34;1539px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;结论：正常情况下adapterPostion和layoutPosition是相等的，当有add、remove、move的时候两者是不一样的。adapterPostion会算上要改变的表项，比如上面我要删除第一个表项，那么拿到的表项就是第二个。而layoutPostion是页面最终呈现的表项，上面例子中等到post完后，才会真正的删除掉。所以post（绘制后）后layoutposition获取到的是原来的第二个表项。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;notifydatasetchange问题&#34;&gt;notifydatasetChange问题
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%B0%83%E7%94%A8notifydatasetChange%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97.png&#34;
+	width=&#34;2574&#34;
+	height=&#34;1490&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%B0%83%E7%94%A8notifydatasetChange%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97_hu8629380768717259897.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%B0%83%E7%94%A8notifydatasetChange%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97_hu9811034100351826362.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;172&#34;
+		data-flex-basis=&#34;414px&#34;
+	
+&gt;
+&lt;img src=&#34;https://example.com/%e5%8f%a6%e4%b8%80%e9%83%a8%e5%88%86%e6%97%a5%e5%bf%97-1.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+&gt;
+先是把页面上所有的都detach掉，然后又走了所有的viewholder的onbind过程，从索引为5的viewholder走了oncreateviewholder。下面看下trace：
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%9A%84trace.png&#34;
+	width=&#34;1726&#34;
+	height=&#34;1086&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%9A%84trace_hu16326029826275178744.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%9A%84trace_hu417268336205723639.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;158&#34;
+		data-flex-basis=&#34;381px&#34;
+	
+&gt;
+layout过程只走了dispatchLayout2，在里面走到了linearlayoutManager.onLayoutChildren，里面会触发fill。在fill之前会走detach逻辑，里面会反向遍历可见的子view，并调用scrapOrRecylerview：
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E9%83%BD%E8%B5%B0removeViewAt.png&#34;
+	width=&#34;1500&#34;
+	height=&#34;456&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E9%83%BD%E8%B5%B0removeViewAt_hu17858563825938736019.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E9%83%BD%E8%B5%B0removeViewAt_hu11808418269986258548.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;328&#34;
+		data-flex-basis=&#34;789px&#34;
+	
+&gt;
+每一个子view回收都走了removeViewAt:
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/removeViewAt%E9%80%BB%E8%BE%91.png&#34;
+	width=&#34;1750&#34;
+	height=&#34;1112&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/removeViewAt%E9%80%BB%E8%BE%91_hu17874290648693971679.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/removeViewAt%E9%80%BB%E8%BE%91_hu10317882271117318045.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;157&#34;
+		data-flex-basis=&#34;377px&#34;
+	
+&gt;
+此处由于所有的viewholder都是invalid状态了，因为在notifyDatasetChange在调用requestLayout之前把页面上的子view都设置成invalid状态了：
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_1.png&#34;
+	width=&#34;1520&#34;
+	height=&#34;882&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_1_hu12943583134031551868.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_1_hu4591628311978383744.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;172&#34;
+		data-flex-basis=&#34;413px&#34;
+	
+&gt;
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_2.png&#34;
+	width=&#34;1414&#34;
+	height=&#34;324&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_2_hu4694049468430595453.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_2_hu11369038894928021298.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;436&#34;
+		data-flex-basis=&#34;1047px&#34;
+	
+&gt;
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_3.png&#34;
+	width=&#34;1962&#34;
+	height=&#34;670&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_3_hu15128694460051254672.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_3_hu3096719542985996145.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;292&#34;
+		data-flex-basis=&#34;702px&#34;
+	
+&gt;
+所以在fill之前都会调用removeViewAt，而该方法会触发onViewDetachedFromWindow，因此可以看到前面日志中先反向打印了9-&amp;gt;0的onViewDetachedFromWindow。接着会调用recycler.recycleViewHolderInternal，该方法是把viewholder加入到cache或者是recyclerpool中：
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5cache%E6%88%96pool%E7%BC%93%E5%AD%98.png&#34;
+	width=&#34;2288&#34;
+	height=&#34;1208&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5cache%E6%88%96pool%E7%BC%93%E5%AD%98_hu5523904204173320317.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5cache%E6%88%96pool%E7%BC%93%E5%AD%98_hu10407373697528151754.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;189&#34;
+		data-flex-basis=&#34;454px&#34;
+	
+&gt;
+如果存在invalid状态，则会把viewholder加入到pool缓存中，trace验证下：
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5pool%E7%9A%84trace.png&#34;
+	width=&#34;2474&#34;
+	height=&#34;912&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5pool%E7%9A%84trace_hu5584527474512766708.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5pool%E7%9A%84trace_hu16705963592357327366.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;271&#34;
+		data-flex-basis=&#34;651px&#34;
+	
+&gt;
+而pool缓存是5个，因此先把9-&amp;gt;5存到poo中时，发现pool满了，则把9给移除掉，因此最后只剩下5个viewholder在pool中。接着在layoutChunk阶段，会从缓存中拿viewholder的时候，只有pool中5个viewhold的缓存，取完一个remove掉一个，当索引为5的时候，pool中已经拿完了，因此5-9会去创建viewholder。&lt;/p&gt;
+&lt;p&gt;参考：
+&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844903778303344647&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;RecyclerView 缓存机制 | 如何复用表项？&lt;/a&gt;
+&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844903778303361038&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;RecyclerView 缓存机制 | 回收些什么？&lt;/a&gt;
+&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844903778307538958&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;RecyclerView 缓存机制 | 回收到哪去？&lt;/a&gt;
+&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844903780006264845&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;RecyclerView缓存机制 | scrap view 的生命周期&lt;/a&gt;&lt;/p&gt;
 </description>
         </item>
         <item>
