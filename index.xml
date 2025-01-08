@@ -14,13 +14,13 @@
         
         <guid>https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/</guid>
         <description>&lt;h3 id=&#34;初始化过程&#34;&gt;初始化过程
-&lt;/h3&gt;&lt;p&gt;当我们app收到choregrapher的vsync信号的时候，会给主线程发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的message设置一个callback（runnable），所以会触发handler的dispatchmessage-&amp;gt;handleCallback，接着就是触发FrameDisplayEventReceiver的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。&lt;/p&gt;
-&lt;p&gt;trace图如下：
+&lt;/h3&gt;&lt;p&gt;当我们app收到choregrapher的vsync信号的时候，choregrapher中会给主线程的messageQueue发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的messageQueue设置一个callback（runnable），所以会触发handler的dispatchmessage-&amp;gt;handleCallback，接着就是触发FrameDisplayEventReceiver（runnable）的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。&lt;/p&gt;
+&lt;p&gt;trace图如下：&lt;/br&gt;
 &lt;img src =&#34;调用recyclerview的onMeasure调用链.png&#34; width =700/&gt;&lt;/p&gt;
 &lt;p&gt;接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren&lt;/p&gt;
 &lt;img src =&#34;recyclerview在dispatchLayoutStep1.png&#34; width =700/&gt;
 &lt;p&gt;有动画的条件是：
-&lt;img src =&#34;recyclerview动画判断.png&#34; width =700/&gt;
+&lt;img src =&#34;recyclerview动画判断.png&#34; width =700/&gt;&lt;/br&gt;
 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。
 &lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onLayoutChildren%E8%B0%83%E7%94%A8%E9%93%BE.png&#34;
 	width=&#34;730&#34;
@@ -35,8 +35,8 @@
 		data-flex-grow=&#34;235&#34;
 		data-flex-basis=&#34;565px&#34;
 	
-&gt;
-调用链如下：
+&gt;&lt;/br&gt;
+调用链如下：&lt;/br&gt;
 linearlayoutmanager.fill-&amp;gt;layoutmanager.layoutChunk-&amp;gt;layoutstate.next-&amp;gt;recycler.getviewforposition-&amp;gt;recycler.tryGeyViewHolderForPostionByDeadline-&amp;gt;adapter.createViewHolder-&amp;gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。
 &lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/layoutChunk%E8%B0%83%E7%94%A8.png&#34;
 	width=&#34;960&#34;
@@ -52,8 +52,8 @@ linearlayoutmanager.fill-&amp;gt;layoutmanager.layoutChunk-&amp;gt;layoutstate.n
 		data-flex-basis=&#34;2057px&#34;
 	
 &gt;
-上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。&lt;/p&gt;
-&lt;p&gt;接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行&lt;/p&gt;
+上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。&lt;/br&gt;
+接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E5%9C%A8dispatchLayoutStep3.png&#34;
 	width=&#34;790&#34;
 	height=&#34;452&#34;
@@ -105,14 +105,14 @@ draw里面基本没干什么，还是沿用了viewgroup的drawchild方法，绿�
 在draw阶段基本什么都没做，dispatchDraw本身会调用到drawChild，recyclerview只是重写了该方法。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h3 id=&#34;滑动过程&#34;&gt;滑动过程
-&lt;/h3&gt;&lt;p&gt;滑动过程中会调用到scrollByInternal-&amp;gt;layoutmanager.scrollBy-&amp;gt;fill-&amp;gt;layoutchunck&lt;/p&gt;
-&lt;p&gt;layoutchunck里面会从缓存中取数据，如果有则命中，没有则走create和bind，接着划出屏幕的表项会先加入到cache缓存中，如果cache缓存满了，则重置该表项，加入到recyclerpool中，下次所以取的时候从recyclerpool根据viewtype取需要重新bind，不需要create，所以在滑动过程中create的次数是cache的大小次数，等到recyclerpool中有缓存的时候就不需要create了。&lt;/p&gt;
+&lt;/h3&gt;&lt;p&gt;滑动过程中会调用到scrollByInternal-&amp;gt;layoutmanager.scrollBy-&amp;gt;fill-&amp;gt;layoutchunck。&lt;/br&gt;
+layoutchunck里面会从缓存中取数据，如果有则命中，没有则走create和bind，接着划出屏幕的表项会先加入到cache缓存中，如果cache缓存满了，则重置该表项，加入到recyclerpool中，下次所以取的时候从recyclerpool根据viewtype取需要重新bind，不需要create，所以在滑动过程中create的次数是cache的大小次数，等到recyclerpool中有缓存的时候就不需要create了。&lt;/p&gt;
 &lt;p&gt;在fill过程中，会找到划出屏幕的表项，然后先调用recycleByLayoutState，接着调用到了Linearlayoutmanager.recycleChildren，接着会触发recyclerview.removeAndRecycleViewAt方法，接着就触发了adapter.onViewDetachedFromWindow(viewHolder)，接着就把viewholder缓存到cache和recyclerpool中，对应的方法是recycler.recycleView-&amp;gt;recycleViewHolderInternal,其中cache缓存中默认是2个，如果大于2的话，会把最前面的那个给放到recyclerpool中，接着再把新的viewholder放进来。&lt;/p&gt;
 &lt;p&gt;在fiil过程中，会通过LayoutState.next从缓存中获取viewholder，获取的时候会先判断是不是preLayout状态，如果是则从changeScrap缓存中获取，从changeScrap中获取缓存先通过position获取，如果用position获取不到，则再用id去获取（必须adapter设置setHasStableIds为true，并且adapter重写了getItemId）。如果没获取到则从attacheScrap和cache中获取，如果从attach和cache中找不到，则继续通过id从attachScrap中获取，如果还没获取到则从viewcacheExtension中去获取，如果还获取不到则再从recyclerpool中去获取，如果还获取不到则通过create来创建viewholder，接着走bind逻辑。&lt;/p&gt;
 &lt;p&gt;所以整个缓存获取顺序：
-changeScrap(preLayout状态，先通过position获取，没获取到再通过id获取)-&amp;gt;attacheScrap-&amp;gt;cache-&amp;gt;attachScrap(id方式获取)-&amp;gt;viewcacheExtension-&amp;gt;recyclerpool-&amp;gt;createholder-&amp;gt;bindholder&lt;/p&gt;
-&lt;p&gt;这就是layoutstate.next获取viewholder整个逻辑，上面哪些会触发createholder和bindholder&lt;/p&gt;
-&lt;p&gt;如果从几个缓存中都拿不到viewholder，则会走createholder的逻辑。&lt;/p&gt;
+changeScrap(preLayout状态，先通过position获取，没获取到再通过id获取)-&amp;gt;attacheScrap-&amp;gt;cache-&amp;gt;attachScrap(id方式获取)-&amp;gt;viewcacheExtension-&amp;gt;recyclerpool-&amp;gt;createholder-&amp;gt;bindholder&lt;/br&gt;
+这就是layoutstate.next获取viewholder整个逻辑，上面哪些会触发createholder和bindholder&lt;/br&gt;
+如果从几个缓存中都拿不到viewholder，则会走createholder的逻辑。&lt;/p&gt;
 &lt;p&gt;什么情况下会调用onBindViewHolder？
 &lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onBindViewHolder%E5%89%8D%E7%BD%AE%E6%9D%A1%E4%BB%B6.png&#34;
 	width=&#34;1884&#34;
@@ -148,10 +148,8 @@ bound标志位：是在bindViewHolder的时候设置的，因此不是bound表�
 &gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;needsUpdate：该状态表示什么？什么时候才会是needUpdate()呢？&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/needsUpdate%E6%BA%90%E7%A0%81.png&#34;
+&lt;p&gt;needsUpdate：该状态表示什么？什么时候才会是needUpdate()呢？
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/needsUpdate%E6%BA%90%E7%A0%81.png&#34;
 	width=&#34;810&#34;
 	height=&#34;220&#34;
 	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/needsUpdate%E6%BA%90%E7%A0%81_hu16745625206395077354.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/needsUpdate%E6%BA%90%E7%A0%81_hu9313751603204677791.png 1024w&#34;
@@ -164,10 +162,8 @@ bound标志位：是在bindViewHolder的时候设置的，因此不是bound表�
 		data-flex-grow=&#34;368&#34;
 		data-flex-basis=&#34;883px&#34;
 	
-&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0update%E6%A0%87%E5%BF%97%E4%BD%8D.png&#34;
+&gt;
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0update%E6%A0%87%E5%BF%97%E4%BD%8D.png&#34;
 	width=&#34;1876&#34;
 	height=&#34;1254&#34;
 	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0update%E6%A0%87%E5%BF%97%E4%BD%8D_hu15558857031045118622.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0update%E6%A0%87%E5%BF%97%E4%BD%8D_hu1326698609201363619.png 1024w&#34;
@@ -202,6 +198,9 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&amp;gt;AdapterHelper.pre
 -&amp;gt;markViewHoldersUpdated-&amp;gt;viewRangeUpdate，所以在dispatchLayout1过程中给flag设置了update状态&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;isInvalid：表示什么状态？什么时候赋值的？
+&lt;ol&gt;
+&lt;li&gt;markKnownViewsInvalid会对所有页面上可见的viewholder设置为FLAG_INVALID，并且把cache缓存中的viewholder设置为FLAG_INVALID，它是在notifydataSetChange时候调用&lt;/li&gt;
+&lt;li&gt;在holder缓存获取的时候，如果发现holder的viewtype和adapter中重写的viewtype不一致会重置，会给viewholder添加该标志位
 &lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0invalid%E6%A0%87%E5%BF%97%E4%BD%8D.png&#34;
 	width=&#34;1816&#34;
 	height=&#34;1336&#34;
@@ -230,9 +229,11 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&amp;gt;AdapterHelper.pre
 		data-flex-basis=&#34;310px&#34;
 	
 &gt;
-从缓存（attachScrap、cacheview）中获取viewholder的时候，如果发现type和holder的type不一致，则会校验不通过。或者设置了stableids为true的时候，如果adapter中的id和holder的id一致，则也通过。
-所以结论就是，需要bound的条件：没有bound过（createholder的holder还没有bound过）；needupdate的，holder发生更新了。invalid，从attachscrap、cache获取后， 如果type不一致也需要重新bound。&lt;/li&gt;
+从缓存（attachScrap、cacheview）中获取viewholder的时候，如果发现type和holder的type不一致，则会校验不通过。或者设置了stableids为true的时候，如果adapter中的id和holder的id一致，则也通过。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;所以结论就是，需要bound的条件：没有bound过（createholder的holder还没有bound过）；needupdate的，holder发生更新了。invalid，从attachscrap、cache获取后， 如果type不一致也需要重新bound，或者是调用了notifydataSetChange后，所有的viewholder都会添加nvalid标志位，此时也需要bind。&lt;/p&gt;
 &lt;h3 id=&#34;更新表项&#34;&gt;更新表项
 &lt;/h3&gt;&lt;p&gt;notifyItemChange(0)：更新表项第0的位置&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5recyclerview%E7%9A%84%E6%97%A5%E5%BF%97.png&#34;
@@ -1025,15 +1026,17 @@ layout过程只走了dispatchLayout2，在里面走到了linearlayoutManager.onL
 	
 &gt;
 而pool缓存是5个，因此先把9-&amp;gt;5存到poo中时，发现pool满了，则把9给移除掉，因此最后只剩下5个viewholder在pool中。接着在layoutChunk阶段，会从缓存中拿viewholder的时候，只有pool中5个viewhold的缓存，取完一个remove掉一个，当索引为5的时候，pool中已经拿完了，因此5-9会去创建viewholder。&lt;/p&gt;
-&lt;p&gt;参考：
-&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844903778303344647&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;RecyclerView 缓存机制 | 如何复用表项？&lt;/a&gt;
-&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844903778303361038&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;RecyclerView 缓存机制 | 回收些什么？&lt;/a&gt;
-&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844903778307538958&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;RecyclerView 缓存机制 | 回收到哪去？&lt;/a&gt;
-&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844903780006264845&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;RecyclerView缓存机制 | scrap view 的生命周期&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;参考：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844903778303344647&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;RecyclerView 缓存机制 | 如何复用表项？&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844903778303361038&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;RecyclerView 缓存机制 | 回收些什么？&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844903778307538958&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;RecyclerView 缓存机制 | 回收到哪去？&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844903780006264845&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;RecyclerView缓存机制 | scrap view 的生命周期&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 </description>
         </item>
         <item>
