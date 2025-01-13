@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="大家有没有想过，scrap缓存存在的意义是什么？为什么存了后，又把它里面的viewholder又给删了？\n在上一篇(RecyclerView源码走读)中我们分析过更新和删除表项的过程，下面来总结下scrap缓存的过程：\n更新表项:页面上有表项0到9，总共有10个表项，然后更新表项0，在dispatchLayout1阶段（pre-layout），先把页面上的表项0到9存到scrap缓存中，由于表项0是更新的所以会把表项0放到changeScrap缓存中，把表项1到9存到attachScrap缓存中。同时会把这10个表项从页面上分离（child的parent置空，并把viewgroup中对应的child给置空），接着从scrap缓存中取出viewholder，由于存在更新表项，所以会去创建表项10的viewholder到recyclerview上。此时recyclerview中有11个表项了，同时把他们从scrap缓存中移除。 在dispatchLayout2阶段（post-layout）阶段，会把这11个表项加入到scrap缓存中，表项0还是放到changeScrap中，表项1到10加入到attachScrap缓存中。接着把他们从页面上分离。然后在fill中，从scrap缓存中获取viewholder，由于changeScrap不会在dispatchLayout2阶段生效，所以会创建了表项0，其余的表项正常从attachScrap缓存中获取。接着把所有的表项添加到recyclerview中，并把scrap中的viewholder缓存移除掉。但是表项10不会添加到recyclerview中，因为到表项9的时候，剩余空间就不够了，所以recyclerview中只有0到9的表项。注意：此时还有表项0个表项10分别存在于changeScrap和attachScrap中。\n上面更新表项经历了两次的布局，分别是dispatchLayout1和dispatchLayout2，在这两个步骤中，先加入到scrap缓存中，然后再从scrap缓存中移除。从现象来看，dispatchLayout1中会生成11个表项，分别是0到10，然后在dispatchLayout2先移除所有的表项，然后添加0到9的表项，而在dispatchLayout2中表项0是重新生成的，因为它要实现更新。而调用两次的布局是为了实现动画而这么做，先生成11个表项，来把他们的位置都记录下来，然后第二次布局的时候把10个表项的位置也记录下来，然后最后根据存储的位置信息做动画。下面来分析下动画如何实现的：\n在dispatchLayoutStep1将页面上可见的表项加入到ViewInfoStore中： 1 2 3 4 5 6 7 8 9 ">
+<title>RecyclerView动画原理</title>
+
+<link rel='canonical' href='https://example.com/p/recyclerview%E5%8A%A8%E7%94%BB%E5%8E%9F%E7%90%86/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="RecyclerView动画原理">
+<meta property='og:description' content="大家有没有想过，scrap缓存存在的意义是什么？为什么存了后，又把它里面的viewholder又给删了？\n在上一篇(RecyclerView源码走读)中我们分析过更新和删除表项的过程，下面来总结下scrap缓存的过程：\n更新表项:页面上有表项0到9，总共有10个表项，然后更新表项0，在dispatchLayout1阶段（pre-layout），先把页面上的表项0到9存到scrap缓存中，由于表项0是更新的所以会把表项0放到changeScrap缓存中，把表项1到9存到attachScrap缓存中。同时会把这10个表项从页面上分离（child的parent置空，并把viewgroup中对应的child给置空），接着从scrap缓存中取出viewholder，由于存在更新表项，所以会去创建表项10的viewholder到recyclerview上。此时recyclerview中有11个表项了，同时把他们从scrap缓存中移除。 在dispatchLayout2阶段（post-layout）阶段，会把这11个表项加入到scrap缓存中，表项0还是放到changeScrap中，表项1到10加入到attachScrap缓存中。接着把他们从页面上分离。然后在fill中，从scrap缓存中获取viewholder，由于changeScrap不会在dispatchLayout2阶段生效，所以会创建了表项0，其余的表项正常从attachScrap缓存中获取。接着把所有的表项添加到recyclerview中，并把scrap中的viewholder缓存移除掉。但是表项10不会添加到recyclerview中，因为到表项9的时候，剩余空间就不够了，所以recyclerview中只有0到9的表项。注意：此时还有表项0个表项10分别存在于changeScrap和attachScrap中。\n上面更新表项经历了两次的布局，分别是dispatchLayout1和dispatchLayout2，在这两个步骤中，先加入到scrap缓存中，然后再从scrap缓存中移除。从现象来看，dispatchLayout1中会生成11个表项，分别是0到10，然后在dispatchLayout2先移除所有的表项，然后添加0到9的表项，而在dispatchLayout2中表项0是重新生成的，因为它要实现更新。而调用两次的布局是为了实现动画而这么做，先生成11个表项，来把他们的位置都记录下来，然后第二次布局的时候把10个表项的位置也记录下来，然后最后根据存储的位置信息做动画。下面来分析下动画如何实现的：\n在dispatchLayoutStep1将页面上可见的表项加入到ViewInfoStore中： 1 2 3 4 5 6 7 8 9 ">
+<meta property='og:url' content='https://example.com/p/recyclerview%E5%8A%A8%E7%94%BB%E5%8E%9F%E7%90%86/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-01-09T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-01-09T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="RecyclerView动画原理">
+<meta name="twitter:description" content="大家有没有想过，scrap缓存存在的意义是什么？为什么存了后，又把它里面的viewholder又给删了？\n在上一篇(RecyclerView源码走读)中我们分析过更新和删除表项的过程，下面来总结下scrap缓存的过程：\n更新表项:页面上有表项0到9，总共有10个表项，然后更新表项0，在dispatchLayout1阶段（pre-layout），先把页面上的表项0到9存到scrap缓存中，由于表项0是更新的所以会把表项0放到changeScrap缓存中，把表项1到9存到attachScrap缓存中。同时会把这10个表项从页面上分离（child的parent置空，并把viewgroup中对应的child给置空），接着从scrap缓存中取出viewholder，由于存在更新表项，所以会去创建表项10的viewholder到recyclerview上。此时recyclerview中有11个表项了，同时把他们从scrap缓存中移除。 在dispatchLayout2阶段（post-layout）阶段，会把这11个表项加入到scrap缓存中，表项0还是放到changeScrap中，表项1到10加入到attachScrap缓存中。接着把他们从页面上分离。然后在fill中，从scrap缓存中获取viewholder，由于changeScrap不会在dispatchLayout2阶段生效，所以会创建了表项0，其余的表项正常从attachScrap缓存中获取。接着把所有的表项添加到recyclerview中，并把scrap中的viewholder缓存移除掉。但是表项10不会添加到recyclerview中，因为到表项9的时候，剩余空间就不够了，所以recyclerview中只有0到9的表项。注意：此时还有表项0个表项10分别存在于changeScrap和attachScrap中。\n上面更新表项经历了两次的布局，分别是dispatchLayout1和dispatchLayout2，在这两个步骤中，先加入到scrap缓存中，然后再从scrap缓存中移除。从现象来看，dispatchLayout1中会生成11个表项，分别是0到10，然后在dispatchLayout2先移除所有的表项，然后添加0到9的表项，而在dispatchLayout2中表项0是重新生成的，因为它要实现更新。而调用两次的布局是为了实现动画而这么做，先生成11个表项，来把他们的位置都记录下来，然后第二次布局的时候把10个表项的位置也记录下来，然后最后根据存储的位置信息做动画。下面来分析下动画如何实现的：\n在dispatchLayoutStep1将页面上可见的表项加入到ViewInfoStore中： 1 2 3 4 5 6 7 8 9 ">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/_index.zh-cn/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%BA%90%E7%A0%81/" >
+                源码
+            </a>
+        
+            <a href="/categories/ui/" >
+                Ui
+            </a>
+        
+            <a href="/categories/recyclerview/" >
+                RecyclerView
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/recyclerview%E5%8A%A8%E7%94%BB%E5%8E%9F%E7%90%86/">RecyclerView动画原理</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2025-01-09</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    4 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>大家有没有想过，scrap缓存存在的意义是什么？为什么存了后，又把它里面的viewholder又给删了？</p>
+<p>在上一篇(<a class="link" href="https://www.xiangcman.fun/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/"  target="_blank" rel="noopener"
+    >RecyclerView源码走读</a>)中我们分析过更新和删除表项的过程，下面来总结下scrap缓存的过程：</p>
+<blockquote>
+<p>更新表项:页面上有表项0到9，总共有10个表项，然后更新表项0，在dispatchLayout1阶段（pre-layout），先把页面上的表项0到9存到scrap缓存中，由于表项0是更新的所以会把表项0放到changeScrap缓存中，把表项1到9存到attachScrap缓存中。同时会把这10个表项从页面上分离（child的parent置空，并把viewgroup中对应的child给置空），接着从scrap缓存中取出viewholder，由于存在更新表项，所以会去创建表项10的viewholder到recyclerview上。此时recyclerview中有11个表项了，同时把他们从scrap缓存中移除。
+在dispatchLayout2阶段（post-layout）阶段，会把这11个表项加入到scrap缓存中，表项0还是放到changeScrap中，表项1到10加入到attachScrap缓存中。接着把他们从页面上分离。然后在fill中，从scrap缓存中获取viewholder，由于changeScrap不会在dispatchLayout2阶段生效，所以会创建了表项0，其余的表项正常从attachScrap缓存中获取。接着把所有的表项添加到recyclerview中，并把scrap中的viewholder缓存移除掉。但是表项10不会添加到recyclerview中，因为到表项9的时候，剩余空间就不够了，所以recyclerview中只有0到9的表项。注意：此时还有表项0个表项10分别存在于changeScrap和attachScrap中。</p>
+</blockquote>
+<p>上面更新表项经历了两次的布局，分别是dispatchLayout1和dispatchLayout2，在这两个步骤中，先加入到scrap缓存中，然后再从scrap缓存中移除。从现象来看，dispatchLayout1中会生成11个表项，分别是0到10，然后在dispatchLayout2先移除所有的表项，然后添加0到9的表项，而在dispatchLayout2中表项0是重新生成的，因为它要实现更新。而调用两次的布局是为了实现动画而这么做，先生成11个表项，来把他们的位置都记录下来，然后第二次布局的时候把10个表项的位置也记录下来，然后最后根据存储的位置信息做动画。下面来分析下动画如何实现的：</p>
+<p>在dispatchLayoutStep1将页面上可见的表项加入到ViewInfoStore中：
+<img src="/p/recyclerview%E5%8A%A8%E7%94%BB%E5%8E%9F%E7%90%86/dispatchLayoutStep1%E8%B0%83%E7%94%A8addToPreLayout.png"
+	width="1782"
+	height="1730"
+	srcset="/p/recyclerview%E5%8A%A8%E7%94%BB%E5%8E%9F%E7%90%86/dispatchLayoutStep1%E8%B0%83%E7%94%A8addToPreLayout_hu2582364741404603596.png 480w, /p/recyclerview%E5%8A%A8%E7%94%BB%E5%8E%9F%E7%90%86/dispatchLayoutStep1%E8%B0%83%E7%94%A8addToPreLayout_hu1660472222325736774.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="103"
+		data-flex-basis="247px"
+	
+></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">addToPreLayout</span><span class="p">(</span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ViewHolder</span><span class="w"> </span><span class="n">holder</span><span class="p">,</span><span class="w"> </span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ItemAnimator</span><span class="p">.</span><span class="na">ItemHolderInfo</span><span class="w"> </span><span class="n">info</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">InfoRecord</span><span class="w"> </span><span class="n">record</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mLayoutHolderMap</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">holder</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">record</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">record</span> <span class="err">=</span> <span class="nc">InfoRecord</span><span class="p">.</span><span class="na">obtain</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mLayoutHolderMap</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">holder</span><span class="p">,</span><span class="w"> </span><span class="n">record</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">record</span><span class="err">.</span><span class="nc">preInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">info</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">record</span><span class="err">.</span><span class="nc">flags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">FLAG_PRE</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>将viewholder和infoRecord绑定好关系，然后给该record添加上FLAG_PRE标记。注意：此处的InforRecord使用了对象池。
+前面分析过在fill完之后，页面上会多出一个表项10，此时也会添加到ViewInfoStore中：
+<img src="/p/recyclerview%E5%8A%A8%E7%94%BB%E5%8E%9F%E7%90%86/fill%E5%AE%8C%E4%B9%8B%E5%90%8E%E8%B0%83%E7%94%A8addToAppearedInPreLayoutHolders.png"
+	width="1848"
+	height="1810"
+	srcset="/p/recyclerview%E5%8A%A8%E7%94%BB%E5%8E%9F%E7%90%86/fill%E5%AE%8C%E4%B9%8B%E5%90%8E%E8%B0%83%E7%94%A8addToAppearedInPreLayoutHolders_hu6348182231879748310.png 480w, /p/recyclerview%E5%8A%A8%E7%94%BB%E5%8E%9F%E7%90%86/fill%E5%AE%8C%E4%B9%8B%E5%90%8E%E8%B0%83%E7%94%A8addToAppearedInPreLayoutHolders_hu10275860032634026695.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="102"
+		data-flex-basis="245px"
+	
+>
+可以看到在onLayoutChildren之后会调用addToAppearedInPreLayoutHolders，此时只有表项10会调用addToAppearedInPreLayoutHolders：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">addToAppearedInPreLayoutHolders</span><span class="p">(</span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ViewHolder</span><span class="w"> </span><span class="n">holder</span><span class="p">,</span><span class="w"> </span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ItemAnimator</span><span class="p">.</span><span class="na">ItemHolderInfo</span><span class="w"> </span><span class="n">info</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">InfoRecord</span><span class="w"> </span><span class="n">record</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mLayoutHolderMap</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">holder</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">record</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">record</span> <span class="err">=</span> <span class="nc">InfoRecord</span><span class="p">.</span><span class="na">obtain</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mLayoutHolderMap</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">holder</span><span class="p">,</span><span class="w"> </span><span class="n">record</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">record</span><span class="err">.</span><span class="nc">flags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">FLAG_APPEAR</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">record</span><span class="err">.</span><span class="nc">preInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">info</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>所以只有表项10添加了FLAG_APPEAR标记。</p>
+<p>在dispatchLayoutStep2走完后，页面上可见的表项就只剩0到9了，在dispatchLayoutStep3中将变化的viewholder调用animateChange，而其他的viewholder调用了addToPostLayout，在该例子中表项0会调用animateChange，表项1到9会调用addToPostLayout：</p>
+<p>animateChange：当有viewholder发生变化的时候，会触发该方法，该方法会触发mItemAnimator的animateChange方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">animateChange</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ViewHolder</span><span class="w"> </span><span class="n">oldHolder</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ViewHolder</span><span class="w"> </span><span class="n">newHolder</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ItemHolderInfo</span><span class="w"> </span><span class="n">preInfo</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ItemHolderInfo</span><span class="w"> </span><span class="n">postInfo</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">boolean</span><span class="w"> </span><span class="n">oldHolderDisappearing</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">newHolderDisappearing</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//省略代码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mItemAnimator</span><span class="p">.</span><span class="na">animateChange</span><span class="p">(</span><span class="n">oldHolder</span><span class="p">,</span><span class="w"> </span><span class="n">newHolder</span><span class="p">,</span><span class="w"> </span><span class="n">preInfo</span><span class="p">,</span><span class="w"> </span><span class="n">postInfo</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">postAnimationRunner</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>调用了mItemAnimator的animateChange方法，并把改变之前的holder、itemholderinfo和改变之后的holder、itemholderinfo传进去了，默认的itemAnimator是DefaultItemAnimator，也是一个SimpleItemAnimator:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">animateChange</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ViewHolder</span><span class="w"> </span><span class="n">oldHolder</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ViewHolder</span><span class="w"> </span><span class="n">newHolder</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ItemHolderInfo</span><span class="w"> </span><span class="n">preInfo</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ItemHolderInfo</span><span class="w"> </span><span class="n">postInfo</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">DEBUG</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;CHANGED: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">oldHolder</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34; with view &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">oldHolder</span><span class="p">.</span><span class="na">itemView</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">fromLeft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">preInfo</span><span class="p">.</span><span class="na">left</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">fromTop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">preInfo</span><span class="p">.</span><span class="na">top</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">toLeft</span><span class="p">,</span><span class="w"> </span><span class="n">toTop</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">newHolder</span><span class="p">.</span><span class="na">shouldIgnore</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">toLeft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">preInfo</span><span class="p">.</span><span class="na">left</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">toTop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">preInfo</span><span class="p">.</span><span class="na">top</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">toLeft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">postInfo</span><span class="p">.</span><span class="na">left</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">toTop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">postInfo</span><span class="p">.</span><span class="na">top</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">animateChange</span><span class="p">(</span><span class="n">oldHolder</span><span class="p">,</span><span class="w"> </span><span class="n">newHolder</span><span class="p">,</span><span class="w"> </span><span class="n">fromLeft</span><span class="p">,</span><span class="w"> </span><span class="n">fromTop</span><span class="p">,</span><span class="w"> </span><span class="n">toLeft</span><span class="p">,</span><span class="w"> </span><span class="n">toTop</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>fromLeft、fromTop是老的holder的坐标，toLeft、toTop是新的holder的坐标，最后调用了另外一个animateChange：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">animateChange</span><span class="p">(</span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ViewHolder</span><span class="w"> </span><span class="n">oldHolder</span><span class="p">,</span><span class="w"> </span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ViewHolder</span><span class="w"> </span><span class="n">newHolder</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">fromX</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">fromY</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">toX</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">toY</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">oldHolder</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">newHolder</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// Don&#39;t know how to run change animations when the same view holder is re-used.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// run a move animation to handle position changes.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">animateMove</span><span class="p">(</span><span class="n">oldHolder</span><span class="p">,</span><span class="w"> </span><span class="n">fromX</span><span class="p">,</span><span class="w"> </span><span class="n">fromY</span><span class="p">,</span><span class="w"> </span><span class="n">toX</span><span class="p">,</span><span class="w"> </span><span class="n">toY</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">prevTranslationX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">oldHolder</span><span class="p">.</span><span class="na">itemView</span><span class="p">.</span><span class="na">getTranslationX</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">prevTranslationY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">oldHolder</span><span class="p">.</span><span class="na">itemView</span><span class="p">.</span><span class="na">getTranslationY</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">prevAlpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">oldHolder</span><span class="p">.</span><span class="na">itemView</span><span class="p">.</span><span class="na">getAlpha</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">resetAnimation</span><span class="p">(</span><span class="n">oldHolder</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">deltaX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">toX</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">fromX</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">prevTranslationX</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">deltaY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">toY</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">fromY</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">prevTranslationY</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// recover prev translation state after ending animation</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">oldHolder</span><span class="p">.</span><span class="na">itemView</span><span class="p">.</span><span class="na">setTranslationX</span><span class="p">(</span><span class="n">prevTranslationX</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">oldHolder</span><span class="p">.</span><span class="na">itemView</span><span class="p">.</span><span class="na">setTranslationY</span><span class="p">(</span><span class="n">prevTranslationY</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">oldHolder</span><span class="p">.</span><span class="na">itemView</span><span class="p">.</span><span class="na">setAlpha</span><span class="p">(</span><span class="n">prevAlpha</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">newHolder</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// carry over translation values</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">resetAnimation</span><span class="p">(</span><span class="n">newHolder</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">newHolder</span><span class="p">.</span><span class="na">itemView</span><span class="p">.</span><span class="na">setTranslationX</span><span class="p">(</span><span class="o">-</span><span class="n">deltaX</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">newHolder</span><span class="p">.</span><span class="na">itemView</span><span class="p">.</span><span class="na">setTranslationY</span><span class="p">(</span><span class="o">-</span><span class="n">deltaY</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">newHolder</span><span class="p">.</span><span class="na">itemView</span><span class="p">.</span><span class="na">setAlpha</span><span class="p">(</span><span class="n">0</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mPendingChanges</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">ChangeInfo</span><span class="p">(</span><span class="n">oldHolder</span><span class="p">,</span><span class="w"> </span><span class="n">newHolder</span><span class="p">,</span><span class="w"> </span><span class="n">fromX</span><span class="p">,</span><span class="w"> </span><span class="n">fromY</span><span class="p">,</span><span class="w"> </span><span class="n">toX</span><span class="p">,</span><span class="w"> </span><span class="n">toY</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果新老holder是同一个，则调用animateMove，前面分析过oldHolder和newHolder不是同一个，所以先把newHolder的translationX和translationX设置到目标位置，其实此时的deltaX和deltaY为0，因为目标的viewholder位置也在原来表项0的位置，接着把透明度设置为0，最后创建了ChangeInfo，放入到mPendingChanges中。当animateChange返回true后，会调用postAnimationRunner方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">postAnimationRunner</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">mPostedAnimatorRunner</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">mIsAttached</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">ViewCompat</span><span class="p">.</span><span class="na">postOnAnimation</span><span class="p">(</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">mItemAnimatorRunner</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mPostedAnimatorRunner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>ViewCompat.postOnAnimation(this, mItemAnimatorRunner)是给Choreographer中添加一条CALLBACK_ANIMATION类型的事件，等到下一个vsync信号来的时候，就会执行mItemAnimatorRunner：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">Runnable</span><span class="w"> </span><span class="n">mItemAnimatorRunner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Runnable</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">run</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mItemAnimator</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">mItemAnimator</span><span class="p">.</span><span class="na">runPendingAnimations</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mPostedAnimatorRunner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">};</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>最终会执行DefaultItemAnimator的runPendingAnimations方法，该方法会执行changesPending的逻辑，最终会执行animateChangeImpl：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">animateChangeImpl</span><span class="p">(</span><span class="kd">final</span><span class="w"> </span><span class="n">ChangeInfo</span><span class="w"> </span><span class="n">changeInfo</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ViewHolder</span><span class="w"> </span><span class="n">holder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">changeInfo</span><span class="p">.</span><span class="na">oldHolder</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">view</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">holder</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">holder</span><span class="p">.</span><span class="na">itemView</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ViewHolder</span><span class="w"> </span><span class="n">newHolder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">changeInfo</span><span class="p">.</span><span class="na">newHolder</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">newView</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newHolder</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">newHolder</span><span class="p">.</span><span class="na">itemView</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">view</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="c1">//改变之前的view</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">final</span><span class="w"> </span><span class="n">ViewPropertyAnimator</span><span class="w"> </span><span class="n">oldViewAnim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">animate</span><span class="p">().</span><span class="na">setDuration</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">getChangeDuration</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mChangeAnimations</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">changeInfo</span><span class="p">.</span><span class="na">oldHolder</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">oldViewAnim</span><span class="p">.</span><span class="na">translationX</span><span class="p">(</span><span class="n">changeInfo</span><span class="p">.</span><span class="na">toX</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">changeInfo</span><span class="p">.</span><span class="na">fromX</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">oldViewAnim</span><span class="p">.</span><span class="na">translationY</span><span class="p">(</span><span class="n">changeInfo</span><span class="p">.</span><span class="na">toY</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">changeInfo</span><span class="p">.</span><span class="na">fromY</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">oldViewAnim</span><span class="p">.</span><span class="na">alpha</span><span class="p">(</span><span class="n">0</span><span class="p">).</span><span class="na">setListener</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">AnimatorListenerAdapter</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onAnimationStart</span><span class="p">(</span><span class="n">Animator</span><span class="w"> </span><span class="n">animator</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">dispatchChangeStarting</span><span class="p">(</span><span class="n">changeInfo</span><span class="p">.</span><span class="na">oldHolder</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onAnimationEnd</span><span class="p">(</span><span class="n">Animator</span><span class="w"> </span><span class="n">animator</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">oldViewAnim</span><span class="p">.</span><span class="na">setListener</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">view</span><span class="p">.</span><span class="na">setAlpha</span><span class="p">(</span><span class="n">1</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">view</span><span class="p">.</span><span class="na">setTranslationX</span><span class="p">(</span><span class="n">0</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">view</span><span class="p">.</span><span class="na">setTranslationY</span><span class="p">(</span><span class="n">0</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">dispatchChangeFinished</span><span class="p">(</span><span class="n">changeInfo</span><span class="p">.</span><span class="na">oldHolder</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">mChangeAnimations</span><span class="p">.</span><span class="na">remove</span><span class="p">(</span><span class="n">changeInfo</span><span class="p">.</span><span class="na">oldHolder</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">dispatchFinishedWhenDone</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}).</span><span class="na">start</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">newView</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="c1">//改变之后的view</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">final</span><span class="w"> </span><span class="n">ViewPropertyAnimator</span><span class="w"> </span><span class="n">newViewAnimation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newView</span><span class="p">.</span><span class="na">animate</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mChangeAnimations</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">changeInfo</span><span class="p">.</span><span class="na">newHolder</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">newViewAnimation</span><span class="p">.</span><span class="na">translationX</span><span class="p">(</span><span class="n">0</span><span class="p">).</span><span class="na">translationY</span><span class="p">(</span><span class="n">0</span><span class="p">).</span><span class="na">setDuration</span><span class="p">(</span><span class="n">getChangeDuration</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">.</span><span class="na">alpha</span><span class="p">(</span><span class="n">1</span><span class="p">).</span><span class="na">setListener</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">AnimatorListenerAdapter</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onAnimationStart</span><span class="p">(</span><span class="n">Animator</span><span class="w"> </span><span class="n">animator</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">dispatchChangeStarting</span><span class="p">(</span><span class="n">changeInfo</span><span class="p">.</span><span class="na">newHolder</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onAnimationEnd</span><span class="p">(</span><span class="n">Animator</span><span class="w"> </span><span class="n">animator</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">newViewAnimation</span><span class="p">.</span><span class="na">setListener</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">newView</span><span class="p">.</span><span class="na">setAlpha</span><span class="p">(</span><span class="n">1</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">newView</span><span class="p">.</span><span class="na">setTranslationX</span><span class="p">(</span><span class="n">0</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">newView</span><span class="p">.</span><span class="na">setTranslationY</span><span class="p">(</span><span class="n">0</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">dispatchChangeFinished</span><span class="p">(</span><span class="n">changeInfo</span><span class="p">.</span><span class="na">newHolder</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">mChangeAnimations</span><span class="p">.</span><span class="na">remove</span><span class="p">(</span><span class="n">changeInfo</span><span class="p">.</span><span class="na">newHolder</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">dispatchFinishedWhenDone</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}).</span><span class="na">start</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>该方法里面通过view的animate方法给view做动画，改变之前的view位置不会发生变化，只会发生alpha的动画，而改变之后的view会做从0到1的透明度动画。所以最终页面上会出现闪的一下，这个是做更新操作。
+上面分析的是表项0会调用animateChange，表项1到9会执行addToPostLayout：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">addToPostLayout</span><span class="p">(</span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ViewHolder</span><span class="w"> </span><span class="n">holder</span><span class="p">,</span><span class="w"> </span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ItemAnimator</span><span class="p">.</span><span class="na">ItemHolderInfo</span><span class="w"> </span><span class="n">info</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">InfoRecord</span><span class="w"> </span><span class="n">record</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mLayoutHolderMap</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">holder</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">record</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">record</span> <span class="err">=</span> <span class="nc">InfoRecord</span><span class="p">.</span><span class="na">obtain</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mLayoutHolderMap</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">holder</span><span class="p">,</span><span class="w"> </span><span class="n">record</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">record</span><span class="err">.</span><span class="nc">postInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">info</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">record</span><span class="err">.</span><span class="nc">flags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">FLAG_POST</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在dispatchLayout1的时候，表项1到9会添加上FLAG_PRE标记，接着在此处又添加上FLAG_POST标记，表项10添加了FLAG_APPEAR标记。所有的标记添加完后，最终会执行ViewInfoStore的process：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="n">ProcessCallback</span><span class="w"> </span><span class="n">callback</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mLayoutHolderMap</span><span class="p">.</span><span class="na">size</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">1</span><span class="p">;</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w"> </span><span class="n">index</span><span class="o">--</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">final</span><span class="w"> </span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ViewHolder</span><span class="w"> </span><span class="n">viewHolder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mLayoutHolderMap</span><span class="p">.</span><span class="na">keyAt</span><span class="p">(</span><span class="n">index</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">final</span><span class="w"> </span><span class="n">InfoRecord</span><span class="w"> </span><span class="n">record</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mLayoutHolderMap</span><span class="p">.</span><span class="na">removeAt</span><span class="p">(</span><span class="n">index</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">record</span><span class="p">.</span><span class="na">flags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">FLAG_PRE_AND_POST</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">FLAG_PRE_AND_POST</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// Persistent in both passes. Animate persistence</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">callback</span><span class="p">.</span><span class="na">processPersistent</span><span class="p">(</span><span class="n">viewHolder</span><span class="p">,</span><span class="w"> </span><span class="n">record</span><span class="p">.</span><span class="na">preInfo</span><span class="p">,</span><span class="w"> </span><span class="n">record</span><span class="p">.</span><span class="na">postInfo</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">  </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">record</span><span class="p">.</span><span class="na">flags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">FLAG_APPEAR</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// Scrap view. RecyclerView will handle removing/recycling this.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">InfoRecord</span><span class="p">.</span><span class="na">recycle</span><span class="p">(</span><span class="n">record</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里省略了无关紧要的代码，表项1到9会调用callback.processPersistent回调，表项10不做相关更新：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">processPersistent</span><span class="p">(</span><span class="n">ViewHolder</span><span class="w"> </span><span class="n">viewHolder</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ItemHolderInfo</span><span class="w"> </span><span class="n">preInfo</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ItemHolderInfo</span><span class="w"> </span><span class="n">postInfo</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">viewHolder</span><span class="p">.</span><span class="na">setIsRecyclable</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mDataSetHasChangedAfterLayout</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// since it was rebound, use change instead as we&#39;ll be mapping them from</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// stable ids. If stable ids were false, we would not be running any</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// animations</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mItemAnimator</span><span class="p">.</span><span class="na">animateChange</span><span class="p">(</span><span class="n">viewHolder</span><span class="p">,</span><span class="w"> </span><span class="n">viewHolder</span><span class="p">,</span><span class="w"> </span><span class="n">preInfo</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">postInfo</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">postAnimationRunner</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mItemAnimator</span><span class="p">.</span><span class="na">animatePersistence</span><span class="p">(</span><span class="n">viewHolder</span><span class="p">,</span><span class="w"> </span><span class="n">preInfo</span><span class="p">,</span><span class="w"> </span><span class="n">postInfo</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">postAnimationRunner</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>由于mDataSetHasChangedAfterLayout是在setAdapter中设置的，所以会走mItemAnimator.animateChange逻辑，在上面分析过，如果两个viewholder是同一个，则调用animateMove方法，而位置信息又不发生变化，所以animateChange返回false，因此也不会触发postAnimationRunner。</p>
+<p>recyclerview中只要被添加到页面上的viewholder，并且是scrap缓存中的，最终都会从scrap缓存中移除。而在上面的例子中，分析dispatchLayout2的时候总共有11个表项，分别是原来的表项0（存在于changeScrap缓存中），dispatchLayout1创建的表项10（存在于attachScrap中）。在dispatchLayout3做完动画后，会清空掉scrap缓存，也就是调用了mLayout.removeAndRecycleScrapInt方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">removeAndRecycleScrapInt</span><span class="p">(</span><span class="n">Recycler</span><span class="w"> </span><span class="n">recycler</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//省略代码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">recycler</span><span class="p">.</span><span class="na">clearScrap</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//省略代码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>最终会调用clearScrap来清空scrap缓存。</p>
+<p>关于删除表项的动画处理，可以看这里:<a class="link" href="https://juejin.cn/post/6895523568025600014"  target="_blank" rel="noopener"
+    >RecyclerView 动画原理 | 如何存储并应用动画属性值？</a></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Example Person
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.29.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
