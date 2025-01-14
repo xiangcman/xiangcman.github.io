@@ -7,7 +7,15 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
         <copyright>Example Person</copyright>
-        <lastBuildDate>Thu, 09 Jan 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/categories/%E6%BA%90%E7%A0%81/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Mon, 13 Jan 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/categories/%E6%BA%90%E7%A0%81/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>RecyclerView性能优化</title>
+        <link>https://example.com/p/recyclerview%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/</link>
+        <pubDate>Mon, 13 Jan 2025 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/recyclerview%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>RecyclerView动画原理</title>
         <link>https://example.com/p/recyclerview%E5%8A%A8%E7%94%BB%E5%8E%9F%E7%90%86/</link>
         <pubDate>Thu, 09 Jan 2025 00:00:00 +0000</pubDate>
@@ -516,7 +524,7 @@
 &lt;img src =&#34;调用recyclerview的onMeasure调用链.png&#34; width =700/&gt;&lt;/p&gt;
 &lt;p&gt;接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren&lt;/p&gt;
 &lt;img src =&#34;recyclerview在dispatchLayoutStep1.png&#34; width =700/&gt;
-&lt;p&gt;有动画的条件是：
+&lt;p&gt;有动画的条件是：&lt;/br&gt;
 &lt;img src =&#34;recyclerview动画判断.png&#34; width =700/&gt;&lt;/br&gt;
 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。
 &lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onLayoutChildren%E8%B0%83%E7%94%A8%E9%93%BE.png&#34;
@@ -1394,14 +1402,18 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 		data-flex-basis=&#34;414px&#34;
 	
 &gt;
-&lt;img src=&#34;https://example.com/%e5%8f%a6%e4%b8%80%e9%83%a8%e5%88%86%e6%97%a5%e5%bf%97-1.png&#34;
-	
-	
-	
+&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8F%A6%E4%B8%80%E9%83%A8%E5%88%86%E6%97%A5%E5%BF%97.png&#34;
+	width=&#34;2546&#34;
+	height=&#34;536&#34;
+	srcset=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8F%A6%E4%B8%80%E9%83%A8%E5%88%86%E6%97%A5%E5%BF%97_hu519445797529211195.png 480w, https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8F%A6%E4%B8%80%E9%83%A8%E5%88%86%E6%97%A5%E5%BF%97_hu281265756307938506.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;475&#34;
+		data-flex-basis=&#34;1140px&#34;
 	
 &gt;
 先是把页面上所有的都detach掉，然后又走了所有的viewholder的onbind过程，从索引为5的viewholder走了oncreateviewholder。下面看下trace：

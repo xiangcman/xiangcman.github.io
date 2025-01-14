@@ -403,7 +403,7 @@
 <img src ="调用recyclerview的onMeasure调用链.png" width =700/></p>
 <p>接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren</p>
 <img src ="recyclerview在dispatchLayoutStep1.png" width =700/>
-<p>有动画的条件是：
+<p>有动画的条件是：</br>
 <img src ="recyclerview动画判断.png" width =700/></br>
 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onLayoutChildren%E8%B0%83%E7%94%A8%E9%93%BE.png"
@@ -1281,14 +1281,18 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 		data-flex-basis="414px"
 	
 >
-<img src="/%e5%8f%a6%e4%b8%80%e9%83%a8%e5%88%86%e6%97%a5%e5%bf%97-1.png"
-	
-	
-	
+<img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8F%A6%E4%B8%80%E9%83%A8%E5%88%86%E6%97%A5%E5%BF%97.png"
+	width="2546"
+	height="536"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8F%A6%E4%B8%80%E9%83%A8%E5%88%86%E6%97%A5%E5%BF%97_hu519445797529211195.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8F%A6%E4%B8%80%E9%83%A8%E5%88%86%E6%97%A5%E5%BF%97_hu281265756307938506.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="475"
+		data-flex-basis="1140px"
 	
 >
 先是把页面上所有的都detach掉，然后又走了所有的viewholder的onbind过程，从索引为5的viewholder走了oncreateviewholder。下面看下trace：

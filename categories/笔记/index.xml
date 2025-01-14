@@ -123,6 +123,22 @@
 &lt;/h3&gt;&lt;p&gt;首先dispather它是CoroutineContext（上下文）的一部分，在协程启动过程中，会取CoroutineContext中的CoroutineDispathcer部分。此时会构造一个DispathedContinuation对象，并把前面取到的Dispather传到DispathedContinuation中，此时会将DispathedContinuation扔到线程池中，最终会执行DispathedContinuation的run方法，在run里面会执行到SuspendLambda，也就是协程的代码块，最终会执行它的invokeSuspend方法。所以协程代码块中代码要执行在哪个线程是协程上下文的dispather部分指定的线程。
 相关文档：&lt;a class=&#34;link&#34; href=&#34;https://www.xiangcman.fun/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;https://www.xiangcman.fun/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;linkedlist特性&#34;&gt;LinkedList特性
+&lt;/h3&gt;&lt;p&gt;LinkedList继承自Deque，它是一个双端队列，允许在队列的两端插入和删除元素。可以作为栈（LIFO）或队列（FIFO）使用。基于链表（双向链表）实现，可以高效地插入和删除元素。
+offer：给链表尾部插入元素，返回值表示是否插入成功
+peek：取出头部节点，如果没有则返回null
+poll：取出头部节点，如果没有则返回null，取完后并把头部节点从队列中移除
+remove：移除头部节点，如果没有头部节点则抛异常，有的话，则返回
+push：给链表头部插入元素，没有返回值
+pop：和remove一样的，都是移除头部节点，如果没有头部节点则抛异常，有的话，则返回&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果想实现队列的话，则使用offer和poll这一对方法；如果想实现栈的话，可以通过offerLast和pollLast来实现，或者通过offerFirst和pollFirst来实现。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;arraydeque特性&#34;&gt;ArrayDeque特性
+&lt;/h3&gt;&lt;p&gt;它也是继承自Deque，和LinkedList的特性一样的，只不过ArrayDeque是通过数组实现的双端队列，内部用一个数组来放所有的节点，并且有两个int值用来存放头结点和尾结点的索引。并且ArrayDeque内部的默认节点容量是16个，也可以初始化容量大小。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;区别：如果频繁要插入和删除操作，那么使用LinkedList，如果是查询情况比较多，可以优先使用ArrayDeque。&lt;/p&gt;
+&lt;/blockquote&gt;
 </description>
         </item>
         
