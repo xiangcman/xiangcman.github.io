@@ -725,13 +725,13 @@ allprojects主要是指所有的模块需要的三方依赖库时候的仓库
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;由于在setting.gradle执行前，Gradle对象其实已经生成，所以通过gradle对象的projectsLoaded回调获取初始化时间。第一次进入到beforeProject的时候记录配置的起始时间，并记录每一个project的配置起始时间，然后在afterProject中算出每一个project配置的时间。然后通过gradle.taskGraph来获取有序无向图，然后通过whenReady方法回调算出总的配置时间。最后通过有序无向图的beforeTask来添加task的开始和结束的执行时间来算出task的执行耗时。最后通过gradle的buildFinish来获取总共的构建时间。&lt;/p&gt;
-&lt;p&gt;参考：
+&lt;p&gt;参考：&lt;/br&gt;
 &lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6888977881679495175&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Gradle 爬坑指南 &amp;ndash; 概念初解、Grovvy 语法、常见 API&lt;/a&gt;
+    &gt;Gradle 爬坑指南 &amp;ndash; 概念初解、Grovvy 语法、常见 API&lt;/a&gt;&lt;/br&gt;
 &lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6889090530593112077&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;Gradle 爬坑指南 &amp;ndash; 理解 Plugin、Task、构建流程&lt;/a&gt;
+    &gt;Gradle 爬坑指南 &amp;ndash; 理解 Plugin、Task、构建流程&lt;/a&gt;&lt;/br&gt;
 &lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844904132092903437&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;深度探索 Gradle 自动化构建技术（三、Gradle 核心解密）&lt;/a&gt;&lt;/p&gt;
+    &gt;深度探索 Gradle 自动化构建技术（三、Gradle 核心解密）&lt;/a&gt;&lt;/br&gt;&lt;/p&gt;
 </description>
         </item>
         
