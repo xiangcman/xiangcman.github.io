@@ -304,6 +304,7 @@
         </li>
         <li><a href="#gradle插件">Gradle插件</a></li>
         <li><a href="#gradle构建过程">Gradle构建过程</a></li>
+        <li><a href="#gradle打包速度优化">gradle打包速度优化</a></li>
       </ol>
     </li>
   </ol>
@@ -374,7 +375,7 @@
 
 
                 <time class="article-time--reading">
-                    4 minute read
+                    5 minute read
                 </time>
             </div>
         
@@ -1101,7 +1102,117 @@ allprojects主要是指所有的模块需要的三方依赖库时候的仓库
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>由于在setting.gradle执行前，Gradle对象其实已经生成，所以通过gradle对象的projectsLoaded回调获取初始化时间。第一次进入到beforeProject的时候记录配置的起始时间，并记录每一个project的配置起始时间，然后在afterProject中算出每一个project配置的时间。然后通过gradle.taskGraph来获取有序无向图，然后通过whenReady方法回调算出总的配置时间。最后通过有序无向图的beforeTask来添加task的开始和结束的执行时间来算出task的执行耗时。最后通过gradle的buildFinish来获取总共的构建时间。</p>
-<p>参考：</br>
+<h3 id="gradle打包速度优化">gradle打包速度优化
+</h3><p>首先了解下安卓中的variant是什么意思，它表示一个包的变体，其中变体是由productFlavor（产品风味）和buildType（构建类型）组合而成的。其中productFlavor是由维度和渠道构成的，buildType指的是debug还是release，比如维度可以配置价格和渠道的两个维度，而渠道可以配置google、xiaomi等渠道：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-groovy" data-lang="groovy"><span class="line"><span class="cl"><span class="n">android</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 定义 buildTypes（构建类型）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">buildTypes</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">debug</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">minifyEnabled</span> <span class="kc">false</span>
+</span></span><span class="line"><span class="cl">            <span class="n">applicationIdSuffix</span> <span class="s2">&#34;.debug&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">release</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">minifyEnabled</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">            <span class="n">proguardFiles</span> <span class="nf">getDefaultProguardFile</span><span class="o">(</span><span class="s1">&#39;proguard-android-optimize.txt&#39;</span><span class="o">),</span> <span class="s1">&#39;proguard-rules.pro&#39;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 定义 productFlavors（产品风味）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">flavorDimensions</span> <span class="s1">&#39;channel&#39;</span><span class="o">,</span> <span class="s1">&#39;pricing&#39;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">productFlavors</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//配置渠道维度下两个变体
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">google</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">dimension</span> <span class="s1">&#39;channel&#39;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">xiaomi</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">dimension</span> <span class="s1">&#39;channel&#39;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//配置价格下两个变体
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">free</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">dimension</span> <span class="s1">&#39;pricing&#39;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">vip</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">dimension</span> <span class="s1">&#39;pricing&#39;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 在这里的 `productFlavors` 和 `buildTypes` 组合形成不同的 variants
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>所以上面通过维度和渠道组合后的productFlavor有googleFree、googleVip、xiaomiFree、xiaomiVip四个，再和buildType组合后，就是8个变体，分别是：</p>
+<ul>
+<li>googleFreeDebug</li>
+<li>googleFreeRelease</li>
+<li>googleVipDebug</li>
+<li>googleVipRelease</li>
+<li>xiaomiFreeDebug</li>
+<li>xiaomiFreeRelease</li>
+<li>xiaomiVipDebug</li>
+<li>xiaomiVipRelease</li>
+</ul>
+<p>知道了variant后，下面就是了解下打包了，一般通过build Analyze查看build过程中的一些警告，使用该工具需要先进行build，第二个工具是gradle profile工具，一般通过如下命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">./gradlew installGoogleFreeDebug --build-cache -x lint -x <span class="nb">test</span> --warning-mode<span class="o">=</span>none -Pkotlin.compiler.execution.strategy<span class="o">=</span>in-process -PcompilerArgs<span class="o">=</span>-Xlint:deprecation --no-configuration-cache --profile
+</span></span><span class="line"><span class="cl">adb shell am start -n 包名/应用主入口
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果通过adb命令启动主入口的话，需要在清单文件中给主入口加上<code>android:exported=&quot;true&quot;</code>属性，装包完了后，本地会生成一个html文件，该文件会有gradle每个阶段的耗时情况，并且会有每个task的耗时。</p>
+<p>再个就是gradle scan工具，一般通过如下命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">./gradlew installGoogleFreeDebug --build-cache -x lint -x <span class="nb">test</span> --warning-mode<span class="o">=</span>none -Pkotlin.compiler.execution.strategy<span class="o">=</span>in-process -PcompilerArgs<span class="o">=</span>-Xlint:deprecation --no-configuration-cache --scan
+</span></span><span class="line"><span class="cl">adb shell am start -n 包名/应用主入口
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>scan会生成一个在线的网页，第一次使用需要邮箱校验，它的信息比profile更全面，更加智能，其中performance跟profile中效果差不多，它多了timeline选项，表示什么时候执行了什么task，switchs选项表示一些建议，比如缓存没开，会提示off。</br>
+其实gradle优化最直接是通过组件化来开发，如果全app编译的话，组件越多，需要的时间越长，所以通过组件化来降低打包时间是最直接的，把一些其他依赖的组件通过aar进行依赖或远程依赖。</br>
+参考：</br>
 <a class="link" href="https://juejin.cn/post/6888977881679495175"  target="_blank" rel="noopener"
     >Gradle 爬坑指南 &ndash; 概念初解、Grovvy 语法、常见 API</a></br>
 <a class="link" href="https://juejin.cn/post/6889090530593112077"  target="_blank" rel="noopener"

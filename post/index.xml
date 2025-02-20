@@ -7,7 +7,412 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
         <copyright>Example Person</copyright>
-        <lastBuildDate>Mon, 10 Feb 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/post/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Wed, 19 Feb 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/post/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>mac下快速写一个脚本</title>
+        <link>https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/</link>
+        <pubDate>Wed, 19 Feb 2025 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/</guid>
+        <description>&lt;h3 id=&#34;创建脚本&#34;&gt;创建脚本
+&lt;/h3&gt;&lt;p&gt;首先在终端下创建一个脚本文件&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;touch apkcompare
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;给脚本赋予执行权限&#34;&gt;给脚本赋予执行权限
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;chmod +x apkcompare
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;打开脚本&#34;&gt;打开脚本
+&lt;/h3&gt;&lt;p&gt;使用zsh中装的sublime插件打开脚本文件&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;st apkcompare
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;编辑脚本内容&#34;&gt;编辑脚本内容
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#!/bin/bash
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;请输入改变前的apk路径：&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;read&lt;/span&gt; path1
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;请输入改变后的apk路径：&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;read&lt;/span&gt; path2
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; /Users/xiangcheng/downloads
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;java -jar apkcompare-1.0.jar &lt;span class=&#34;nv&#34;&gt;$path1&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$path2&lt;/span&gt; compare_result_file
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;执行脚本&#34;&gt;执行脚本
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;./apkcompare
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;将脚本定制成应用&#34;&gt;将脚本定制成应用
+&lt;/h3&gt;&lt;p&gt;平时使用shell脚本的时候，每次都要找到shell脚本的执行文件非常麻烦，然后想到如果能将shell脚本制作成一个应用那就非常nice了。&lt;/br&gt;
+下面就以平时用的比较多的反编译脚本&lt;a class=&#34;link&#34; href=&#34;https://github.com/skylot/jadx&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;jadx&lt;/a&gt;为例来实践。&lt;/p&gt;
+&lt;h4 id=&#34;先通过alfred工具搜索出本机的automator工具&#34;&gt;先通过Alfred工具搜索出本机的&lt;code&gt;Automator&lt;/code&gt;工具：
+&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2Automator%E5%B7%A5%E5%85%B7.png&#34;
+	width=&#34;1436&#34;
+	height=&#34;298&#34;
+	srcset=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2Automator%E5%B7%A5%E5%85%B7_hu13576890229934251208.png 480w, https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2Automator%E5%B7%A5%E5%85%B7_hu2821974695366956086.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;481&#34;
+		data-flex-basis=&#34;1156px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h4 id=&#34;选取应用程序&#34;&gt;选取应用程序
+&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E5%8F%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F.png&#34;
+	width=&#34;1074&#34;
+	height=&#34;954&#34;
+	srcset=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E5%8F%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F_hu7383789163043902577.png 480w, https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E5%8F%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F_hu4829022659480578753.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;112&#34;
+		data-flex-basis=&#34;270px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h4 id=&#34;添加shell脚本&#34;&gt;添加shell脚本
+&lt;/h4&gt;&lt;ol&gt;
+&lt;li&gt;在左侧搜索 “运行 Shell 脚本”（Run Shell Script）。
+&lt;img src=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2shell%E8%84%9A%E6%9C%AC.png&#34;
+	width=&#34;2000&#34;
+	height=&#34;1768&#34;
+	srcset=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2shell%E8%84%9A%E6%9C%AC_hu781375108408735742.png 480w, https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2shell%E8%84%9A%E6%9C%AC_hu14615199015857252835.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;113&#34;
+		data-flex-basis=&#34;271px&#34;
+	
+&gt;&lt;/li&gt;
+&lt;li&gt;拖动到右侧工作区。
+&lt;img src=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%8B%96%E5%8A%A8shell%E8%84%9A%E6%9C%AC%E5%88%B0%E5%8F%B3%E4%BE%A7.png&#34;
+	width=&#34;1998&#34;
+	height=&#34;1756&#34;
+	srcset=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%8B%96%E5%8A%A8shell%E8%84%9A%E6%9C%AC%E5%88%B0%E5%8F%B3%E4%BE%A7_hu11765521415516910728.png 480w, https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%8B%96%E5%8A%A8shell%E8%84%9A%E6%9C%AC%E5%88%B0%E5%8F%B3%E4%BE%A7_hu11696295268397146098.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;113&#34;
+		data-flex-basis=&#34;273px&#34;
+	
+&gt;&lt;/li&gt;
+&lt;li&gt;在 Shell 选项里，选择 /bin/bash（或 /bin/zsh）。
+&lt;img src=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E6%8B%A9shell%E7%B1%BB%E5%9E%8B.png&#34;
+	width=&#34;1220&#34;
+	height=&#34;356&#34;
+	srcset=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E6%8B%A9shell%E7%B1%BB%E5%9E%8B_hu16876359859905355104.png 480w, https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E6%8B%A9shell%E7%B1%BB%E5%9E%8B_hu10732417014375881329.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;342&#34;
+		data-flex-basis=&#34;822px&#34;
+	
+&gt;&lt;/li&gt;
+&lt;li&gt;在文本框里输入如下代码：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#!/bin/bash
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;&lt;/span&gt;/opt/homebrew/Cellar/jadx/1.5.1/bin/jadx-gui
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%86%85%E5%AE%B9%E5%8C%BA%E5%9F%9F%E5%A1%AB%E4%B8%8A%E8%84%9A%E6%9C%AC%E8%A6%81%E6%89%A7%E8%A1%8C%E7%9A%84%E5%86%85%E5%AE%B9.png&#34;
+	width=&#34;1240&#34;
+	height=&#34;370&#34;
+	srcset=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%86%85%E5%AE%B9%E5%8C%BA%E5%9F%9F%E5%A1%AB%E4%B8%8A%E8%84%9A%E6%9C%AC%E8%A6%81%E6%89%A7%E8%A1%8C%E7%9A%84%E5%86%85%E5%AE%B9_hu8520234096856523437.png 480w, https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%86%85%E5%AE%B9%E5%8C%BA%E5%9F%9F%E5%A1%AB%E4%B8%8A%E8%84%9A%E6%9C%AC%E8%A6%81%E6%89%A7%E8%A1%8C%E7%9A%84%E5%86%85%E5%AE%B9_hu15242097777827069684.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;335&#34;
+		data-flex-basis=&#34;804px&#34;
+	
+&gt;
+我是通过homebrew装的jadx工具，所以指定下自己的jadx目录。&lt;/br&gt;&lt;/p&gt;
+&lt;h4 id=&#34;保存应用&#34;&gt;保存应用
+&lt;/h4&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%AD%98%E5%82%A8%E5%BA%94%E7%94%A8.png&#34;
+	width=&#34;2000&#34;
+	height=&#34;1806&#34;
+	srcset=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%AD%98%E5%82%A8%E5%BA%94%E7%94%A8_hu11487500343413603622.png 480w, https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%AD%98%E5%82%A8%E5%BA%94%E7%94%A8_hu5754731901232872703.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;110&#34;
+		data-flex-basis=&#34;265px&#34;
+	
+&gt;
+&lt;img src=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E8%BE%93%E5%85%A5%E5%BA%94%E7%94%A8%E7%9A%84%E5%90%8D%E5%AD%97.png&#34;
+	width=&#34;1986&#34;
+	height=&#34;1740&#34;
+	srcset=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E8%BE%93%E5%85%A5%E5%BA%94%E7%94%A8%E7%9A%84%E5%90%8D%E5%AD%97_hu14553101990345728185.png 480w, https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E8%BE%93%E5%85%A5%E5%BA%94%E7%94%A8%E7%9A%84%E5%90%8D%E5%AD%97_hu12867887965541032475.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;114&#34;
+		data-flex-basis=&#34;273px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;给应用定制图标&#34;&gt;给应用定制图标
+&lt;/h3&gt;&lt;p&gt;mac下应用的图标都是通过应用下的Info.plist文件来控制的：
+&lt;img src=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E7%9A%84%E5%9B%BE%E6%A0%87%E5%AD%97%E6%AE%B5.png&#34;
+	width=&#34;1902&#34;
+	height=&#34;1492&#34;
+	srcset=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E7%9A%84%E5%9B%BE%E6%A0%87%E5%AD%97%E6%AE%B5_hu2268879132930354375.png 480w, https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E7%9A%84%E5%9B%BE%E6%A0%87%E5%AD%97%E6%AE%B5_hu15258672040487590265.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;127&#34;
+		data-flex-basis=&#34;305px&#34;
+	
+&gt;
+它是通过CFBundleIconFile字段控制的，这里我把图标放在了应用的Resources文件下：
+&lt;img src=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E5%9B%BE%E6%A0%87%E7%9A%84%E4%BD%8D%E7%BD%AE.png&#34;
+	width=&#34;2374&#34;
+	height=&#34;1010&#34;
+	srcset=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E5%9B%BE%E6%A0%87%E7%9A%84%E4%BD%8D%E7%BD%AE_hu5856973507782400123.png 480w, https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E5%9B%BE%E6%A0%87%E7%9A%84%E4%BD%8D%E7%BD%AE_hu2639029172732527205.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;235&#34;
+		data-flex-basis=&#34;564px&#34;
+	
+&gt;
+可以看到需要一个.icns的文件，这里我是通过在线网站&lt;a class=&#34;link&#34; href=&#34;https://cloudconvert.com/png-to-icns&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://cloudconvert.com/png-to-icns&lt;/a&gt;来实现png-&amp;gt;icns的。一切替换完后，还需要刷新 Launch Services，否则 macOS 可能不会立刻识别新图标，执行如下脚本：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;touch /Applications/Jadx.app
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;killall Finder
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;我在chatgpt搜索的时候，它是通过&lt;code&gt;touch ~/Applications/Jadx.app&lt;/code&gt;来执行的，但是我发现我的Jadx.app是在如下目录：
+&lt;img src=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/Jadx%E5%BA%94%E7%94%A8%E7%9A%84%E4%BD%8D%E7%BD%AE.png&#34;
+	width=&#34;1088&#34;
+	height=&#34;112&#34;
+	srcset=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/Jadx%E5%BA%94%E7%94%A8%E7%9A%84%E4%BD%8D%E7%BD%AE_hu8631475480901247838.png 480w, https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/Jadx%E5%BA%94%E7%94%A8%E7%9A%84%E4%BD%8D%E7%BD%AE_hu10782278666947502510.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;971&#34;
+		data-flex-basis=&#34;2331px&#34;
+	
+&gt;
+所以不用定位到Users/用户名，要不然会报错找不到Jadx应用。这里提一句mac下&lt;code&gt;~&lt;/code&gt;表示的目录是&lt;code&gt;Users/用户名&lt;/code&gt;，比如我的如下：
+&lt;img src=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/~%E8%A1%A8%E7%A4%BAUsers:%E7%94%A8%E6%88%B7%E5%90%8D.png&#34;
+	width=&#34;884&#34;
+	height=&#34;344&#34;
+	srcset=&#34;https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/~%E8%A1%A8%E7%A4%BAUsers:%E7%94%A8%E6%88%B7%E5%90%8D_hu13844569872443408533.png 480w, https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/~%E8%A1%A8%E7%A4%BAUsers:%E7%94%A8%E6%88%B7%E5%90%8D_hu3699519055810490239.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;256&#34;
+		data-flex-basis=&#34;616px&#34;
+	
+&gt;
+操作完后，一个带图标的shell脚本的应用就创建成功了。&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>booster源码分析</title>
+        <link>https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</link>
+        <pubDate>Mon, 17 Feb 2025 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</guid>
+        <description>&lt;p&gt;booster是基于gradle transform、asm进行字节码操作的框架，内部有很多gradle transform来操作对应的字节码，首先我们将对应的插件依赖进来，我们以toast插件替换为测试，看下效果&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-groovy&#34; data-lang=&#34;groovy&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;buildscript&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;ext&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;plugin_version&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;0.3.0&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;booster_version&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;1.0.0&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//    ext.plugin_version = &amp;#34;0.3.0&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;repositories&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;google&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;jcenter&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;maven&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;url&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;https://artifact.bytedance.com/repository/byteX/&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;dependencies&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;classpath&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;com.android.tools.build:gradle:3.5.3&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;//booster
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;classpath&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;com.didiglobal.booster:booster-gradle-plugin:$booster_version&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;//booster toast插件
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;classpath&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;com.didiglobal.booster:booster-transform-toast:$booster_version&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;//bytex base
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//        classpath &amp;#34;com.bytedance.android.byteX:base-plugin:${plugin_version}&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;c1&#34;&gt;// Add bytex plugins&amp;#39; dependencies on demand. 按需添加插件依赖
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//        classpath &amp;#34;com.bytedance.android.byteX:method-call-opt-plugin:${plugin_version}&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;c1&#34;&gt;// NOTE: Do not place your application dependencies here; they belong
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;c1&#34;&gt;// in the individual module build.gradle files
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;然后使用插件：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-groovy&#34; data-lang=&#34;groovy&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;apply&lt;/span&gt; &lt;span class=&#34;nl&#34;&gt;plugin:&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;com.android.application&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;apply&lt;/span&gt; &lt;span class=&#34;nl&#34;&gt;plugin:&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;com.didiglobal.booster&amp;#39;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// ③
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;在MainActivity中添加如下代码：
+&lt;img src=&#34;https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/booster%E4%B8%ADtoast%E6%8F%92%E4%BB%B6%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81.png&#34;
+	width=&#34;1930&#34;
+	height=&#34;1746&#34;
+	srcset=&#34;https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/booster%E4%B8%ADtoast%E6%8F%92%E4%BB%B6%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81_hu10683299051695701293.png 480w, https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/booster%E4%B8%ADtoast%E6%8F%92%E4%BB%B6%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81_hu7864296268837971217.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;110&#34;
+		data-flex-basis=&#34;265px&#34;
+	
+&gt;
+然后看编译后的类，这里有个细节，大家得熟悉打包流程，javac编译成class后，然后把class转化成dex文件，transform就是作用于class转成dex之间，所以如果看javac之后的class是看不到最终toast插件作用的效果，需要反编译看最终的apk或者dex文件：
+&lt;img src=&#34;https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8F%8D%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class.png&#34;
+	width=&#34;2390&#34;
+	height=&#34;1558&#34;
+	srcset=&#34;https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8F%8D%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class_hu14671158599456049863.png 480w, https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8F%8D%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class_hu15421142697038522178.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;153&#34;
+		data-flex-basis=&#34;368px&#34;
+	
+&gt;
+可以看到此时是替换成了ShadowToast中的show方法了。下面结合源码看下booster如何做到class替换的，本次通过gradle下载的插件源码来分析，booster插件下载的地址在&lt;code&gt;/Users/xiangcheng/.gralde/cache/modules-2/files-2.1/com.didiglobal.booster&lt;/code&gt;下：
+&lt;img src=&#34;https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/gradle%E4%B8%AD%E4%B8%8B%E8%BD%BD%E7%9A%84booster%E6%8F%92%E4%BB%B6%E4%BD%8D%E7%BD%AE.png&#34;
+	width=&#34;2916&#34;
+	height=&#34;1294&#34;
+	srcset=&#34;https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/gradle%E4%B8%AD%E4%B8%8B%E8%BD%BD%E7%9A%84booster%E6%8F%92%E4%BB%B6%E4%BD%8D%E7%BD%AE_hu5123805727021410466.png 480w, https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/gradle%E4%B8%AD%E4%B8%8B%E8%BD%BD%E7%9A%84booster%E6%8F%92%E4%BB%B6%E4%BD%8D%E7%BD%AE_hu11125841290776928757.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;225&#34;
+		data-flex-basis=&#34;540px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;booster-gradle-plugin&#34;&gt;booster-gradle-plugin
+&lt;/h3&gt;&lt;p&gt;是booster定义插件的模块，下面打开它的源码，找到它的plugin：&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>asm修改字节码初体验</title>
         <link>https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/</link>
         <pubDate>Mon, 10 Feb 2025 00:00:00 +0000</pubDate>
@@ -592,7 +997,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;可以结合上面的反编译的字节码，对应着看asm的操作。最后asm操作完后，就是通过输出流把byte数组写会到文件中。&lt;/p&gt;
-&lt;p&gt;参考:
+&lt;p&gt;参考:&lt;/br&gt;
 &lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6999646242125529096&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;Android 进阶之路：ASM 修改字节码，这样学就对了！&lt;/a&gt;&lt;/br&gt;
 &lt;a class=&#34;link&#34; href=&#34;https://repository.ow2.org/nexus/#nexus-search;quick~asm&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
@@ -700,13 +1105,33 @@
 		data-flex-basis=&#34;351px&#34;
 	
 &gt;&lt;/p&gt;
-&lt;h3 id=&#34;使用对应版本&#34;&gt;使用对应版本
+&lt;h3 id=&#34;切换全局的jdk版本&#34;&gt;切换全局的jdk版本
 &lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
 &lt;td class=&#34;lntd&#34;&gt;
 &lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;jenv global &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;当前-shell-切换-jdk&#34;&gt;当前 shell 切换 JDK
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;jenv shell &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;项目目录指定-jdk&#34;&gt;项目目录指定 JDK
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; ~/my_project
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;jenv &lt;span class=&#34;nb&#34;&gt;local&lt;/span&gt; &lt;span class=&#34;m&#34;&gt;18&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;</description>
@@ -1475,7 +1900,117 @@ allprojects主要是指所有的模块需要的三方依赖库时候的仓库
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;由于在setting.gradle执行前，Gradle对象其实已经生成，所以通过gradle对象的projectsLoaded回调获取初始化时间。第一次进入到beforeProject的时候记录配置的起始时间，并记录每一个project的配置起始时间，然后在afterProject中算出每一个project配置的时间。然后通过gradle.taskGraph来获取有序无向图，然后通过whenReady方法回调算出总的配置时间。最后通过有序无向图的beforeTask来添加task的开始和结束的执行时间来算出task的执行耗时。最后通过gradle的buildFinish来获取总共的构建时间。&lt;/p&gt;
-&lt;p&gt;参考：&lt;/br&gt;
+&lt;h3 id=&#34;gradle打包速度优化&#34;&gt;gradle打包速度优化
+&lt;/h3&gt;&lt;p&gt;首先了解下安卓中的variant是什么意思，它表示一个包的变体，其中变体是由productFlavor（产品风味）和buildType（构建类型）组合而成的。其中productFlavor是由维度和渠道构成的，buildType指的是debug还是release，比如维度可以配置价格和渠道的两个维度，而渠道可以配置google、xiaomi等渠道：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;28
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;29
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;30
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;31
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;32
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;33
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-groovy&#34; data-lang=&#34;groovy&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;android&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;c1&#34;&gt;// 定义 buildTypes（构建类型）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;buildTypes&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;debug&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;minifyEnabled&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;applicationIdSuffix&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;.debug&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;release&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;minifyEnabled&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;proguardFiles&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;getDefaultProguardFile&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;proguard-android-optimize.txt&amp;#39;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;proguard-rules.pro&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;c1&#34;&gt;// 定义 productFlavors（产品风味）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;flavorDimensions&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;channel&amp;#39;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;pricing&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;productFlavors&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;//配置渠道维度下两个变体
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;google&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;dimension&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;channel&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;xiaomi&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;dimension&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;channel&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;//配置价格下两个变体
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;free&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;             &lt;span class=&#34;n&#34;&gt;dimension&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;pricing&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;vip&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;             &lt;span class=&#34;n&#34;&gt;dimension&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;pricing&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;c1&#34;&gt;// 在这里的 `productFlavors` 和 `buildTypes` 组合形成不同的 variants
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;所以上面通过维度和渠道组合后的productFlavor有googleFree、googleVip、xiaomiFree、xiaomiVip四个，再和buildType组合后，就是8个变体，分别是：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;googleFreeDebug&lt;/li&gt;
+&lt;li&gt;googleFreeRelease&lt;/li&gt;
+&lt;li&gt;googleVipDebug&lt;/li&gt;
+&lt;li&gt;googleVipRelease&lt;/li&gt;
+&lt;li&gt;xiaomiFreeDebug&lt;/li&gt;
+&lt;li&gt;xiaomiFreeRelease&lt;/li&gt;
+&lt;li&gt;xiaomiVipDebug&lt;/li&gt;
+&lt;li&gt;xiaomiVipRelease&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;知道了variant后，下面就是了解下打包了，一般通过build Analyze查看build过程中的一些警告，使用该工具需要先进行build，第二个工具是gradle profile工具，一般通过如下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;./gradlew installGoogleFreeDebug --build-cache -x lint -x &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; --warning-mode&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;none -Pkotlin.compiler.execution.strategy&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;in-process -PcompilerArgs&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;-Xlint:deprecation --no-configuration-cache --profile
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;adb shell am start -n 包名/应用主入口
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;如果通过adb命令启动主入口的话，需要在清单文件中给主入口加上&lt;code&gt;android:exported=&amp;quot;true&amp;quot;&lt;/code&gt;属性，装包完了后，本地会生成一个html文件，该文件会有gradle每个阶段的耗时情况，并且会有每个task的耗时。&lt;/p&gt;
+&lt;p&gt;再个就是gradle scan工具，一般通过如下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;./gradlew installGoogleFreeDebug --build-cache -x lint -x &lt;span class=&#34;nb&#34;&gt;test&lt;/span&gt; --warning-mode&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;none -Pkotlin.compiler.execution.strategy&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;in-process -PcompilerArgs&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;-Xlint:deprecation --no-configuration-cache --scan
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;adb shell am start -n 包名/应用主入口
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;scan会生成一个在线的网页，第一次使用需要邮箱校验，它的信息比profile更全面，更加智能，其中performance跟profile中效果差不多，它多了timeline选项，表示什么时候执行了什么task，switchs选项表示一些建议，比如缓存没开，会提示off。&lt;/br&gt;
+其实gradle优化最直接是通过组件化来开发，如果全app编译的话，组件越多，需要的时间越长，所以通过组件化来降低打包时间是最直接的，把一些其他依赖的组件通过aar进行依赖或远程依赖。&lt;/br&gt;
+参考：&lt;/br&gt;
 &lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6888977881679495175&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;Gradle 爬坑指南 &amp;ndash; 概念初解、Grovvy 语法、常见 API&lt;/a&gt;&lt;/br&gt;
 &lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6889090530593112077&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
@@ -1585,7 +2120,42 @@ allprojects主要是指所有的模块需要的三方依赖库时候的仓库
     &gt;Android 进阶之路：ASM 修改字节码，这样学就对了！&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;gradle相关&#34;&gt;Gradle相关
-&lt;/h3&gt;&lt;h3 id=&#34;大佬博客系列&#34;&gt;大佬博客系列
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6882178101191639053&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Gradle 爬坑指南 &amp;ndash; 导论&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6888977881679495175&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Gradle 爬坑指南 &amp;ndash; 概念初解、Grovvy 语法、常见 API&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6889090530593112077&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Gradle 爬坑指南 &amp;ndash; 理解 Plugin、Task、构建流程&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6890549273105006600&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Gradle 爬坑指南 &amp;ndash; Gradle 核心模型、Hook 函数、ext 扩展属性、Project API&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844904122492125198&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;深度探索 Gradle 自动化构建技术（一、Gradle 核心配置篇）&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844904128594853902&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;深度探索 Gradle 自动化构建技术（二、Groovy 筑基篇）&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844904132092903437&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;深度探索 Gradle 自动化构建技术（三、Gradle 核心解密）&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844904135314128903&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;深度探索 Gradle 自动化构建技术（四、自定义 Gradle 插件）&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844904142725447687&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;深度探索 Gradle 自动化构建技术（五、Gradle 插件架构实现原理剖析 — 上）&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844904142717075469&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;深度探索 Gradle 自动化构建技术（五、Gradle 插件架构实现原理剖析 — 下）&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844904202393960455&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;深入探索 Gradle 自动化构建技术（九、Gradle 插件平台化框架 ByteX 探秘之旅）&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;设计模式相关&#34;&gt;设计模式相关
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/7198700701952983100&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Java常用设计模式(一)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/7199907126688825400&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Java常用设计模式(二)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/7202820042688528445&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Java常用设计模式(三)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://blog.csdn.net/zhaokaiqiang1992/article/details/50285021?spm=1001.2014.3001.5502&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;《Android源码设计模式解析》读书笔记——Android中你应该知道的设计模式&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;大佬博客系列&#34;&gt;大佬博客系列
 &lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://blog.csdn.net/Luoshengyang?type=blog&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;老罗&lt;/a&gt;&lt;/li&gt;
@@ -1593,6 +2163,7 @@ allprojects主要是指所有的模块需要的三方依赖库时候的仓库
     &gt;Gracker&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/user/668101431009496/posts&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;程序员江同学&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;&#34; &gt;&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 </description>
         </item>
@@ -7769,6 +8340,56 @@ pop：和remove一样的，都是移除头部节点，如果没有头部节点�
 &lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;Bytecode-Viewer-2.12.jar&#34; &gt;Bytecode-Viewer-2.12.jar&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;来源:&lt;a class=&#34;link&#34; href=&#34;https://github.com/Konloch/bytecode-viewer&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;https://github.com/Konloch/bytecode-viewer&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;rectangle窗口大小调整&#34;&gt;Rectangle窗口大小调整
+&lt;/h3&gt;&lt;p&gt;Rectangle是一个在mac上动态调整应用窗口的工具，比如我想在屏幕上同时展示多个应用，这个工具使用上非常好用。&lt;/br&gt;
+&lt;a class=&#34;link&#34; href=&#34;https://rectangleapp.com/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Rectangle下载&lt;/a&gt;&lt;/br&gt;
+&lt;img src=&#34;https://example.com/p/%E5%B7%A5%E5%85%B7%E6%95%B4%E7%90%86/rectangle%E6%88%AA%E5%9B%BE.png&#34;
+	width=&#34;416&#34;
+	height=&#34;1590&#34;
+	srcset=&#34;https://example.com/p/%E5%B7%A5%E5%85%B7%E6%95%B4%E7%90%86/rectangle%E6%88%AA%E5%9B%BE_hu18196838233251261495.png 480w, https://example.com/p/%E5%B7%A5%E5%85%B7%E6%95%B4%E7%90%86/rectangle%E6%88%AA%E5%9B%BE_hu10806440589578457417.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;26&#34;
+		data-flex-basis=&#34;62px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;alfred工具&#34;&gt;Alfred工具
+&lt;/h3&gt;&lt;p&gt;Alfred是一款在mac上全局搜索的工具，能指定搜索文件、文件夹、应用的一款工具。&lt;/br&gt;
+建议你在设置中将要搜索的文件类型给勾选住：
+&lt;img src=&#34;https://example.com/p/%E5%B7%A5%E5%85%B7%E6%95%B4%E7%90%86/Alfred%E5%B7%A5%E5%85%B7%E8%AE%BE%E7%BD%AE.png&#34;
+	width=&#34;2362&#34;
+	height=&#34;1556&#34;
+	srcset=&#34;https://example.com/p/%E5%B7%A5%E5%85%B7%E6%95%B4%E7%90%86/Alfred%E5%B7%A5%E5%85%B7%E8%AE%BE%E7%BD%AE_hu7768199027905866653.png 480w, https://example.com/p/%E5%B7%A5%E5%85%B7%E6%95%B4%E7%90%86/Alfred%E5%B7%A5%E5%85%B7%E8%AE%BE%E7%BD%AE_hu16197585396581491270.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;151&#34;
+		data-flex-basis=&#34;364px&#34;
+	
+&gt;
+关于更多使用看官网，我的快捷键是双击command：
+&lt;img src=&#34;https://example.com/p/%E5%B7%A5%E5%85%B7%E6%95%B4%E7%90%86/Alfred%E5%BF%AB%E6%8D%B7%E9%94%AE%E8%AE%BE%E7%BD%AE.png&#34;
+	width=&#34;2336&#34;
+	height=&#34;1516&#34;
+	srcset=&#34;https://example.com/p/%E5%B7%A5%E5%85%B7%E6%95%B4%E7%90%86/Alfred%E5%BF%AB%E6%8D%B7%E9%94%AE%E8%AE%BE%E7%BD%AE_hu7930148657953472419.png 480w, https://example.com/p/%E5%B7%A5%E5%85%B7%E6%95%B4%E7%90%86/Alfred%E5%BF%AB%E6%8D%B7%E9%94%AE%E8%AE%BE%E7%BD%AE_hu17547726911130143510.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;154&#34;
+		data-flex-basis=&#34;369px&#34;
+	
+&gt;&lt;/p&gt;
 &lt;h3 id=&#34;动画差值器&#34;&gt;动画差值器
 &lt;/h3&gt;&lt;p&gt;在线预览：&lt;a class=&#34;link&#34; href=&#34;https://inloop.github.io/interpolator/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;https://inloop.github.io/interpolator/&lt;/a&gt;&lt;/p&gt;

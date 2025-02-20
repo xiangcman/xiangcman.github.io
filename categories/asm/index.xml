@@ -7,7 +7,134 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
         <copyright>Example Person</copyright>
-        <lastBuildDate>Mon, 10 Feb 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/categories/asm/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Mon, 17 Feb 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/categories/asm/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>booster源码分析</title>
+        <link>https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</link>
+        <pubDate>Mon, 17 Feb 2025 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</guid>
+        <description>&lt;p&gt;booster是基于gradle transform、asm进行字节码操作的框架，内部有很多gradle transform来操作对应的字节码，首先我们将对应的插件依赖进来，我们以toast插件替换为测试，看下效果&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-groovy&#34; data-lang=&#34;groovy&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;buildscript&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;ext&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;plugin_version&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;0.3.0&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;booster_version&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;1.0.0&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//    ext.plugin_version = &amp;#34;0.3.0&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;repositories&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;google&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;jcenter&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;maven&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;url&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;https://artifact.bytedance.com/repository/byteX/&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;dependencies&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;classpath&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;com.android.tools.build:gradle:3.5.3&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;//booster
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;classpath&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;com.didiglobal.booster:booster-gradle-plugin:$booster_version&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;//booster toast插件
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;classpath&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;com.didiglobal.booster:booster-transform-toast:$booster_version&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;//bytex base
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//        classpath &amp;#34;com.bytedance.android.byteX:base-plugin:${plugin_version}&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;c1&#34;&gt;// Add bytex plugins&amp;#39; dependencies on demand. 按需添加插件依赖
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//        classpath &amp;#34;com.bytedance.android.byteX:method-call-opt-plugin:${plugin_version}&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;c1&#34;&gt;// NOTE: Do not place your application dependencies here; they belong
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;c1&#34;&gt;// in the individual module build.gradle files
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;然后使用插件：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-groovy&#34; data-lang=&#34;groovy&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;apply&lt;/span&gt; &lt;span class=&#34;nl&#34;&gt;plugin:&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;com.android.application&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;apply&lt;/span&gt; &lt;span class=&#34;nl&#34;&gt;plugin:&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;com.didiglobal.booster&amp;#39;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// ③
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;在MainActivity中添加如下代码：
+&lt;img src=&#34;https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/booster%E4%B8%ADtoast%E6%8F%92%E4%BB%B6%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81.png&#34;
+	width=&#34;1930&#34;
+	height=&#34;1746&#34;
+	srcset=&#34;https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/booster%E4%B8%ADtoast%E6%8F%92%E4%BB%B6%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81_hu10683299051695701293.png 480w, https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/booster%E4%B8%ADtoast%E6%8F%92%E4%BB%B6%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81_hu7864296268837971217.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;110&#34;
+		data-flex-basis=&#34;265px&#34;
+	
+&gt;
+然后看编译后的类，这里有个细节，大家得熟悉打包流程，javac编译成class后，然后把class转化成dex文件，transform就是作用于class转成dex之间，所以如果看javac之后的class是看不到最终toast插件作用的效果，需要反编译看最终的apk或者dex文件：
+&lt;img src=&#34;https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8F%8D%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class.png&#34;
+	width=&#34;2390&#34;
+	height=&#34;1558&#34;
+	srcset=&#34;https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8F%8D%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class_hu14671158599456049863.png 480w, https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E5%8F%8D%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class_hu15421142697038522178.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;153&#34;
+		data-flex-basis=&#34;368px&#34;
+	
+&gt;
+可以看到此时是替换成了ShadowToast中的show方法了。下面结合源码看下booster如何做到class替换的，本次通过gradle下载的插件源码来分析，booster插件下载的地址在&lt;code&gt;/Users/xiangcheng/.gralde/cache/modules-2/files-2.1/com.didiglobal.booster&lt;/code&gt;下：
+&lt;img src=&#34;https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/gradle%E4%B8%AD%E4%B8%8B%E8%BD%BD%E7%9A%84booster%E6%8F%92%E4%BB%B6%E4%BD%8D%E7%BD%AE.png&#34;
+	width=&#34;2916&#34;
+	height=&#34;1294&#34;
+	srcset=&#34;https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/gradle%E4%B8%AD%E4%B8%8B%E8%BD%BD%E7%9A%84booster%E6%8F%92%E4%BB%B6%E4%BD%8D%E7%BD%AE_hu5123805727021410466.png 480w, https://example.com/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/gradle%E4%B8%AD%E4%B8%8B%E8%BD%BD%E7%9A%84booster%E6%8F%92%E4%BB%B6%E4%BD%8D%E7%BD%AE_hu11125841290776928757.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;225&#34;
+		data-flex-basis=&#34;540px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;booster-gradle-plugin&#34;&gt;booster-gradle-plugin
+&lt;/h3&gt;&lt;p&gt;是booster定义插件的模块，下面打开它的源码，找到它的plugin：&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>asm修改字节码初体验</title>
         <link>https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/</link>
         <pubDate>Mon, 10 Feb 2025 00:00:00 +0000</pubDate>
@@ -592,7 +719,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;可以结合上面的反编译的字节码，对应着看asm的操作。最后asm操作完后，就是通过输出流把byte数组写会到文件中。&lt;/p&gt;
-&lt;p&gt;参考:
+&lt;p&gt;参考:&lt;/br&gt;
 &lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6999646242125529096&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;Android 进阶之路：ASM 修改字节码，这样学就对了！&lt;/a&gt;&lt;/br&gt;
 &lt;a class=&#34;link&#34; href=&#34;https://repository.ow2.org/nexus/#nexus-search;quick~asm&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
