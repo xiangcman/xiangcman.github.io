@@ -290,6 +290,8 @@
     <li>
       <ol>
         <li><a href="#booster-gradle-plugin">booster-gradle-plugin</a></li>
+        <li><a href="#booster-transform-asm">booster-transform-asm</a></li>
+        <li><a href="#booster-transform-toast">booster-transform-toast</a></li>
       </ol>
     </li>
   </ol>
@@ -372,7 +374,7 @@
 
 
                 <time class="article-time--reading">
-                    2 minute read
+                    9 minute read
                 </time>
             </div>
         
@@ -683,6 +685,7 @@ booster插件对应的类名是<code>com.didiglobal.booster.gradle.BoosterPlugin
 </span><span class="lnt">18
 </span><span class="lnt">19
 </span><span class="lnt">20
+</span><span class="lnt">21
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span><span class="w"> </span><span class="nn">com.didiglobal.booster.transform.toast</span><span class="w">
@@ -699,6 +702,7 @@ booster插件对应的类名是<code>com.didiglobal.booster.gradle.BoosterPlugin
 </span></span><span class="line"><span class="cl"><span class="nc">class</span><span class="w"> </span><span class="n">ToastVariantProcessor</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">VariantProcessor</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="n">variant</span><span class="p">:</span><span class="w"> </span><span class="n">BaseVariant</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//如果变体不是LibraryVariant，LibraryVariant只出现在library的module中，并且变体不是一个动态模块，动态模块是Android App Bundle(.aab)结构中一的一部分，允许按需下载和安装模块，然后添加instrument-toast的aar依赖</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">variant</span><span class="w"> </span><span class="o">!</span><span class="n">is</span><span class="w"> </span><span class="n">LibraryVariant</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">variant</span><span class="p">.</span><span class="na">variantData</span><span class="p">.</span><span class="na">isDynamicFeature</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">variant</span><span class="p">.</span><span class="na">scope</span><span class="p">.</span><span class="na">globalScope</span><span class="p">.</span><span class="na">project</span><span class="p">.</span><span class="na">dependencies</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="s">&#34;implementation&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;${Build.GROUP}:booster-android-instrument-toast:${Build.VERSION}&#34;</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
@@ -707,7 +711,928 @@ booster插件对应的类名是<code>com.didiglobal.booster.gradle.BoosterPlugin
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>通过AutoSer</p>
+</div><p>通过AutoService注解找到ToastVariantProcessor这个子类，而上面分析boosterPlugin的时候，VariantProcessor的process方法是在配置完后调用的，也就是每一个module的build.gradle解析完事之后。ToastVariantProcessor中的process方法判断如果变体不是LibraryVariant，LibraryVariant只出现在library的module中，并且变体不是一个动态模块，动态模块是Android App Bundle(.aab)结构中一的一部分，允许按需下载和安装模块，然后添加instrument-toast的aar依赖。</p>
+<p>来看下booster-android-instrument-toast的主要构成：
+<img src="/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/instrument-toast%E6%9E%84%E6%88%90.png"
+	width="1094"
+	height="246"
+	srcset="/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/instrument-toast%E6%9E%84%E6%88%90_hu13050793797927049708.png 480w, /p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/instrument-toast%E6%9E%84%E6%88%90_hu17289288137545624020.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="444"
+		data-flex-basis="1067px"
+	
+>
+这不就是上面要将Toast的调用要替换成目标ShadowToast类吗？所以不难看出，其实对应的booster-android-instrument-toast模块就是将ShadowToast引入进来，方便asm操作字节码的时候能够替换，下面来看下如何替换的字节码。</p>
+<p>我们回到上面注册的BoosterAppTransform，它是核心流程：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span><span class="w"> </span><span class="nn">com.didiglobal.booster.gradle</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kn">import</span><span class="w"> </span><span class="nn">com.android.build.api.transform.QualifiedContent</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * Represents android transform for application project
+</span></span></span><span class="line"><span class="cl"><span class="cm"> *
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @author johnsonlee
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">class</span> <span class="nc">BoosterAppTransform</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">BoosterTransform</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">getScopes</span><span class="p">():</span><span class="w"> </span><span class="n">MutableSet</span><span class="o">&lt;</span><span class="n">in</span><span class="w"> </span><span class="n">QualifiedContent</span><span class="p">.</span><span class="na">Scope</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SCOPE_FULL_WITH_FEATURES</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>它是继承自BoosterTransform，所以接着看BoosterTransform的transform方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">final</span><span class="w"> </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="n">invocation</span><span class="p">:</span><span class="w"> </span><span class="n">TransformInvocation</span><span class="o">?</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">invocation</span><span class="o">?</span><span class="p">.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//BoosterTransformInvocation是一个代理类</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">BoosterTransformInvocation</span><span class="p">(</span><span class="n">it</span><span class="p">).</span><span class="na">apply</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//①</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">dumpInputs</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//②</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isIncremental</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">//③</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">onPreTransform</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">doIncrementalTransform</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">buildDir</span><span class="p">.</span><span class="na">file</span><span class="p">(</span><span class="n">AndroidProject</span><span class="p">.</span><span class="na">FD_INTERMEDIATES</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;transforms&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;dexBuilder&#34;</span><span class="p">).</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">dexBuilder</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dexBuilder</span><span class="p">.</span><span class="na">exists</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">dexBuilder</span><span class="p">.</span><span class="na">deleteRecursively</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">outputProvider</span><span class="p">.</span><span class="na">deleteAll</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">onPreTransform</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">doFullTransform</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//④</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="na">onPostTransform</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}.</span><span class="na">executor</span><span class="p">.</span><span class="na">apply</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">shutdown</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">awaitTermination</span><span class="p">(</span><span class="n">1</span><span class="p">,</span><span class="w"> </span><span class="n">TimeUnit</span><span class="p">.</span><span class="na">MINUTES</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//将扫描到的jar写到inputs.txt文件中</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">dumpInputs</span><span class="p">(</span><span class="n">invocation</span><span class="p">:</span><span class="w"> </span><span class="n">BoosterTransformInvocation</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//invocation.context.temporaryDir：获取当前transform的临时目录，然后创建inputs.txt文件</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">invocation</span><span class="p">.</span><span class="na">context</span><span class="p">.</span><span class="na">temporaryDir</span><span class="p">.</span><span class="na">file</span><span class="p">(</span><span class="s">&#34;inputs.txt&#34;</span><span class="p">).</span><span class="na">touch</span><span class="p">().</span><span class="na">printWriter</span><span class="p">().</span><span class="na">use</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">printer</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">invocation</span><span class="p">.</span><span class="na">inputs</span><span class="p">.</span><span class="na">flatMap</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">it</span><span class="p">.</span><span class="na">jarInputs</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}.</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">it</span><span class="p">.</span><span class="na">file</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}.</span><span class="na">forEach</span><span class="p">(</span><span class="n">printer</span><span class="p">::</span><span class="n">println</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在transform方法中TransformInvocation对象是Transform核心类，它是获取所有class和输出class的处理类。接着将TransformInvocation代理到了BoosterTransformInvocation中，它是一个静态代理模式。在①处，dumpInputs方法将项目中使用到的jar都打印到transform的临时目录中的inputs.txt中：
+<img src="/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/booster%E5%B0%86%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%9A%84jar%E6%89%93%E5%8D%B0%E5%88%B0inputs.txt%E4%B8%AD.png"
+	width="3564"
+	height="1682"
+	srcset="/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/booster%E5%B0%86%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%9A%84jar%E6%89%93%E5%8D%B0%E5%88%B0inputs.txt%E4%B8%AD_hu10214778559203696378.png 480w, /p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/booster%E5%B0%86%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%9A%84jar%E6%89%93%E5%8D%B0%E5%88%B0inputs.txt%E4%B8%AD_hu11046835571925830181.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="211"
+		data-flex-basis="508px"
+	
+>
+不知道这个是干嘛的，可能是为了记录所有的jar吧。在②处，判断是不是增量编译，默认是增量的，在③处，调用了BoosterTransformInvocation的onPreTransform，接着调用了doIncrementalTransform，在④处，调用了onPostTransform，这些都是BoosterTransformInvocation的方法，注意了最后是调用了executor的shutdown和awaitTermination方法。此处的executor是一个ForkJoinPool。所以重点来到BoosterTransformInvocation：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">internal</span><span class="w"> </span><span class="kd">class</span> <span class="nf">BoosterTransformInvocation</span><span class="p">(</span><span class="kd">private</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">delegate</span><span class="p">:</span><span class="w"> </span><span class="n">TransformInvocation</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">TransformInvocation</span><span class="p">,</span><span class="w"> </span><span class="n">TransformContext</span><span class="p">,</span><span class="w"> </span><span class="n">TransformListener</span><span class="p">,</span><span class="w"> </span><span class="n">ArtifactManager</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Preload transformers as List to fix NoSuchElementException caused by ServiceLoader in parallel mode
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">transformers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ServiceLoader</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">Transformer</span><span class="p">::</span><span class="kd">class</span><span class="err">.</span><span class="nc">java</span><span class="p">,</span><span class="w"> </span><span class="n">javaClass</span><span class="p">.</span><span class="na">classLoader</span><span class="p">).</span><span class="na">toList</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">onPreTransform</span><span class="p">(</span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="n">TransformContext</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">transformers</span><span class="p">.</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">it</span><span class="p">.</span><span class="na">onPreTransform</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Suppress</span><span class="p">(</span><span class="s">&#34;NON_EXHAUSTIVE_WHEN&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">internal</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">doIncrementalTransform</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//①</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">inputs</span><span class="p">.</span><span class="na">parallelStream</span><span class="p">().</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//②</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">input</span><span class="p">.</span><span class="na">jarInputs</span><span class="p">.</span><span class="na">parallelStream</span><span class="p">().</span><span class="na">filter</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="na">status</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">NOTCHANGED</span><span class="w"> </span><span class="p">}.</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">jarInput</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">when</span><span class="w"> </span><span class="p">(</span><span class="n">jarInput</span><span class="p">.</span><span class="na">status</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">REMOVED</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">jarInput</span><span class="p">.</span><span class="na">file</span><span class="p">.</span><span class="na">delete</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">CHANGED</span><span class="p">,</span><span class="w"> </span><span class="n">ADDED</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="c1">//③</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">val</span><span class="w"> </span><span class="n">root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">outputProvider</span><span class="p">.</span><span class="na">getContentLocation</span><span class="p">(</span><span class="n">jarInput</span><span class="p">.</span><span class="na">name</span><span class="p">,</span><span class="w"> </span><span class="n">jarInput</span><span class="p">.</span><span class="na">contentTypes</span><span class="p">,</span><span class="w"> </span><span class="n">jarInput</span><span class="p">.</span><span class="na">scopes</span><span class="p">,</span><span class="w"> </span><span class="n">Format</span><span class="p">.</span><span class="na">JAR</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">project</span><span class="p">.</span><span class="na">logger</span><span class="p">.</span><span class="na">info</span><span class="p">(</span><span class="s">&#34;Transforming ${jarInput.file}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="c1">//④</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">jarInput</span><span class="p">.</span><span class="na">file</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">root</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">bytecode</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="c1">//⑤</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="n">bytecode</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">input</span><span class="p">.</span><span class="na">directoryInputs</span><span class="p">.</span><span class="na">parallelStream</span><span class="p">().</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">dirInput</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">val</span><span class="w"> </span><span class="n">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dirInput</span><span class="p">.</span><span class="na">file</span><span class="p">.</span><span class="na">toURI</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">dirInput</span><span class="p">.</span><span class="na">changedFiles</span><span class="p">.</span><span class="na">ifNotEmpty</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">it</span><span class="p">.</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">when</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="n">REMOVED</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="na">delete</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="n">ADDED</span><span class="p">,</span><span class="w"> </span><span class="n">CHANGED</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                                </span><span class="n">val</span><span class="w"> </span><span class="n">root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">outputProvider</span><span class="p">.</span><span class="na">getContentLocation</span><span class="p">(</span><span class="n">dirInput</span><span class="p">.</span><span class="na">name</span><span class="p">,</span><span class="w"> </span><span class="n">dirInput</span><span class="p">.</span><span class="na">contentTypes</span><span class="p">,</span><span class="w"> </span><span class="n">dirInput</span><span class="p">.</span><span class="na">scopes</span><span class="p">,</span><span class="w"> </span><span class="n">Format</span><span class="p">.</span><span class="na">DIRECTORY</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                                </span><span class="n">project</span><span class="p">.</span><span class="na">logger</span><span class="p">.</span><span class="na">info</span><span class="p">(</span><span class="s">&#34;Transforming $file&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                                </span><span class="n">file</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">File</span><span class="p">(</span><span class="n">root</span><span class="p">,</span><span class="w"> </span><span class="n">base</span><span class="p">.</span><span class="na">relativize</span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">toURI</span><span class="p">()).</span><span class="na">path</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">bytecode</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                                    </span><span class="n">bytecode</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                                </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="n">ByteArray</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">invocation</span><span class="p">:</span><span class="w"> </span><span class="n">BoosterTransformInvocation</span><span class="p">):</span><span class="w"> </span><span class="n">ByteArray</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">transformers</span><span class="p">.</span><span class="na">fold</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">bytes</span><span class="p">,</span><span class="w"> </span><span class="n">transformer</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">transformer</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">invocation</span><span class="p">,</span><span class="w"> </span><span class="n">bytes</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">onPostTransform</span><span class="p">(</span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="n">TransformContext</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">transformers</span><span class="p">.</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">it</span><span class="p">.</span><span class="na">onPostTransform</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里我把几个重点方法给搬过来了，BoosterTransformInvocation继承自TransformInvocation，而构造器中传入了BoosterTransform中的TransformInvocation，最终代理到了这个TransformInvocation。在onPreTransform中遍历Transformer，然后调用onPreTransform。
+在doIncrementalTransform的①处中通过parallelStream遍历TransformInput集合，其中parallelStream是集合流的一种处理方式，它能并行遍历对象，一般适合大量数据的时候，在②处遍历TransformInput中的jarInputs，如果是REMOVED状态则直接删除，如果是更新、添加状态，则会走到③处，通过TransformOutputProvider获取到jar的输出路径。在④处拿到jar的file对象，然后调用扩展的transform，获取到jar中的byteArray。经过⑤处的byteArray的transform操作后，也就是字节码操作，然后在jar的transform中再写回到③中的root中。下面看下File的transform扩展方法是如何获取到byteArray，并回写到root中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * Transform this file or directory to the output by the specified transformer
+</span></span></span><span class="line"><span class="cl"><span class="cm"> *
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @param output The output location
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @param transformer The byte data transformer
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">fun</span><span class="w"> </span><span class="n">File</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">output</span><span class="p">:</span><span class="w"> </span><span class="n">File</span><span class="p">,</span><span class="w"> </span><span class="n">transformer</span><span class="p">:</span><span class="w"> </span><span class="p">(</span><span class="n">ByteArray</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">ByteArray</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">when</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">isDirectory</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">val</span><span class="w"> </span><span class="n">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="na">toURI</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="na">search</span><span class="p">().</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">it</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">File</span><span class="p">(</span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="n">base</span><span class="p">.</span><span class="na">relativize</span><span class="p">(</span><span class="n">it</span><span class="p">.</span><span class="na">toURI</span><span class="p">()).</span><span class="na">path</span><span class="p">),</span><span class="w"> </span><span class="n">transformer</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">isFile</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">when</span><span class="w"> </span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="na">extension</span><span class="p">.</span><span class="na">toLowerCase</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">//如果当前file是一个jar，①</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="s">&#34;jar&#34;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">JarFile</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="na">use</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">//②</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">it</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="p">::</span><span class="n">JarArchiveEntry</span><span class="p">,</span><span class="w"> </span><span class="n">transformer</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">//如果当前file是一个class，③</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="s">&#34;class&#34;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">inputStream</span><span class="p">().</span><span class="na">use</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">logger</span><span class="p">.</span><span class="na">info</span><span class="p">(</span><span class="s">&#34;Transforming ${this.absolutePath}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">//④</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">it</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">transformer</span><span class="p">).</span><span class="na">redirect</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="na">copyTo</span><span class="p">(</span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TODO</span><span class="p">(</span><span class="s">&#34;Unexpected file: ${this.absolutePath}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>整个transform方法，有两个参数一个是目标路径，第二个参数就是字节码操作的闭包。闭包返回的是ByteArray，也就是修改前的字节码数据。
+在①处，如果当前File是一个jar的时候，会初始化一个JarFile，然后调用use扩展函数，其中use方法是对Closeable类型做的异常处理，流的关闭处理。在②处调用JarFile的transform扩展函数，其中JarFile是ZipFile的子类：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">fun</span><span class="w"> </span><span class="n">ZipFile</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">output</span><span class="p">:</span><span class="w"> </span><span class="n">File</span><span class="p">,</span><span class="w"> </span><span class="n">entryFactory</span><span class="p">:</span><span class="w"> </span><span class="p">(</span><span class="n">ZipEntry</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">ZipArchiveEntry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">::</span><span class="n">ZipArchiveEntry</span><span class="p">,</span><span class="w"> </span><span class="n">transformer</span><span class="p">:</span><span class="w"> </span><span class="p">(</span><span class="n">ByteArray</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">ByteArray</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//①</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">creator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ParallelScatterZipCreator</span><span class="p">(</span><span class="n">Executors</span><span class="p">.</span><span class="na">newWorkStealingPool</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">entries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mutableSetOf</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//②</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">entries</span><span class="p">().</span><span class="na">asSequence</span><span class="p">().</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">entry</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//③</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">entries</span><span class="p">.</span><span class="na">contains</span><span class="p">(</span><span class="n">entry</span><span class="p">.</span><span class="na">name</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//④</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">val</span><span class="w"> </span><span class="n">zae</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entryFactory</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//⑤</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">val</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">InputStreamSupplier</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">when</span><span class="w"> </span><span class="p">(</span><span class="n">entry</span><span class="p">.</span><span class="na">name</span><span class="p">.</span><span class="na">substringAfterLast</span><span class="p">(</span><span class="sc">&#39;.&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;&#34;</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">//⑥</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="s">&#34;class&#34;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">getInputStream</span><span class="p">(</span><span class="n">entry</span><span class="p">).</span><span class="na">use</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">src</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">logger</span><span class="p">.</span><span class="na">info</span><span class="p">(</span><span class="s">&#34;Transforming ${this.name}!/${entry.name}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">src</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">transformer</span><span class="p">).</span><span class="na">inputStream</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">//⑦</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">else</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">getInputStream</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//⑧</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">creator</span><span class="p">.</span><span class="na">addArchiveEntry</span><span class="p">(</span><span class="n">zae</span><span class="p">,</span><span class="w"> </span><span class="n">stream</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">entries</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">entry</span><span class="p">.</span><span class="na">name</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="s">&#34;Duplicated jar entry: ${this.name}!/${entry.name}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//⑨</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ZipArchiveOutputStream</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="na">touch</span><span class="p">()).</span><span class="na">use</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">creator</span><span class="p">.</span><span class="na">writeTo</span><span class="p">(</span><span class="n">it</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在①处创建ParallelScatterZipCreator，它是多线程并行压缩多个文件，然后再合并到一个总的压缩文件中，常见的ZipOutputStream是单线程进行压缩所有的文件。在②处拿到ZipFile的entries数组，然后调用asSequence进行遍历，entries方法是一个ZipEntryIterator对象，其实它也有toList方法，在此处都是遍历，其实和list没有区别，Sequence区别是在处理中间操作符的时候不会创建临时的集合对象，比如map，filter等。在③主要是去重，在④处将ZipEntry转化成ZipArchiveEntry，方便给到ParallelScatterZipCreator。在⑤处构建InputStreamSupplier，它是一个接口，在get方法中返回InputStream，方便使用闭包。在⑥处通过ZipEntry获取到对应的inputStream，然后调用src（inputStream）的transform扩展方法，并把transformer闭包传入其中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">fun</span><span class="w"> </span><span class="n">InputStream</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">transformer</span><span class="p">:</span><span class="w"> </span><span class="p">(</span><span class="n">ByteArray</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">ByteArray</span><span class="p">):</span><span class="w"> </span><span class="n">ByteArray</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">transformer</span><span class="p">(</span><span class="n">readBytes</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以看到通过InputStream的readBytes扩展方法获取到ByteArray：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="n">InputStream</span><span class="p">.</span><span class="na">readBytes</span><span class="p">(</span><span class="n">estimatedSize</span><span class="p">:</span><span class="w"> </span><span class="n">Int</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DEFAULT_BUFFER_SIZE</span><span class="p">):</span><span class="w"> </span><span class="n">ByteArray</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ByteArrayOutputStream</span><span class="p">(</span><span class="n">Math</span><span class="p">.</span><span class="na">max</span><span class="p">(</span><span class="n">estimatedSize</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="na">available</span><span class="p">()))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">copyTo</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="na">toByteArray</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>其中最终通过构造ByteArrayOutputStream对象，然后调用InputStream的copyTo扩展方法将buffer复制到ByteArrayOutputStream中L</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="n">InputStream</span><span class="p">.</span><span class="na">copyTo</span><span class="p">(</span><span class="n">out</span><span class="p">:</span><span class="w"> </span><span class="n">OutputStream</span><span class="p">,</span><span class="w"> </span><span class="n">bufferSize</span><span class="p">:</span><span class="w"> </span><span class="n">Int</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DEFAULT_BUFFER_SIZE</span><span class="p">):</span><span class="w"> </span><span class="n">Long</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="n">bytesCopied</span><span class="p">:</span><span class="w"> </span><span class="n">Long</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ByteArray</span><span class="p">(</span><span class="n">bufferSize</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">bytes</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">out</span><span class="p">.</span><span class="na">write</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">bytes</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">bytesCopied</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">bytes</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">bytesCopied</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>获取到file的byteArray后，交给了transformer进行修改字节码，剩下就是写回到目标路径中，回到上面ZipFile的transform⑥处，最终将ByteArray通过inputStream扩展方法转化成
+ByteArrayInputStream：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@kotlin.internal.InlineOnly</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="n">inline</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="n">ByteArray</span><span class="p">.</span><span class="na">inputStream</span><span class="p">():</span><span class="w"> </span><span class="n">ByteArrayInputStream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ByteArrayInputStream</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>所以最终的ByteArrayInputStream给到了⑤处InputStreamSupplier的get方法返回值了。在⑦中，如果不是class类型的entry，则不进行transform的闭包修改。在⑧处将修改后的InputStream添加到ParallelScatterZipCreator中，并添加到entries集合中，方便去重。在⑨处，通过ZipArchiveOutputStream的输出流回写到output目标文件中。整个修改并回写过程分为这9大步骤。关于file是目录结构和非目录结构中的class文件处理就不说了，代码很简单。</p>
+<p>BoosterTransformInvocation中全量编译过程就不分析了，和增量编译大差不差。</p>
+<blockquote>
+<p>小结：
+booster中修改字节码过程是在BoosterTransformInvocation中，它将具体的修改交给了Transformer的子类，其中修改步骤是先遍历TransformInput中JarInput和directoryInput的class文件，然后获取到class的byteArray，然后经过Transformer子类的transform方法修改byteArray，修改完后，再回写到原始class对应的目录中，这样就达到了修改并覆盖class的目的。</p>
+</blockquote>
+<h3 id="booster-transform-asm">booster-transform-asm
+</h3><p>前面分析了boosterPlugin中会遍历Transform的子类然后执行它的transform方法，其中AsmTransformer是实现了Transformer接口：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@AutoService</span><span class="p">(</span><span class="n">Transformer</span><span class="p">::</span><span class="kd">class</span><span class="err">)</span>
+</span></span><span class="line"><span class="cl"><span class="nc">class</span><span class="w"> </span><span class="n">AsmTransformer</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Transformer</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Preload transformers as List to fix NoSuchElementException caused by ServiceLoader in parallel mode
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">transformers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ServiceLoader</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="n">ClassTransformer</span><span class="p">::</span><span class="kd">class</span><span class="err">.</span><span class="nc">java</span><span class="p">,</span><span class="w"> </span><span class="n">javaClass</span><span class="p">.</span><span class="na">classLoader</span><span class="p">).</span><span class="na">toList</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="n">TransformContext</span><span class="p">,</span><span class="w"> </span><span class="n">bytecode</span><span class="p">:</span><span class="w"> </span><span class="n">ByteArray</span><span class="p">):</span><span class="w"> </span><span class="n">ByteArray</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">ClassWriter</span><span class="p">(</span><span class="n">ClassWriter</span><span class="p">.</span><span class="na">COMPUTE_MAXS</span><span class="p">).</span><span class="na">also</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">writer</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">transformers</span><span class="p">.</span><span class="na">fold</span><span class="p">(</span><span class="n">ClassNode</span><span class="p">().</span><span class="na">also</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">klass</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">ClassReader</span><span class="p">(</span><span class="n">bytecode</span><span class="p">).</span><span class="na">accept</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">})</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">klass</span><span class="p">,</span><span class="w"> </span><span class="n">transformer</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">transformer</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">klass</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}.</span><span class="na">accept</span><span class="p">(</span><span class="n">writer</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}.</span><span class="na">toByteArray</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">onPreTransform</span><span class="p">(</span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="n">TransformContext</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">transformers</span><span class="p">.</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">it</span><span class="p">.</span><span class="na">onPreTransform</span><span class="p">(</span><span class="n">context</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">onPostTransform</span><span class="p">(</span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="n">TransformContext</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">transformers</span><span class="p">.</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">it</span><span class="p">.</span><span class="na">onPostTransform</span><span class="p">(</span><span class="n">context</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>AsmTransformer通过AutoService注解被扫描到是Transformer的子类，我们将它的transform写成如下方式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="n">TransformContext</span><span class="p">,</span><span class="w"> </span><span class="n">bytecode</span><span class="p">:</span><span class="w"> </span><span class="n">ByteArray</span><span class="p">):</span><span class="w"> </span><span class="n">ByteArray</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">     </span><span class="c1">// ClassNode是ASM tree API的类</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="n">classNode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClassNode</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">classReader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClassReader</span><span class="p">(</span><span class="n">bytecode</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// accept()方法，读取bytecode的相关.class信息赋值到classNode对象的相应字段</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">classReader</span><span class="p">.</span><span class="na">accept</span><span class="p">(</span><span class="n">classNode</span><span class="p">,</span><span class="n">0</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">transformers</span><span class="p">.</span><span class="na">foreach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">transformer</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 每次transform后，class的内容变化都缓存在classNodes中</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 注意此时的classNode对象的内容就是bytecode的内容，只是格式不同而已</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">transformer</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">classNode</span><span class="p">)</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//ClassWriter是ASM core API的类 ，专门用来写出修改后class的类</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">classWriter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClassWriter</span><span class="p">(</span><span class="n">ClassWriter</span><span class="p">.</span><span class="na">COMPUTE_MAXS</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//将写好后的classNode回写到classWriter中</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">classNode</span><span class="p">.</span><span class="na">accept</span><span class="p">(</span><span class="n">classWriter</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// classWriter把被洗礼后的classNode，即ClassNode对象，</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 写成ByteArray返回到上层BoosterTransformInvocation</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">classWriter</span><span class="p">.</span><span class="na">toByteArray</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>小结:
+可以发现asm字节码操作，基本都是模版代码，首先通过classReader读取到byteArray（在前面学习asm的时候，是通过FileInputStream来读取的），然后把class信息映射到classNode对象上。然后遍历字节码操作类，将要修改的classNode给到操作类，修改完后，将classNode同步到classWriter上，最后把修改后的byteArray回写到上层中。</p>
+</blockquote>
+<h3 id="booster-transform-toast">booster-transform-toast
+</h3><p>上面分析过会通过ClassTransformer的子类来修改字节码，toast字节码的修改是在ToastTransformer这个子类中，主要来看下它的transform方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">TOAST</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;android/widget/Toast&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">SHADOW_TOAST</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;com/didiglobal/booster/instrument/ShadowToast&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="n">context</span><span class="p">:</span><span class="w"> </span><span class="n">TransformContext</span><span class="p">,</span><span class="w"> </span><span class="n">klass</span><span class="p">:</span><span class="w"> </span><span class="n">ClassNode</span><span class="p">):</span><span class="w"> </span><span class="n">ClassNode</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//①</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">klass</span><span class="p">.</span><span class="na">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SHADOW_TOAST</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">klass</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">klass</span><span class="p">.</span><span class="na">methods</span><span class="p">.</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//②</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">method</span><span class="p">.</span><span class="na">instructions</span><span class="o">?</span><span class="p">.</span><span class="na">iterator</span><span class="p">()</span><span class="o">?</span><span class="p">.</span><span class="na">asIterable</span><span class="p">()</span><span class="o">?</span><span class="p">.</span><span class="na">filterIsInstance</span><span class="p">(</span><span class="n">MethodInsnNode</span><span class="p">::</span><span class="kd">class</span><span class="err">.</span><span class="nc">java</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="na">filter</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//③</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">it</span><span class="p">.</span><span class="na">opcode</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Opcodes</span><span class="p">.</span><span class="na">INVOKEVIRTUAL</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="na">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&#34;show&#34;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="na">desc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&#34;()V&#34;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">it</span><span class="p">.</span><span class="na">owner</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">TOAST</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">klassPool</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">TOAST</span><span class="p">).</span><span class="na">isAssignableFrom</span><span class="p">(</span><span class="n">it</span><span class="p">.</span><span class="na">owner</span><span class="p">))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="o">?</span><span class="p">.</span><span class="na">forEach</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//④</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">it</span><span class="p">.</span><span class="na">optimize</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">klass</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//⑤</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="n">MethodInsnNode</span><span class="p">.</span><span class="na">optimize</span><span class="p">(</span><span class="n">klass</span><span class="p">:</span><span class="w"> </span><span class="n">ClassNode</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="p">:</span><span class="w"> </span><span class="n">MethodNode</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">logger</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&#34; * ${this.owner}.${this.name}${this.desc} =&gt; $SHADOW_TOAST.apply(L$SHADOW_TOAST;)V: ${klass.name}.${method.name}${method.desc}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">owner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SHADOW_TOAST</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;show&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">desc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;(L$TOAST;)V&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">opcode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Opcodes</span><span class="p">.</span><span class="na">INVOKESTATIC</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">itf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面transform方法中，在①处如果当前class是<code>com/didiglobal/booster/instrument/ShadowToast</code>，则不处理，在②处通过method.instructions拿到当前方法的所有的指令集，然后通过filterIsInstance过滤是方法调用指令，比如INVOKEVIRTUAL、INVOKESTATIC、INVOKESPECIAL 和 INVOKEINTERFACE，因为MethodInsnNode代表的是方法调用指令。所以在③处通过opcode、name、desc、owner来判断是不是要修改的字节码，我们可以通过工具来看下：
+<img src="/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BF%AE%E6%94%B9%E5%89%8D%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81%E6%8C%87%E4%BB%A4.png"
+	width="2710"
+	height="1550"
+	srcset="/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BF%AE%E6%94%B9%E5%89%8D%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81%E6%8C%87%E4%BB%A4_hu12546364397819859470.png 480w, /p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BF%AE%E6%94%B9%E5%89%8D%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81%E6%8C%87%E4%BB%A4_hu5054982025274590257.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="174"
+		data-flex-basis="419px"
+	
+>
+可以看到，修改前的字节码的<code>opcode=invokevirtual，name=show，desc = ()V，owner = android/widget/Toast</code>，所以通过上面的过滤条件，就能过滤出要修改的指令。在④处，调用了MethodInsnNode的扩展方法optimize，在⑤处就是修改字节码了，如果不知道修改后的字节码，我们可以借助工具查看：
+<img src="/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BF%AE%E6%94%B9%E5%90%8E%E7%9A%84%E6%8C%87%E4%BB%A4.png"
+	width="3382"
+	height="1808"
+	srcset="/p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BF%AE%E6%94%B9%E5%90%8E%E7%9A%84%E6%8C%87%E4%BB%A4_hu1384952752494189175.png 480w, /p/booster%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/%E4%BF%AE%E6%94%B9%E5%90%8E%E7%9A%84%E6%8C%87%E4%BB%A4_hu3095438150572186011.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="187"
+		data-flex-basis="448px"
+	
+>
+可以看到最终的opcode= invokestatic，name = show，desc = (Landroid/widget/Toast;)V，owner = com/didiglobal/booster/instrument/ShadowToast。和上面optimize方法中修改的指令一样，新加了itf = false，表示新替换的owner是否是接口，此处的ShadowToast不是一个接口，所以为false，这就是替换指令的过程，是不是很简单。</p>
+<p>下面来实操一波，将某个类中的方法调用改成其它的方法调用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span><span class="w"> </span><span class="nn">com.xc.asm</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">Main</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&#34;Hello world!&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">test</span><span class="p">(){</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&#34;Main中的test方法&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">test1</span><span class="p">(){</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&#34;Main中的test1方法&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kn">package</span><span class="w"> </span><span class="nn">com.xc.asm</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">C</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">m</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Thread</span><span class="p">.</span><span class="na">sleep</span><span class="p">(</span><span class="n">100</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">n</span><span class="p">(){</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Main</span><span class="p">.</span><span class="na">test</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在C类中调用了Main类中的test静态方法，我们这里是想把调用test方法给替换成test1方法，话不多说，直接撸🐴：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">MethodReplaceTest</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Class</span><span class="w"> </span><span class="n">clazz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">C</span><span class="p">.</span><span class="na">class</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">clazzFilePath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Utils</span><span class="p">.</span><span class="na">getClassFilePath</span><span class="p">(</span><span class="n">clazz</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">ClassReader</span><span class="w"> </span><span class="n">classReader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassReader</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">FileInputStream</span><span class="p">(</span><span class="n">clazzFilePath</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//ClassWriter.COMPUTE_FRAMES表示自动计算方法栈数</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">ClassWriter</span><span class="w"> </span><span class="n">classWriter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassWriter</span><span class="p">(</span><span class="n">ClassWriter</span><span class="p">.</span><span class="na">COMPUTE_FRAMES</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//通过构造一个新的classVisitor，然后将classWriter传入到该classVistor中，实际干活的还是classWriter，MethodReplaceClassVisitor只是作为一个代理类，进行添加属性</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">MethodReplaceClassVisitor</span><span class="w"> </span><span class="n">methodReplaceClassVisitor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">MethodReplaceClassVisitor</span><span class="p">(</span><span class="n">Opcodes</span><span class="p">.</span><span class="na">ASM5</span><span class="p">,</span><span class="w"> </span><span class="n">classWriter</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">classReader</span><span class="p">.</span><span class="na">accept</span><span class="p">(</span><span class="n">methodReplaceClassVisitor</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 写入文件</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">byte</span><span class="o">[]</span><span class="w"> </span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">classWriter</span><span class="p">.</span><span class="na">toByteArray</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">FileOutputStream</span><span class="w"> </span><span class="n">fos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">FileOutputStream</span><span class="p">(</span><span class="n">clazzFilePath</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">fos</span><span class="p">.</span><span class="na">write</span><span class="p">(</span><span class="n">bytes</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">fos</span><span class="p">.</span><span class="na">flush</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">fos</span><span class="p">.</span><span class="na">close</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//验证结果</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">C</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">C</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">c</span><span class="p">.</span><span class="na">n</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">MethodReplaceClassVisitor</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">ClassVisitor</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">protected</span><span class="w"> </span><span class="nf">MethodReplaceClassVisitor</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">api</span><span class="p">,</span><span class="w"> </span><span class="n">ClassVisitor</span><span class="w"> </span><span class="n">classVisitor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">super</span><span class="p">(</span><span class="n">api</span><span class="p">,</span><span class="w"> </span><span class="n">classVisitor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">MethodVisitor</span><span class="w"> </span><span class="nf">visitMethod</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">access</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">descriptor</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">signature</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">exceptions</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">MethodVisitor</span><span class="w"> </span><span class="n">methodVisitor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kd">super</span><span class="p">.</span><span class="na">visitMethod</span><span class="p">(</span><span class="n">access</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">descriptor</span><span class="p">,</span><span class="w"> </span><span class="n">signature</span><span class="p">,</span><span class="w"> </span><span class="n">exceptions</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="n">name</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="s">&#34;n&#34;</span><span class="p">)){</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">MethodReplaceMethodVisitor</span><span class="p">(</span><span class="n">Opcodes</span><span class="p">.</span><span class="na">ASM5</span><span class="p">,</span><span class="n">methodVisitor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">methodVisitor</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">MethodReplaceMethodVisitor</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">MethodVisitor</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">protected</span><span class="w"> </span><span class="nf">MethodReplaceMethodVisitor</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">api</span><span class="p">,</span><span class="w"> </span><span class="n">MethodVisitor</span><span class="w"> </span><span class="n">methodVisitor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">super</span><span class="p">(</span><span class="n">api</span><span class="p">,</span><span class="w"> </span><span class="n">methodVisitor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">visitMethodInsn</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">opcode</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">owner</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">descriptor</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isInterface</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mv</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">mv</span><span class="p">.</span><span class="na">visitMethodInsn</span><span class="p">(</span><span class="n">Opcodes</span><span class="p">.</span><span class="na">INVOKESTATIC</span><span class="p">,</span><span class="s">&#34;com/xc/asm/Main&#34;</span><span class="p">,</span><span class="s">&#34;test1&#34;</span><span class="p">,</span><span class="s">&#34;()V&#34;</span><span class="p">,</span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>关于asm的基础操作就不多说了，主要看下MethodReplaceMethodVisitor的visitMethodInsn方法是操作方法指令的，通过传进来的MethodVisitor，来进行修改指令，其中指令中的name字段传test1，其余的字段和原来调用test方法一致的。</p>
+<p>参考:</br>
+<a class="link" href="https://juejin.cn/post/6844903951024783374"  target="_blank" rel="noopener"
+    >滴滴开源库Booster:架构运作及源码分析</a></p>
 
 </section>
 
