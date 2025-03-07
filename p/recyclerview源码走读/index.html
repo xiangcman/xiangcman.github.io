@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
-    <head><meta charset='utf-8'>
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="初始化过程 当我们app收到choregrapher的vsync信号的时候，choregrapher中会给主线程的messageQueue发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的messageQueue设置一个callback（runnable），所以会触发handler的dispatchmessage-&gt;handleCallback，接着就是触发FrameDisplayEventReceiver（runnable）的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。\ntrace图如下： 接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren\n有动画的条件是： 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。 调用链如下： linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;recycler.getviewforposition-&gt;recycler.tryGeyViewHolderForPostionByDeadline-&gt;adapter.createViewHolder-&gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。 上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。 接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行\n">
 <title>RecyclerView源码走读</title>
 
-<link rel='canonical' href='https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/'>
+<link rel='canonical' href='http://localhost:1313/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="RecyclerView源码走读">
 <meta property='og:description' content="初始化过程 当我们app收到choregrapher的vsync信号的时候，choregrapher中会给主线程的messageQueue发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的messageQueue设置一个callback（runnable），所以会触发handler的dispatchmessage-&gt;handleCallback，接着就是触发FrameDisplayEventReceiver（runnable）的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。\ntrace图如下： 接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren\n有动画的条件是： 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。 调用链如下： linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;recycler.getviewforposition-&gt;recycler.tryGeyViewHolderForPostionByDeadline-&gt;adapter.createViewHolder-&gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。 上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。 接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行\n">
-<meta property='og:url' content='https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/'>
+<meta property='og:url' content='http://localhost:1313/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-01-02T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-01-02T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="RecyclerView源码走读">
@@ -1607,7 +1607,7 @@ layout过程只走了dispatchLayout2，在里面走到了linearlayoutManager.onL
                 src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
                 
                 >
-            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+            </script><script type="text/javascript" src="/ts/main.b013e5e1e738f40f172163608dbf040d8f4866fdc9d3d19c87ea979df1ac3395.js" defer></script>
 <script>
     (function () {
         const customFont = document.createElement('link');

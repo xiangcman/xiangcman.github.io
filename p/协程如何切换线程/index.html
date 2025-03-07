@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
-    <head><meta charset='utf-8'>
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。\nCoroutineScope(协程作用域) CoroutineScope组成 可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：\nCoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它 Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob CoroutineName：用来给协程起名字的作用 CoroutineExceptionHandler：它是用来捕捉协程异常的回调器 所以完整的CoroutineContext组成部分如下： job+dispatchers+CoroutineName+CoroutineExceptionHandler\nCoroutineScope分类 目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别\nGlobalScope 上面用到的GlobalScope就是一个协程作用域： 可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它\n">
 <title>协程如何切换线程</title>
 
-<link rel='canonical' href='https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/'>
+<link rel='canonical' href='http://localhost:1313/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程如何切换线程">
 <meta property='og:description' content="在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。\nCoroutineScope(协程作用域) CoroutineScope组成 可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：\nCoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它 Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob CoroutineName：用来给协程起名字的作用 CoroutineExceptionHandler：它是用来捕捉协程异常的回调器 所以完整的CoroutineContext组成部分如下： job+dispatchers+CoroutineName+CoroutineExceptionHandler\nCoroutineScope分类 目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别\nGlobalScope 上面用到的GlobalScope就是一个协程作用域： 可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它\n">
-<meta property='og:url' content='https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/'>
+<meta property='og:url' content='http://localhost:1313/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-11-05T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-05T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="协程如何切换线程">
@@ -1262,7 +1262,7 @@ AbstractCoroutine的afterCompletion：
                 src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
                 
                 >
-            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+            </script><script type="text/javascript" src="/ts/main.b013e5e1e738f40f172163608dbf040d8f4866fdc9d3d19c87ea979df1ac3395.js" defer></script>
 <script>
     (function () {
         const customFont = document.createElement('link');

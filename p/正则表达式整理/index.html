@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="整理正则表达式的常用语法">
+<title>正则表达式整理</title>
+
+<link rel='canonical' href='http://localhost:1313/p/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%95%B4%E7%90%86/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="正则表达式整理">
+<meta property='og:description' content="整理正则表达式的常用语法">
+<meta property='og:url' content='http://localhost:1313/p/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%95%B4%E7%90%86/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-03-04T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-03-04T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="正则表达式整理">
+<meta name="twitter:description" content="整理正则表达式的常用语法">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/_index.zh-cn/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%AD%A3%E5%88%99/" >
+                正则
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E6%95%B4%E7%90%86/">正则表达式整理</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            整理正则表达式的常用语法
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2025-03-04</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    3 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>在看booster内联R的时候，看到过滤R$color这种内部类的时候，是通过正则表达式进行过滤的，然后它的匹配规则是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">internal</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">R_REGEX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;.*/R\\\$.*|.*/R\\.*&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">Pattern</span><span class="p">.</span><span class="na">matches</span><span class="p">(</span><span class="n">R_REGEX</span><span class="p">,</span><span class="w"> </span><span class="n">klass</span><span class="p">.</span><span class="na">name</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>我是想匹配到<code>com/xc/lib/R$color</code>或<code>com/xc/lib/R</code>形如这种class的名字，第一眼看的时候有点懵，然后通过查看正则表达式的语法时候，发现正则是有规律可循的，先看一张表格：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">符号</th>
+          <th style="text-align: left">含义</th>
+          <th style="text-align: left">示例</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">.</td>
+          <td style="text-align: left">匹配任意单个字符（除换行符）</td>
+          <td style="text-align: left">a.b 可匹配 acb、a1b</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">\d</td>
+          <td style="text-align: left">数字 (0-9)</td>
+          <td style="text-align: left">\d{3} 匹配 123</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">\w</td>
+          <td style="text-align: left">单词字符 (a-z, A-Z, 0-9, _)</td>
+          <td style="text-align: left">\w+ 匹配 abc_123</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">\s</td>
+          <td style="text-align: left">空白字符（空格、Tab、换行）</td>
+          <td style="text-align: left">Hello\sWorld 匹配 Hello World</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">\S</td>
+          <td style="text-align: left">单个非空白字符</td>
+          <td style="text-align: left">任意单个非空格字符都匹配</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">\b	单词边界	\bcat\b 仅匹配 cat，不匹配 catalog</td>
+          <td style="text-align: left"></td>
+          <td style="text-align: left"></td>
+      </tr>
+      <tr>
+          <td style="text-align: left">^</td>
+          <td style="text-align: left">行首</td>
+          <td style="text-align: left">^Hello 仅匹配 Hello 在行首的情况</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">$</td>
+          <td style="text-align: left">行尾</td>
+          <td style="text-align: left">end$ 仅匹配 end 在行尾的情况</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">*</td>
+          <td style="text-align: left">匹配前一个字符 0 次或多次</td>
+          <td style="text-align: left">ab*c 可匹配 ac、abc、abbc</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">+</td>
+          <td style="text-align: left">匹配前一个字符 1 次或多次</td>
+          <td style="text-align: left">ab+c 仅匹配 abc、abbc，不匹配 ac</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">?</td>
+          <td style="text-align: left">匹配前一个字符 0 次或 1 次</td>
+          <td style="text-align: left">ab?c 可匹配 ac 或 abc</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">{n}</td>
+          <td style="text-align: left">匹配 n 次</td>
+          <td style="text-align: left">a{3} 仅匹配 aaa</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">{n,}</td>
+          <td style="text-align: left">至少匹配 n 次</td>
+          <td style="text-align: left">a{2,} 可匹配 aa、aaa</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">{n,m}</td>
+          <td style="text-align: left">匹配 n 到 m 次</td>
+          <td style="text-align: left">a{2,4} 可匹配 aa、aaa、aaaa</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">[]</td>
+          <td style="text-align: left">字符集合</td>
+          <td style="text-align: left">[aeiou] 匹配任意元音字母</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">`</td>
+          <td style="text-align: left">`</td>
+          <td style="text-align: left">或（匹配左边或右边）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">()</td>
+          <td style="text-align: left">分组</td>
+          <td style="text-align: left">(ab)+ 匹配 ab、abab</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>上面<code>&quot;.*/R\\\$.*|.*/R\\.*&quot;</code>可以拆解成两个正则，因为中间用了一个或，分别是<code>.*/R\\\$.*</code>、<code>.*/R\\.*</code>，首先来看<code>.*/R\\\$.*</code>它可以分解成:</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">字符</th>
+          <th style="text-align: left">含义</th>
+          <th style="text-align: left">匹配字符</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">.*</td>
+          <td style="text-align: left">表示有0次或多次的单个字符</td>
+          <td style="text-align: left">com/xc/lib</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">/R</td>
+          <td style="text-align: left">直接匹配字符</td>
+          <td style="text-align: left">/R</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">\$</td>
+          <td style="text-align: left">这里由于和$有冲突，所以前面加了转义，匹配的是$字符</td>
+          <td style="text-align: left">$</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">.*</td>
+          <td style="text-align: left">和开头的匹配一样，表示有0次或多次的单个字符</td>
+          <td style="text-align: left">color</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">所以最终<code>com/xc/lib/R$color</code>能被匹配到，再来看<code>.*/R\\.*</code>它可以分解成：</td>
+          <td style="text-align: left"></td>
+          <td style="text-align: left"></td>
+      </tr>
+      <tr>
+          <td style="text-align: left">字符</td>
+          <td style="text-align: left">含义</td>
+          <td style="text-align: left">匹配字符</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">&mdash;&mdash;</td>
+          <td style="text-align: left">&mdash;&mdash;</td>
+          <td style="text-align: left">&mdash;&mdash;</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">.*</td>
+          <td style="text-align: left">表示有0次或多次的单个字符</td>
+          <td style="text-align: left">com/xc/lib</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">/R</td>
+          <td style="text-align: left">直接匹配字符</td>
+          <td style="text-align: left">/R</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">\.*</td>
+          <td style="text-align: left">这里由于和.有冲突，所以前面加了转义，匹配的是0次或多次的.字符</td>
+          <td style="text-align: left">.</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>所以最终<code>com/xc/lib/R</code>也能被匹配到。</p>
+<p>更多正则的匹配：
+测试用例：
+<code>#key_mmkv_migrate_version# </code>，正则表达式<code>(#[^#]*[^#\\s]+[^#]*#)</code>，使用</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">Pattern</span><span class="w"> </span><span class="n">pattern</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pattern</span><span class="p">.</span><span class="na">compile</span><span class="p">(</span><span class="s">&#34;(#[^#]*[^#\\s]+[^#]*#)&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">Matcher</span><span class="w"> </span><span class="n">matcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pattern</span><span class="p">.</span><span class="na">match</span><span class="p">(</span><span class="s">&#34;#key_mmkv_migrate_version# &#34;</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>该正则表达式作用：用于匹配 以 # 开头和结尾的内容，并且内容中至少包含 一个非空白的非 # 字符。
+正则解析：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">部分</th>
+          <th style="text-align: left">含义</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">#</td>
+          <td style="text-align: left">匹配 #（开始）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">[^#]*</td>
+          <td style="text-align: left">匹配任意多个非 # 的字符（0 次或多次）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">[^#\s]+</td>
+          <td style="text-align: left">至少匹配 1 个非 # 和非空格的字符（保证内容不是空的）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">[^#]*</td>
+          <td style="text-align: left">再次匹配任意多个非 # 的字符（0 次或多次）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">#</td>
+          <td style="text-align: left">匹配 #（结束）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">(&hellip;)</td>
+          <td style="text-align: left">括号用于捕获匹配内容</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>Matcher#replaceAll方法</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">matcher</span><span class="p">.</span><span class="na">replaceAll</span><span class="p">(</span><span class="s">&#34;&lt;a type=&#34;</span><span class="n">topic</span><span class="s">&#34; &gt;$1&lt;/a&gt;&#34;</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>会被替换成如下：
+<code>&lt;a type=&quot;topic&quot; &gt;#key_mmkv_migrate_version#&lt;/a&gt; </code></p>
+<p>正则:
+<code>&lt;a[^&gt;]*?((&gt;[\s\S]*?&lt;/a&gt;)|(/&gt;))</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@kotlin.internal.InlineOnly</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="n">inline</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="n">String</span><span class="p">.</span><span class="na">toRegex</span><span class="p">():</span><span class="w"> </span><span class="n">Regex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Regex</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>将string转化成Regex:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">regexStr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">`</span><span class="o">&lt;</span><span class="n">a</span><span class="o">[^&gt;]*?</span><span class="p">((</span><span class="o">&gt;[</span><span class="err">\</span><span class="n">s</span><span class="err">\</span><span class="n">S</span><span class="o">]*?&lt;/</span><span class="n">a</span><span class="o">&gt;</span><span class="p">)</span><span class="o">|</span><span class="p">(</span><span class="o">/&gt;</span><span class="p">))</span><span class="err">`</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">regex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regexStr</span><span class="p">.</span><span class="na">toRegex</span><span class="p">()</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>用于 匹配 HTML <a> 标签（包括自闭合 <a /> 和 **带内容的 <a>&hellip;</a> 形式）。
+正则解析：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">部分</th>
+          <th style="text-align: left">含义</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">&lt;a</td>
+          <td style="text-align: left">匹配 &lt;a（开始的 <a> 标签）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">[^&gt;]*?</td>
+          <td style="text-align: left">非贪婪匹配 <a> 内的所有属性（不包括 &gt;)</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">`((… )</td>
+          <td style="text-align: left">(/&gt;))`</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">&gt;[\s\S]*?</a></td>
+          <td style="text-align: left">情况 ①：匹配 &gt; 后的内容，直到 </a></td>
+      </tr>
+      <tr>
+          <td style="text-align: left">/ &gt;</td>
+          <td style="text-align: left">情况 ②：匹配 <a />（自闭合标签）</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>CharSequence.contains(regex: Regex):</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">`</span><span class="o">&lt;</span><span class="n">a</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&#34;topic&#34;</span><span class="w"> </span><span class="o">&gt;</span><span class="err">#</span><span class="n">key_mmkv_migrate_version</span><span class="err">#</span><span class="o">&lt;/</span><span class="n">a</span><span class="o">&gt;</span><span class="w"> </span><span class="err">`</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">regexStr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">`</span><span class="o">&lt;</span><span class="n">a</span><span class="o">[^&gt;]*?</span><span class="p">((</span><span class="o">&gt;[</span><span class="err">\</span><span class="n">s</span><span class="err">\</span><span class="n">S</span><span class="o">]*?&lt;/</span><span class="n">a</span><span class="o">&gt;</span><span class="p">)</span><span class="o">|</span><span class="p">(</span><span class="o">/&gt;</span><span class="p">))</span><span class="err">`</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">regex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regexStr</span><span class="p">.</span><span class="na">toRegex</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">source</span><span class="p">.</span><span class="na">contains</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>contains方法表示是否符合这个正则判断。</p>
+<p>Regex.find(input: CharSequence, startIndex: Int = 0): MatchResult?</br>
+Regex.find() 方法用于 查找字符串中第一个匹配的结果，返回 MatchResult?，如果找不到匹配项，则返回 null。
+MatchResult.range:表示匹配的索引范围，分别用start和endInclusive来表示范围。
+MatchResult.value:表示匹配到的内容</p>
+<p>正则：<code>(\\S+)=\&quot;([^\&quot;]+)\&quot;</code>
+作用：主要是用来匹配html/xml属性及其值，比如<code>&lt;a type=&quot;topic&quot; &gt;#key_mmkv_migrate_version#&lt;/a&gt; </code>能匹配到，它是匹配<code>type=&quot;topic&quot;</code>。
+正则解析：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">正则部分</th>
+          <th style="text-align: left">作用</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">(\S+)</td>
+          <td style="text-align: left">匹配属性名（非空字符 \S，匹配至少一个字符 +）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">=</td>
+          <td style="text-align: left">匹配等号（固定字符 =）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">&quot;([^&quot;]+)&quot;</td>
+          <td style="text-align: left">匹配属性值（被双引号 &quot; 包裹，内容不含 &ldquo;）</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>Regex.findAll</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">actual</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">findAll</span><span class="p">(</span><span class="n">input</span><span class="p">:</span><span class="w"> </span><span class="n">CharSequence</span><span class="p">,</span><span class="w"> </span><span class="n">startIndex</span><span class="p">:</span><span class="w"> </span><span class="n">Int</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">):</span><span class="w"> </span><span class="n">Sequence</span><span class="o">&lt;</span><span class="n">MatchResult</span><span class="o">&gt;</span><span class="w"> 
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>用于获取字符串中所有符合正则的结果，返回的是一个Sequence的MatchResult</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">attributeRegex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;(\\S+)=\&#34;([^\&#34;]+)\&#34;&#34;</span><span class="p">.</span><span class="na">toRegex</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;&lt;a type=&#34;</span><span class="n">topic</span><span class="s">&#34; &gt;#key_mmkv_migrate_version#&lt;/a&gt; &#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">matchResultList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">attributeRegex</span><span class="p">.</span><span class="na">findAll</span><span class="p">(</span><span class="n">source</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>MatchResult.destructured属性</br>
+用来提取匹配结果的捕获组，例如上面提取的是type和topic这一组内容。</p>
+<p>例如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">regex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Regex</span><span class="p">(</span><span class="s">&#34;(\\d{4})-(\\d{2})-(\\d{2})&#34;</span><span class="p">)</span><span class="w"> </span><span class="c1">// 匹配日期格式 YYYY-MM-DD</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;2024-03-07&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">matchResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regex</span><span class="p">.</span><span class="na">find</span><span class="p">(</span><span class="n">input</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">matchResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="p">(</span><span class="n">year</span><span class="p">,</span><span class="w"> </span><span class="n">month</span><span class="p">,</span><span class="w"> </span><span class="n">day</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">matchResult</span><span class="p">.</span><span class="na">destructured</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nf">println</span><span class="p">(</span><span class="s">&#34;Year: $year, Month: $month, Day: $day&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">输出</span><span class="err">：</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nl">Year</span><span class="p">:</span><span class="w"> </span><span class="n">2024</span><span class="p">,</span><span class="w"> </span><span class="n">Month</span><span class="p">:</span><span class="w"> </span><span class="n">03</span><span class="p">,</span><span class="w"> </span><span class="n">Day</span><span class="p">:</span><span class="w"> </span><span class="n">07</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后通过MatchResult.destructured.toList()方法转成list，就可以获取type和topic内容了。</p>
+<p>SpannableStringBuilder使用</p>
+<blockquote>
+<p>在 Android 开发中，SpannableStringBuilder 主要用于富文本（Styled Text），可以让字符串的一部分具有不同的格式，比如 颜色、大小、样式、点击事件、图片等。它比 Html.fromHtml() 性能更好，更适合动态拼接文本。</p>
+</blockquote>
+<p>使用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">spannable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpannableStringBuilder</span><span class="p">(</span><span class="s">&#34;Hello, Android!&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 给 &#34;Android&#34; 设置红色</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">spannable</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ForegroundColorSpan</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="na">RED</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">7</span><span class="p">,</span><span class="w"> </span><span class="n">14</span><span class="p">,</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Spannable</span><span class="p">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 应用到 TextView</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">textView</span><span class="p">.</span><span class="na">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spannable</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>SpannableStringBuilder(&ldquo;Hello, Android!&rdquo;) 创建一个可变的 Spannable 对象。</li>
+<li>setSpan(ForegroundColorSpan(Color.RED), 7, 14, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)</li>
+<li>ForegroundColorSpan(Color.RED) → 设置前景色为红色。</li>
+<li>7, 14 → 应用范围（“Android” 字符的索引）。</li>
+<li>SPAN_EXCLUSIVE_EXCLUSIVE → 该 Span 只作用于当前字符范围，后续文本修改不会继承。</li>
+<li>textView.movementMethod = LinkMovementMethod.getInstance()，设置 TextView 可点击</li>
+</ul>
+<p>所以如果想要多个效果，可以添加多个span给SpannableStringBuilder，通过多次调用setSpan方法，然后设置不同的坐标信息。</p>
+<p>SpannableStringBuilder.append()，可以追加多个span的样式，如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">spannable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpannableStringBuilder</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 添加普通文本</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">spannable</span><span class="p">.</span><span class="na">append</span><span class="p">(</span><span class="s">&#34;Normal Text &#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 添加红色文字</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">redText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpannableString</span><span class="p">(</span><span class="s">&#34;Red Text&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">redText</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="n">ForegroundColorSpan</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="na">RED</span><span class="p">),</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">redText</span><span class="p">.</span><span class="na">length</span><span class="p">,</span><span class="w"> </span><span class="n">Spannable</span><span class="p">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">spannable</span><span class="p">.</span><span class="na">append</span><span class="p">(</span><span class="n">redText</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 添加蓝色斜体文字</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">blueText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpannableString</span><span class="p">(</span><span class="s">&#34; Blue Italic&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">blueText</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="n">ForegroundColorSpan</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="na">BLUE</span><span class="p">),</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">blueText</span><span class="p">.</span><span class="na">length</span><span class="p">,</span><span class="w"> </span><span class="n">Spannable</span><span class="p">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">blueText</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="n">StyleSpan</span><span class="p">(</span><span class="n">Typeface</span><span class="p">.</span><span class="na">ITALIC</span><span class="p">),</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">blueText</span><span class="p">.</span><span class="na">length</span><span class="p">,</span><span class="w"> </span><span class="n">Spannable</span><span class="p">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">spannable</span><span class="p">.</span><span class="na">append</span><span class="p">(</span><span class="n">blueText</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 应用到 TextView</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">textView</span><span class="p">.</span><span class="na">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spannable</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面用到了SpannableString，它是实现了CharSequence，是对字符串进行样式的扩展类，然后把它添加到SpannableStringBuilder中。</p>
+<p>span中插入图片，通过imageSpan实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">spannable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpannableStringBuilder</span><span class="p">(</span><span class="s">&#34;Text with image &#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">drawable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ContextCompat</span><span class="p">.</span><span class="na">getDrawable</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">drawable</span><span class="p">.</span><span class="na">ic_launcher_foreground</span><span class="p">)</span><span class="o">!!</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">drawable</span><span class="p">.</span><span class="na">setBounds</span><span class="p">(</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">drawable</span><span class="p">.</span><span class="na">intrinsicWidth</span><span class="p">,</span><span class="w"> </span><span class="n">drawable</span><span class="p">.</span><span class="na">intrinsicHeight</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 在文本末尾添加图片</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">spannable</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ImageSpan</span><span class="p">(</span><span class="n">drawable</span><span class="p">,</span><span class="w"> </span><span class="n">ImageSpan</span><span class="p">.</span><span class="na">ALIGN_BASELINE</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">spannable</span><span class="p">.</span><span class="na">length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">1</span><span class="p">,</span><span class="w"> </span><span class="n">spannable</span><span class="p">.</span><span class="na">length</span><span class="p">,</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Spannable</span><span class="p">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">textView</span><span class="p">.</span><span class="na">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spannable</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Example Person
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.29.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.b013e5e1e738f40f172163608dbf040d8f4866fdc9d3d19c87ea979df1ac3395.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

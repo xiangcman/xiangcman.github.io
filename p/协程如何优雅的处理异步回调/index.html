@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
-    <head><meta charset='utf-8'>
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="suspendCoroutine 在android中无处不在获取view的宽高，而获取宽高是需要在view绘制完后才能获取，所以这是一个时机问题，通常通过view.post来获取，那么用协程如何形如同步获取宽高呢？下面来试试：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 GlobalScope.launch { val wh = getViewWh(view) Log.d(TAG, &#34;width:${wh.first}&#34;) Log.d(TAG, &#34;height:${wh.second}&#34;) } Log.d(TAG, &#34;outer coroutine&#34;) private suspend fun getViewWh(view: View) = suspendCoroutine&lt;Pair&lt;Int, Int&gt;&gt; { continuation -&gt; view.post { val width = view.width val height = view.height continuation.resume(Pair(width, height)) } } ">
 <title>协程如何优雅的处理异步回调</title>
 
-<link rel='canonical' href='https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/'>
+<link rel='canonical' href='http://localhost:1313/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程如何优雅的处理异步回调">
 <meta property='og:description' content="suspendCoroutine 在android中无处不在获取view的宽高，而获取宽高是需要在view绘制完后才能获取，所以这是一个时机问题，通常通过view.post来获取，那么用协程如何形如同步获取宽高呢？下面来试试：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 GlobalScope.launch { val wh = getViewWh(view) Log.d(TAG, &#34;width:${wh.first}&#34;) Log.d(TAG, &#34;height:${wh.second}&#34;) } Log.d(TAG, &#34;outer coroutine&#34;) private suspend fun getViewWh(view: View) = suspendCoroutine&lt;Pair&lt;Int, Int&gt;&gt; { continuation -&gt; view.post { val width = view.width val height = view.height continuation.resume(Pair(width, height)) } } ">
-<meta property='og:url' content='https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/'>
+<meta property='og:url' content='http://localhost:1313/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-12-30T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-12-30T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="协程如何优雅的处理异步回调">
@@ -845,7 +845,7 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
                 src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
                 
                 >
-            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+            </script><script type="text/javascript" src="/ts/main.b013e5e1e738f40f172163608dbf040d8f4866fdc9d3d19c87ea979df1ac3395.js" defer></script>
 <script>
     (function () {
         const customFont = document.createElement('link');

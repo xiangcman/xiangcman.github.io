@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
-    <head><meta charset='utf-8'>
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 crossinline算是在内联和非内联之间做智能化选择，如果你将lambda表达式当做变量来使用，此时编译器不会内联该lambda，比如： 1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } ">
 <title>笔记整理</title>
 
-<link rel='canonical' href='https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/'>
+<link rel='canonical' href='http://localhost:1313/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="笔记整理">
 <meta property='og:description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 crossinline算是在内联和非内联之间做智能化选择，如果你将lambda表达式当做变量来使用，此时编译器不会内联该lambda，比如： 1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } ">
-<meta property='og:url' content='https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/'>
+<meta property='og:url' content='http://localhost:1313/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-11-04T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-04T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="笔记整理">
@@ -878,7 +878,7 @@ pop：和remove一样的，都是移除头部节点，如果没有头部节点�
                 src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
                 
                 >
-            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+            </script><script type="text/javascript" src="/ts/main.b013e5e1e738f40f172163608dbf040d8f4866fdc9d3d19c87ea979df1ac3395.js" defer></script>
 <script>
     (function () {
         const customFont = document.createElement('link');
