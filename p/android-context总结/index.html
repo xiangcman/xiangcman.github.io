@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
-    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n主题设置 回到performLaunchActivity，给activity设置主题：\n将theme的resid传进来，最终会把resid这个theme追加到mTheme上。这里牵扯到资源加载，后面再说。\nLayoutInflater中的context LayoutInflater.from(context)： 此处的context一般是activity，看activity.getSystemService方法，如果传入的不是activity，比如是ContextThemeWrapper，Application会怎么样：\n">
 <title>Android context总结</title>
 
-<link rel='canonical' href='http://localhost:1313/p/android-context%E6%80%BB%E7%BB%93/'>
+<link rel='canonical' href='https://example.com/p/android-context%E6%80%BB%E7%BB%93/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Android context总结">
-<meta property='og:description' content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n">
-<meta property='og:url' content='http://localhost:1313/p/android-context%E6%80%BB%E7%BB%93/'>
+<meta property='og:description' content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n主题设置 回到performLaunchActivity，给activity设置主题：\n将theme的resid传进来，最终会把resid这个theme追加到mTheme上。这里牵扯到资源加载，后面再说。\nLayoutInflater中的context LayoutInflater.from(context)： 此处的context一般是activity，看activity.getSystemService方法，如果传入的不是activity，比如是ContextThemeWrapper，Application会怎么样：\n">
+<meta property='og:url' content='https://example.com/p/android-context%E6%80%BB%E7%BB%93/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-10-25T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-10-25T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="Android context总结">
-<meta name="twitter:description" content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n">
+<meta name="twitter:description" content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n主题设置 回到performLaunchActivity，给activity设置主题：\n将theme的resid传进来，最终会把resid这个theme追加到mTheme上。这里牵扯到资源加载，后面再说。\nLayoutInflater中的context LayoutInflater.from(context)： 此处的context一般是activity，看activity.getSystemService方法，如果传入的不是activity，比如是ContextThemeWrapper，Application会怎么样：\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -400,8 +400,7 @@ ActivityThread.performLaunchActivity</p>
 <img src=setOuterContext.png width=60% />
 <img src=setOuterContext过程.png width=60% />
 <blockquote>
-<p>结论：contextImpl中的outerContext指向了activity。</p>
-</blockquote>
+<p>结论：contextImpl中的outerContext指向了activity。</p></blockquote>
 <h3 id="context传递">Context传递
 </h3><img src=attach调用.png width=60% />
 <p>attach调用了attachBaseContext，并把contextimpl传进去了：</p>
@@ -415,8 +414,7 @@ ActivityThread.performLaunchActivity</p>
 <p>mPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：</p>
 <img src=创建application.png width=60% />
 <blockquote>
-<p>结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。</p>
-</blockquote>
+<p>结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。</p></blockquote>
 <h3 id="主题设置">主题设置
 </h3><p>回到performLaunchActivity，给activity设置主题：</p>
 <img src=给activity设置主题.png width=60% />
@@ -448,8 +446,7 @@ ActivityThread.performLaunchActivity</p>
 <img src=cloneInContext.png width=60% />
 <img src=cloneInContext详细过程.png width=60% />
 <blockquote>
-<p>所以此种情况下，最终给view传的context也是一个contextthemewrapper的context。</p>
-</blockquote>
+<p>所以此种情况下，最终给view传的context也是一个contextthemewrapper的context。</p></blockquote>
 <h3 id="attr部分">Attr部分
 </h3><p>从主题中获取属性：</p>
 <img src=主题属性.png width=60% />
@@ -472,8 +469,7 @@ attrs表示的是要从哪个属性集中取到属性。
 <p>可以看出来生出来一个R.styleable.TestView的数组和两个int值，分别是R.styleable.TestView_attr1和R.styleable.TestView_attr2，它两分别代表TestView数组的索引，而对应的值是定义在resource.arsc文件中：</p>
 <img src=resource.arsc结果.png width=60% />
 <blockquote>
-<p>所以最终得出结论是：通过context.obtainStyledAttributes传入attrbuteset和attrs数组，得到了typearray，然后通过typearray的索引得到所有的属性：</p>
-</blockquote>
+<p>所以最终得出结论是：通过context.obtainStyledAttributes传入attrbuteset和attrs数组，得到了typearray，然后通过typearray的索引得到所有的属性：</p></blockquote>
 <img src=取出attr中的属性.png width=60% /> 
 <h4 id="defstyleattrdefstyleres">defStyleAttr、defStyleRes
 </h4><img src=view构造器.png width=60% /> 
@@ -704,7 +700,7 @@ attrs表示的是要从哪个属性集中取到属性。
     
     <section class="powerby">
         Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.29.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
     </section>
 </footer>
 
@@ -793,7 +789,7 @@ attrs表示的是要从哪个属性集中取到属性。
                 src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
                 
                 >
-            </script><script type="text/javascript" src="/ts/main.b013e5e1e738f40f172163608dbf040d8f4866fdc9d3d19c87ea979df1ac3395.js" defer></script>
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
 <script>
     (function () {
         const customFont = document.createElement('link');

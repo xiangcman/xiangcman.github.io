@@ -2,24 +2,24 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>Class on xiangcman</title>
-        <link>http://localhost:1313/categories/class/</link>
+        <link>https://example.com/categories/class/</link>
         <description>Recent content in Class on xiangcman</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
         <copyright>Example Person</copyright>
-        <lastBuildDate>Mon, 10 Feb 2025 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/categories/class/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Mon, 10 Feb 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/categories/class/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>asm修改字节码初体验</title>
-        <link>http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/</link>
+        <link>https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/</link>
         <pubDate>Mon, 10 Feb 2025 00:00:00 +0000</pubDate>
         
-        <guid>http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/</guid>
+        <guid>https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/</guid>
         <description>&lt;p&gt;gradle的很多插件涉及到了字节码修改，内部修改字节码基本都是通过asm来修改，本文章就是通过asm来修改class。本文基于intellij idea来体验的。&lt;/p&gt;
 &lt;h3 id=&#34;下载依赖&#34;&gt;下载依赖
 &lt;/h3&gt;&lt;p&gt;首先我创建的工程是一个java工程，然后将项目配置成maven工程：
-&lt;img src=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/java%E5%B7%A5%E7%A8%8B%E8%BD%AC%E6%88%90maven%E5%B7%A5%E7%A8%8B.png&#34;
+&lt;img src=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/java%E5%B7%A5%E7%A8%8B%E8%BD%AC%E6%88%90maven%E5%B7%A5%E7%A8%8B.png&#34;
 	width=&#34;830&#34;
 	height=&#34;1440&#34;
-	srcset=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/java%E5%B7%A5%E7%A8%8B%E8%BD%AC%E6%88%90maven%E5%B7%A5%E7%A8%8B_hu11788454956195940807.png 480w, http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/java%E5%B7%A5%E7%A8%8B%E8%BD%AC%E6%88%90maven%E5%B7%A5%E7%A8%8B_hu18263756911644406708.png 1024w&#34;
+	srcset=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/java%E5%B7%A5%E7%A8%8B%E8%BD%AC%E6%88%90maven%E5%B7%A5%E7%A8%8B_hu_326155892f37c6b8.png 480w, https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/java%E5%B7%A5%E7%A8%8B%E8%BD%AC%E6%88%90maven%E5%B7%A5%E7%A8%8B_hu_ce104a2073a87721.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;
@@ -31,10 +31,10 @@
 	
 &gt;
 接着去maven官网找下对应依赖：
-&lt;img src=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/asm%E4%BE%9D%E8%B5%96%E7%89%88%E6%9C%AC.png&#34;
+&lt;img src=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/asm%E4%BE%9D%E8%B5%96%E7%89%88%E6%9C%AC.png&#34;
 	width=&#34;3408&#34;
 	height=&#34;548&#34;
-	srcset=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/asm%E4%BE%9D%E8%B5%96%E7%89%88%E6%9C%AC_hu17419888399571718439.png 480w, http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/asm%E4%BE%9D%E8%B5%96%E7%89%88%E6%9C%AC_hu14459970654628997925.png 1024w&#34;
+	srcset=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/asm%E4%BE%9D%E8%B5%96%E7%89%88%E6%9C%AC_hu_6c7823dfd1ede46f.png 480w, https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/asm%E4%BE%9D%E8%B5%96%E7%89%88%E6%9C%AC_hu_ef9c54d78d1801a9.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;
@@ -46,10 +46,10 @@
 	
 &gt;
 然后在工程里面添加依赖：
-&lt;img src=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/%E5%B7%A5%E7%A8%8B%E4%B8%AD%E6%B7%BB%E5%8A%A0%E4%BE%9D%E8%B5%96.png&#34;
+&lt;img src=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/%E5%B7%A5%E7%A8%8B%E4%B8%AD%E6%B7%BB%E5%8A%A0%E4%BE%9D%E8%B5%96.png&#34;
 	width=&#34;2278&#34;
 	height=&#34;1322&#34;
-	srcset=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/%E5%B7%A5%E7%A8%8B%E4%B8%AD%E6%B7%BB%E5%8A%A0%E4%BE%9D%E8%B5%96_hu12939024683402268129.png 480w, http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/%E5%B7%A5%E7%A8%8B%E4%B8%AD%E6%B7%BB%E5%8A%A0%E4%BE%9D%E8%B5%96_hu10508024546822040522.png 1024w&#34;
+	srcset=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/%E5%B7%A5%E7%A8%8B%E4%B8%AD%E6%B7%BB%E5%8A%A0%E4%BE%9D%E8%B5%96_hu_b2506b5f024f02f.png 480w, https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/%E5%B7%A5%E7%A8%8B%E4%B8%AD%E6%B7%BB%E5%8A%A0%E4%BE%9D%E8%B5%96_hu_58f1648d7a3a6f29.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;
@@ -203,10 +203,10 @@
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;我们通过&lt;a class=&#34;link&#34; href=&#34;https://github.com/ingokegel/jclasslib&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;jclasslib&lt;/a&gt;验证下：
-&lt;img src=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/jclasslib%E5%B7%A5%E5%85%B7%E6%9F%A5%E7%9C%8B%E7%BB%93%E6%9E%9C.png&#34;
+&lt;img src=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/jclasslib%E5%B7%A5%E5%85%B7%E6%9F%A5%E7%9C%8B%E7%BB%93%E6%9E%9C.png&#34;
 	width=&#34;984&#34;
 	height=&#34;708&#34;
-	srcset=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/jclasslib%E5%B7%A5%E5%85%B7%E6%9F%A5%E7%9C%8B%E7%BB%93%E6%9E%9C_hu1975056171143250507.png 480w, http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/jclasslib%E5%B7%A5%E5%85%B7%E6%9F%A5%E7%9C%8B%E7%BB%93%E6%9E%9C_hu8466522714498801889.png 1024w&#34;
+	srcset=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/jclasslib%E5%B7%A5%E5%85%B7%E6%9F%A5%E7%9C%8B%E7%BB%93%E6%9E%9C_hu_df683ad318b64697.png 480w, https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/jclasslib%E5%B7%A5%E5%85%B7%E6%9F%A5%E7%9C%8B%E7%BB%93%E6%9E%9C_hu_52efb6ff355474c2.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;
@@ -340,10 +340,10 @@
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;可以看到classReader的accept方法也可以接受一个classWriter对象，它也是继承自classVisitor，然后把它转化成byte数组，最后通过文件输出流把byte数组写会到文件中，整个过程很简单。修改class也是如此把修改后的byte数组也是写会到文件中的。&lt;/p&gt;
 &lt;p&gt;在上面我们知道classVisitor是读取class的核心类，最终把该classVistor传到accept方法中，而classWriter也需要传到accept方法中。所以看下两者都要使用的话，该怎么处理：
-&lt;img src=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/classVisitor%E7%B1%BB%E6%96%B9%E6%B3%95.png&#34;
+&lt;img src=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/classVisitor%E7%B1%BB%E6%96%B9%E6%B3%95.png&#34;
 	width=&#34;898&#34;
 	height=&#34;860&#34;
-	srcset=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/classVisitor%E7%B1%BB%E6%96%B9%E6%B3%95_hu17323361575367939264.png 480w, http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/classVisitor%E7%B1%BB%E6%96%B9%E6%B3%95_hu14982585248155474551.png 1024w&#34;
+	srcset=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/classVisitor%E7%B1%BB%E6%96%B9%E6%B3%95_hu_2ba2e010792b747b.png 480w, https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/classVisitor%E7%B1%BB%E6%96%B9%E6%B3%95_hu_c6d3d6e9dd00032d.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;
@@ -409,10 +409,10 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;将ClassWriter传到AddTimerClassVisitor中，可以看出来ClassWriter是被代理的对象，AddTimerClassVisitor是代理对象，在前面我们通过重写visitField访问到属性，通过visitMethod访问到方法，这两个方法是多次被调用，而我们是想添加一个静态的timer属性，和修改方法m，那此时visitField肯定不会被调用到，在class开始访问和结束访问的时候会分别调用visit和visitEnd方法，那添加timer属性可以放到visitEnd中，修改方法可以在visitMethod中通过过滤来达到修改的目的，而最终的字节码照样可以先把结果通过jclasslib来查看：
-&lt;img src=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/class%E4%B8%ADtimer%E5%B1%9E%E6%80%A7.png&#34;
+&lt;img src=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/class%E4%B8%ADtimer%E5%B1%9E%E6%80%A7.png&#34;
 	width=&#34;1016&#34;
 	height=&#34;470&#34;
-	srcset=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/class%E4%B8%ADtimer%E5%B1%9E%E6%80%A7_hu5819256557918503387.png 480w, http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/class%E4%B8%ADtimer%E5%B1%9E%E6%80%A7_hu3202320217386434493.png 1024w&#34;
+	srcset=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/class%E4%B8%ADtimer%E5%B1%9E%E6%80%A7_hu_99a8f11f1a534527.png 480w, https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/class%E4%B8%ADtimer%E5%B1%9E%E6%80%A7_hu_e4447284e1e89f12.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;
@@ -480,10 +480,10 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;首先是拿到当前的MethodVisitor，然后判断方法不是构造函数，最后放回一个新的NewMethodVisitor，否则返回原来的MethodVisitor，下来来看下NewMethodVisitor如何修改方法m，先看下jclasslib修改后class的方法m：
-&lt;img src=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/class%E4%B8%ADm%E6%96%B9%E6%B3%95.png&#34;
+&lt;img src=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/class%E4%B8%ADm%E6%96%B9%E6%B3%95.png&#34;
 	width=&#34;1504&#34;
 	height=&#34;524&#34;
-	srcset=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/class%E4%B8%ADm%E6%96%B9%E6%B3%95_hu1381221309801485577.png 480w, http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/class%E4%B8%ADm%E6%96%B9%E6%B3%95_hu17218276568242045721.png 1024w&#34;
+	srcset=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/class%E4%B8%ADm%E6%96%B9%E6%B3%95_hu_4c3fc9fceb0f834.png 480w, https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/class%E4%B8%ADm%E6%96%B9%E6%B3%95_hu_fbe7eb1c8c799c3f.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;
@@ -495,10 +495,10 @@
 	
 &gt;
 其实我们通过javap -v com.xc.asm.C来查看字节码：
-&lt;img src=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/javap%E5%91%BD%E4%BB%A4%E7%BB%93%E6%9E%9C.png&#34;
+&lt;img src=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/javap%E5%91%BD%E4%BB%A4%E7%BB%93%E6%9E%9C.png&#34;
 	width=&#34;1744&#34;
 	height=&#34;1254&#34;
-	srcset=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/javap%E5%91%BD%E4%BB%A4%E7%BB%93%E6%9E%9C_hu18223714757828861394.png 480w, http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/javap%E5%91%BD%E4%BB%A4%E7%BB%93%E6%9E%9C_hu4960881914299146661.png 1024w&#34;
+	srcset=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/javap%E5%91%BD%E4%BB%A4%E7%BB%93%E6%9E%9C_hu_74e9980ee8cabaaf.png 480w, https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/javap%E5%91%BD%E4%BB%A4%E7%BB%93%E6%9E%9C_hu_fa72bf31ba156f46.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;
@@ -510,10 +510,10 @@
 	
 &gt;
 更多的javap命令如下：&lt;/br&gt;
-&lt;img src=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/javap%E5%91%BD%E4%BB%A4.png&#34;
+&lt;img src=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/javap%E5%91%BD%E4%BB%A4.png&#34;
 	width=&#34;658&#34;
 	height=&#34;456&#34;
-	srcset=&#34;http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/javap%E5%91%BD%E4%BB%A4_hu7141172015757490818.png 480w, http://localhost:1313/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/javap%E5%91%BD%E4%BB%A4_hu12080628541207484818.png 1024w&#34;
+	srcset=&#34;https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/javap%E5%91%BD%E4%BB%A4_hu_76f536bc6bb3d85.png 480w, https://example.com/p/asm%E4%BF%AE%E6%94%B9%E5%AD%97%E8%8A%82%E7%A0%81%E5%88%9D%E4%BD%93%E9%AA%8C/javap%E5%91%BD%E4%BB%A4_hu_fe2753b82fc2a5e0.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;

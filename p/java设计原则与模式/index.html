@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="主要介绍java中的设计原则与模式">
+<title>java设计原则与模式</title>
+
+<link rel='canonical' href='https://example.com/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="java设计原则与模式">
+<meta property='og:description' content="主要介绍java中的设计原则与模式">
+<meta property='og:url' content='https://example.com/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-03-07T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-03-07T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="java设计原则与模式">
+<meta name="twitter:description" content="主要介绍java中的设计原则与模式">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/_index.zh-cn/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#设计原则">设计原则</a>
+          <ol>
+            <li><a href="#开闭原则">开闭原则</a></li>
+            <li><a href="#里式替换原则">里式替换原则</a></li>
+            <li><a href="#依赖倒置原则">依赖倒置原则</a></li>
+            <li><a href="#单一职业原则">单一职业原则</a></li>
+            <li><a href="#接口隔离原则">接口隔离原则</a></li>
+            <li><a href="#迪米特法则">迪米特法则</a></li>
+            <li><a href="#合成复用原则">合成复用原则</a></li>
+          </ol>
+        </li>
+        <li><a href="#设计模式">设计模式</a>
+          <ol>
+            <li><a href="#单例模式">单例模式</a></li>
+            <li><a href="#原型模式">原型模式</a></li>
+            <li><a href="#工厂模式">工厂模式</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/java/" >
+                Java
+            </a>
+        
+            <a href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" >
+                设计模式
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/">java设计原则与模式</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            主要介绍java中的设计原则与模式
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2025-03-07</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    1 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h3 id="设计原则">设计原则
+</h3><h4 id="开闭原则">开闭原则
+</h4><ul>
+<li>主要指对扩展开放，对修改关闭。用抽象构建框架，用实现扩展细节。</li>
+<li>优点：保持软件的稳定性，不影响原有业务逻辑代码。使代码更具有模块化，易于维护。提高开发效率。</li>
+<li>来源：<a class="link" href="https://segmentfault.com/a/1190000021922108"  target="_blank" rel="noopener"
+    >https://segmentfault.com/a/1190000021922108</a></li>
+</ul>
+<h4 id="里式替换原则">里式替换原则
+</h4><ul>
+<li>所有引用基类的地方必须能透明地使用其子类的对象</li>
+<li>原则：子类必须实现父类的抽象方法，不得重写父类的非抽象方法</li>
+<li>子类可以增加自己特有的方法</li>
+<li>子类在实现父类的方法的时候，形参要比父类的参数更加宽松。</li>
+<li>子类实现父类的方法的时候，出参要比父类更加严格。</li>
+</ul>
+<h4 id="依赖倒置原则">依赖倒置原则
+</h4><ul>
+<li>高层模块不应该直接依赖底层模块，二者应该依赖抽象，抽象不应该依赖细节，细节应该依赖抽象。</li>
+<li>比如A类是接口，B类是实现，而C类要使用B类，那么C类不能直接使用B类，而是通过依赖A接口来实现，这样将使用谁的权交给了外界。C类更加的灵活</li>
+</ul>
+<h4 id="单一职业原则">单一职业原则
+</h4><ul>
+<li>一个类或者模块只负责完成一个职责。不要设计大而全的类，要设计粒度小、功能单一的类。单一职责原则是为了实现代码高内聚、低耦合，提高代码的复用性、可读性、可维护性。</li>
+</ul>
+<h4 id="接口隔离原则">接口隔离原则
+</h4><ul>
+<li>尽量将臃肿庞大的接口拆分成更小的和更具体的接口，让接口中只包含客户感兴趣的方法。和单一职责原则相比，他们都是为了提高类的内聚性、降低它们之间的耦合性，体现了封装的思想。两者不同在于单一职责原则注重的是职责，而接口隔离原则注重的是对接口依赖的隔离。单一职责原则主要是约束类，它针对的是程序中的实现和细节。接口隔离原则主要是约束接口，主要针对抽象和程序整体框架的构建。</li>
+</ul>
+<h4 id="迪米特法则">迪米特法则
+</h4><ul>
+<li>如果两个软件实体无须直接通信，那么就不应当发生直接的相互调用，可以通过第三方转发该调用，目的是降低类之间的耦合度，提高模块的相对独立性。由于亲合度降低，从而提高了类的可复用率和系统的扩展性。</li>
+<li>比如A类想调用B类，但是他们又没有直接联系，而通过中间的C类来调用B类。A-&gt;C-&gt;B这种调用关系</li>
+</ul>
+<h4 id="合成复用原则">合成复用原则
+</h4><ul>
+<li>要求在软件复用时，尽量先使用组合或者聚合等关联关系来实现，其次才考虑使用集成关系来实现。采用组合或聚合复用时，可以将已有对象纳入新对象中，使之成为新对象的一部分，从而新对象可以调用已有对象的功能。</li>
+<li>维持了类的封装性，因为成分对象的内部细节是新对象看不见的，这种复用称为黑箱复用。</li>
+<li>新旧类之间的耦合度低，这种复用所需的依赖较少，新对象存储成分对象的唯一方法是通过成分对象的接口。</li>
+<li>复用的灵活性高。这种复用可以在运行时动态进行，新对象可以动态地引用与成分对象类型相同的对象。</li>
+</ul>
+<h3 id="设计模式">设计模式
+</h3><ul>
+<li>设计模式分为创建型、结构型、行为型。
+<ol>
+<li>创建型：用于对象的创建，提高代码的灵活性和复用性
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>设计模式</th>
+          <th>描述</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>工厂方法模式（Factory Method）</td>
+          <td>通过工厂类提供一个创建对象的接口，而不是直接 new 一个对象，提高代码的可扩展性。</td>
+      </tr>
+      <tr>
+          <td>抽象工厂模式（Abstract Factory）</td>
+          <td>提供一个创建一系列相关或相互依赖对象的接口，而无需指定它们的具体类。</td>
+      </tr>
+      <tr>
+          <td>单例模式（Singleton）</td>
+          <td>确保一个类只有一个实例，并提供一个全局访问点。</td>
+      </tr>
+      <tr>
+          <td>建造者模式（Builder）</td>
+          <td>用于创建复杂对象，将对象的构建与表示分离，以便相同的构建过程可以创建不同的表示。</td>
+      </tr>
+      <tr>
+          <td>原型模式（Prototype）</td>
+          <td>通过复制（克隆）已有的实例来创建新对象，而不是通过实例化。</td>
+      </tr>
+  </tbody>
+</table></div>
+</li>
+<li>结构型模式：主要用于类与对象的组合，确保系统的结构更加灵活和高效。
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>设计模式</th>
+          <th>描述</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>适配器模式（Adapter）</td>
+          <td>让原本不兼容的接口能够协同工作，相当于“转换器”。</td>
+      </tr>
+      <tr>
+          <td>桥接模式（Bridge）</td>
+          <td>分离抽象部分和实现部分，使它们可以独立变化，提高可扩展性。</td>
+      </tr>
+      <tr>
+          <td>装饰器模式（Decorator）</td>
+          <td>通过动态地给对象增加额外的功能，而不会改变其结构（类似于 Java 的 IO 流）。</td>
+      </tr>
+      <tr>
+          <td>组合模式（Composite）</td>
+          <td>允许将对象组合成树形结构，以表示“整体-部分”关系，适用于树形结构数据。</td>
+      </tr>
+      <tr>
+          <td>外观模式（Facade）</td>
+          <td>提供一个统一的接口，用于访问子系统的一组接口，简化客户端的调用。</td>
+      </tr>
+      <tr>
+          <td>享元模式（Flyweight）</td>
+          <td>通过共享对象，减少内存占用，提高性能。</td>
+      </tr>
+      <tr>
+          <td>代理模式（Proxy）</td>
+          <td>通过代理对象控制对目标对象的访问，例如：静态代理、动态代理（JDK/CGLIB）。</td>
+      </tr>
+  </tbody>
+</table></div>
+</li>
+<li>行为型模式：主要用于对象之间的通信和职责分配，提高代码的可维护性和可扩展性。
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>设计模式</th>
+          <th>描述</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>策略模式（Strategy）</td>
+          <td>定义一系列算法，将每种算法封装起来，并使它们可以互换。</td>
+      </tr>
+      <tr>
+          <td>观察者模式（Observer）</td>
+          <td>允许对象间建立一对多的依赖关系，当一个对象状态变化时，所有依赖它的对象都会收到通知（如 监听器 机制）。</td>
+      </tr>
+      <tr>
+          <td>责任链模式（Chain of Responsibility）</td>
+          <td>将请求沿着处理链传递，直到某个对象处理请求，降低耦合度（如 Java Web 过滤器）。</td>
+      </tr>
+      <tr>
+          <td>命令模式（Command）</td>
+          <td>将请求封装为对象，支持请求的撤销（Undo）和恢复（Redo）。</td>
+      </tr>
+      <tr>
+          <td>备忘录模式（Memento）</td>
+          <td>保存对象的历史状态，以便以后恢复（如 撤销/恢复 操作）。</td>
+      </tr>
+      <tr>
+          <td>状态模式（State）</td>
+          <td>允许对象在不同状态下改变行为，避免大量 if-else 语句。</td>
+      </tr>
+      <tr>
+          <td>中介者模式（Mediator）</td>
+          <td>通过一个中介对象来协调多个对象之间的交互，避免对象间的直接通信。</td>
+      </tr>
+      <tr>
+          <td>迭代器模式（Iterator）</td>
+          <td>提供一种访问集合对象元素的方法，而不暴露集合的内部表示。</td>
+      </tr>
+      <tr>
+          <td>访问者模式（Visitor）</td>
+          <td>允许在不修改对象结构的情况下，向对象结构中添加新的行为（如 XML 解析）。</td>
+      </tr>
+      <tr>
+          <td>解释器模式（Interpreter）</td>
+          <td>用于定义语言的语法规则，并解释相应的表达式（如 SQL 解析）。</td>
+      </tr>
+  </tbody>
+</table></div>
+</li>
+</ol>
+</li>
+</ul>
+<h4 id="单例模式">单例模式
+</h4><ul>
+<li>饿汉式：类加载时机就已经把单例对象实例化出来了，所以他不存在线程安全问题。但是它会浪费内存，在还没使用的时候，就已经创建了实例。
+<img src="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E9%A5%BF%E6%B1%89%E5%BC%8F%E5%8D%95%E4%BE%8B.png"
+	width="1258"
+	height="668"
+	srcset="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E9%A5%BF%E6%B1%89%E5%BC%8F%E5%8D%95%E4%BE%8B_hu_8f552d015b64da7c.png 480w, /p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E9%A5%BF%E6%B1%89%E5%BC%8F%E5%8D%95%E4%BE%8B_hu_294090fd966a4b43.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="188"
+		data-flex-basis="451px"
+	
+></li>
+<li>懒汉式（线程不安全）
+<img src="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%87%92%E6%B1%89%E5%BC%8F-%E7%BA%BF%E7%A8%8B%E4%B8%8D%E5%AE%89%E5%85%A8.png"
+	width="724"
+	height="522"
+	srcset="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%87%92%E6%B1%89%E5%BC%8F-%E7%BA%BF%E7%A8%8B%E4%B8%8D%E5%AE%89%E5%85%A8_hu_78f617843f9f1b39.png 480w, /p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%87%92%E6%B1%89%E5%BC%8F-%E7%BA%BF%E7%A8%8B%E4%B8%8D%E5%AE%89%E5%85%A8_hu_ac79883fe134ac1a.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="138"
+		data-flex-basis="332px"
+	
+>
+<ul>
+<li>创建对象的时机修改为了在getInstance内部，需要时再创建，可以节约系统资源。</li>
+<li>getInstance方法在多个线程并发调用时，有可能会出现创建了多个实例，所以这是线程不安全的单例模式。</li>
+</ul>
+</li>
+<li>懒汉式（线程安全）
+<img src="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%87%92%E6%B1%89%E5%BC%8F-%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8-%E6%96%B9%E6%B3%95%E5%8A%A0%E9%94%81.png"
+	width="984"
+	height="540"
+	srcset="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%87%92%E6%B1%89%E5%BC%8F-%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8-%E6%96%B9%E6%B3%95%E5%8A%A0%E9%94%81_hu_a23bae050f0c9a57.png 480w, /p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%87%92%E6%B1%89%E5%BC%8F-%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8-%E6%96%B9%E6%B3%95%E5%8A%A0%E9%94%81_hu_d9eec35aa9aa5739.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="182"
+		data-flex-basis="437px"
+	
+>
+<ul>
+<li>方法上加锁，这种加锁能保证线程安全问题，但是加锁的粒度较大，每次在调用getInstance方法的时候，都需要加锁，很显然，锁的开销很大。</li>
+</ul>
+</li>
+<li>懒汉式（线程安全-dcl模式）
+<img src="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%87%92%E6%B1%89%E5%BC%8F-dcl%E6%A8%A1%E5%BC%8F.png"
+	width="816"
+	height="672"
+	srcset="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%87%92%E6%B1%89%E5%BC%8F-dcl%E6%A8%A1%E5%BC%8F_hu_6131b6284634999c.png 480w, /p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%87%92%E6%B1%89%E5%BC%8F-dcl%E6%A8%A1%E5%BC%8F_hu_7938b39de945d47f.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="121"
+		data-flex-basis="291px"
+	
+>
+<ul>
+<li>双重判断，成员属性instance上，增加了volatile关键字，保障多线程对instance值的可见性以及禁止指令重排。
+第一层非空判断是为了锁的开销，只有为空的时候才加锁。第二层非空判断是为了防止创建了多个实例。</li>
+<li>第一层非空判断是为了锁的开销，只有为空的时候才加锁。第二层非空判断是为了防止创建了多个实例。</li>
+</ul>
+</li>
+<li>静态内部类中加静态变量
+<img src="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E9%9D%99%E6%80%81%E5%86%85%E9%83%A8%E7%B1%BB%E5%8A%A0%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F.png"
+	width="970"
+	height="480"
+	srcset="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E9%9D%99%E6%80%81%E5%86%85%E9%83%A8%E7%B1%BB%E5%8A%A0%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F_hu_74673bebb225bf83.png 480w, /p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E9%9D%99%E6%80%81%E5%86%85%E9%83%A8%E7%B1%BB%E5%8A%A0%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F_hu_810020d1c3cf2ad4.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="202"
+		data-flex-basis="485px"
+	
+>
+<ul>
+<li>静态内部类可以达到双检锁的效果。将instance放在了内部类中，不会在类加载的时候就加载实例，这个和饿汉式在类加载的时候就加载有区别。他只会在getInstance的时候，才会去加载内部类，此时才会去加载单例实例。并且instance是内部类类加载的时候才进行加载，所以线程安全问题也保证了。</li>
+</ul>
+</li>
+<li>枚举单例
+<img src="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%9E%9A%E4%B8%BE%E5%8D%95%E4%BE%8B.png"
+	width="542"
+	height="234"
+	srcset="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%9E%9A%E4%B8%BE%E5%8D%95%E4%BE%8B_hu_a30663440ad5d877.png 480w, /p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%9E%9A%E4%B8%BE%E5%8D%95%E4%BE%8B_hu_9ee3e1f9c39fdfe6.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="231"
+		data-flex-basis="555px"
+	
+>
+<ul>
+<li>这种不仅能避免多线程同步问题，还自动支持序列化机制，防止反序列化重新创建新的对象，防止多次实例化。</li>
+</ul>
+</li>
+</ul>
+<h4 id="原型模式">原型模式
+</h4><ul>
+<li>Java原型模式（Prototype Pattern）是一种创建型设计模式，其目的是通过复制现有对象来创建新的对象。</li>
+<li>使用场景：
+<ul>
+<li>当对象创建的过程比较耗时或者比较复杂，例如需要进行复杂的计算或者涉及到网络请求等操作，可以使用原型模式来避免重复的初始化过程。</li>
+<li>当需要创建的对象需要和其他对象进行协同工作时，例如需要创建一个包含多个对象的组合对象，可以使用原型模式来复制一个已有的组合对象，然后进行修改来创建新的组合对象。</li>
+<li>当需要动态地增加或者删除一些对象时，可以使用原型模式来复制一个已有的对象，然后进行修改来创建新的对象。</li>
+<li>当需要保护对象的复杂状态时，例如当一个对象的创建需要大量的数据初始化时，可以使用原型模式来保护这些数据，避免因为对象的复制而产生意外的副作用。</li>
+</ul>
+</li>
+<li>代码实现：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 定义一个原型接口</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">interface</span> <span class="nc">Prototype</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Prototype</span><span class="w"> </span><span class="nf">clone</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 具体的原型类</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">class</span> <span class="nc">ConcretePrototype</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Prototype</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Prototype</span><span class="w"> </span><span class="nf">clone</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ConcretePrototype</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 客户端代码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">class</span> <span class="nc">Client</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Prototype</span><span class="w"> </span><span class="n">prototype</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ConcretePrototype</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Prototype</span><span class="w"> </span><span class="n">clone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prototype</span><span class="p">.</span><span class="na">clone</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>使用小结：
+<ul>
+<li>Java中的Object类实现了Cloneable接口，这就意味着Java中的任何对象都可以实现原型模式。通过实现Cloneable接口，并重写Object类中的clone()方法，可以实现原型模式。例如 ArrayList、HashMap 等集合类都实现了Cloneable 接口，可以通过复制现有对象来创建新的对象。</li>
+<li>Java中的线程池也是使用了原型模式，线程池中的每个线程都是从原型线程中复制而来，而不是每次创建新的线程。</li>
+</ul>
+</li>
+</ul>
+<h4 id="工厂模式">工厂模式
+</h4><ul>
+<li>
+<p>分为简单工厂模式、工厂方法模式、抽象工厂模式。定义一个创建产品对象的工厂接口，将产品对象的实际创建工作推迟到具体子工厂类当中。这满足创建型模式中所要求的创建与使用相分离。创建型模式可以降低系统的耦合度，使用者不需要关注对象的创建细节，对象的创建由相关的工厂来完成。</p>
+</li>
+<li>
+<p>简单工厂模式
+<img src="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F.png"
+	width="898"
+	height="500"
+	srcset="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F_hu_4d02ffd4f313328a.png 480w, /p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F_hu_94695e990651a461.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="179"
+		data-flex-basis="431px"
+	
+></p>
+<ul>
+<li>简单工厂类会很庞大，负责创建所有产品的创建，如果要新增产品类，会修改工厂类，违背了开闭原则。并且违背了高聚合原则。</li>
+</ul>
+</li>
+<li>
+<p>工厂方法模式</p>
+<ul>
+<li>在简单工厂类基础上将工厂类也进行抽象化，每个工厂类只做一件事，那就是生产对应的对象，保证了单一职责原则，并且保证了开闭原则，如果要生产不同的对象，只需要提供对应的工厂实现类就可以。
+<img src="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F.png"
+	width="1070"
+	height="684"
+	srcset="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F_hu_9743ce8971d2d6e6.png 480w, /p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F_hu_befeb2fd12b533d5.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="156"
+		data-flex-basis="375px"
+	
+></li>
+</ul>
+</li>
+<li>
+<p>抽象工厂模式</p>
+<ul>
+<li>和上面的工厂方法模式差不多，也是有对应的工厂实现类，区别是工厂类能生产不同级别的产品。
+<img src="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F.png"
+	width="1384"
+	height="996"
+	srcset="/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F_hu_b68c7303ccffee30.png 480w, /p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F_hu_7f99eaa23582d0eb.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="138"
+		data-flex-basis="333px"
+	
+></li>
+</ul>
+</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Example Person
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

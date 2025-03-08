@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
-    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="创建脚本 首先在终端下创建一个脚本文件\n1 touch apkcompare 给脚本赋予执行权限 1 chmod +x apkcompare 打开脚本 使用zsh中装的sublime插件打开脚本文件\n1 ">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="创建脚本 首先在终端下创建一个脚本文件\n1 touch apkcompare 给脚本赋予执行权限 1 chmod +x apkcompare 打开脚本 使用zsh中装的sublime插件打开脚本文件\n1 st apkcompare 编辑脚本内容 1 2 3 4 5 6 7 #!/bin/bash echo &#34;请输入改变前的apk路径：&#34; read path1 echo &#34;请输入改变后的apk路径：&#34; read path2 cd /Users/xiangcheng/downloads java -jar apkcompare-1.0.jar $path1 $path2 compare_result_file 执行脚本 1 ./apkcompare 将脚本定制成应用 平时使用shell脚本的时候，每次都要找到shell脚本的执行文件非常麻烦，然后想到如果能将shell脚本制作成一个应用那就非常nice了。 下面就以平时用的比较多的反编译脚本jadx为例来实践。\n先通过Alfred工具搜索出本机的Automator工具： 选取应用程序 添加shell脚本 在左侧搜索 “运行 Shell 脚本”（Run Shell Script）。 拖动到右侧工作区。 在 Shell 选项里，选择 /bin/bash（或 /bin/zsh）。 在文本框里输入如下代码： 1 2 #!/bin/bash /opt/homebrew/Cellar/jadx/1.5.1/bin/jadx-gui 我是通过homebrew装的jadx工具，所以指定下自己的jadx目录。\n">
 <title>mac下快速写一个脚本</title>
 
-<link rel='canonical' href='http://localhost:1313/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/'>
+<link rel='canonical' href='https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="mac下快速写一个脚本">
-<meta property='og:description' content="创建脚本 首先在终端下创建一个脚本文件\n1 touch apkcompare 给脚本赋予执行权限 1 chmod +x apkcompare 打开脚本 使用zsh中装的sublime插件打开脚本文件\n1 ">
-<meta property='og:url' content='http://localhost:1313/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/'>
+<meta property='og:description' content="创建脚本 首先在终端下创建一个脚本文件\n1 touch apkcompare 给脚本赋予执行权限 1 chmod +x apkcompare 打开脚本 使用zsh中装的sublime插件打开脚本文件\n1 st apkcompare 编辑脚本内容 1 2 3 4 5 6 7 #!/bin/bash echo &#34;请输入改变前的apk路径：&#34; read path1 echo &#34;请输入改变后的apk路径：&#34; read path2 cd /Users/xiangcheng/downloads java -jar apkcompare-1.0.jar $path1 $path2 compare_result_file 执行脚本 1 ./apkcompare 将脚本定制成应用 平时使用shell脚本的时候，每次都要找到shell脚本的执行文件非常麻烦，然后想到如果能将shell脚本制作成一个应用那就非常nice了。 下面就以平时用的比较多的反编译脚本jadx为例来实践。\n先通过Alfred工具搜索出本机的Automator工具： 选取应用程序 添加shell脚本 在左侧搜索 “运行 Shell 脚本”（Run Shell Script）。 拖动到右侧工作区。 在 Shell 选项里，选择 /bin/bash（或 /bin/zsh）。 在文本框里输入如下代码： 1 2 #!/bin/bash /opt/homebrew/Cellar/jadx/1.5.1/bin/jadx-gui 我是通过homebrew装的jadx工具，所以指定下自己的jadx目录。\n">
+<meta property='og:url' content='https://example.com/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-02-19T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-02-19T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="mac下快速写一个脚本">
-<meta name="twitter:description" content="创建脚本 首先在终端下创建一个脚本文件\n1 touch apkcompare 给脚本赋予执行权限 1 chmod +x apkcompare 打开脚本 使用zsh中装的sublime插件打开脚本文件\n1 ">
+<meta name="twitter:description" content="创建脚本 首先在终端下创建一个脚本文件\n1 touch apkcompare 给脚本赋予执行权限 1 chmod +x apkcompare 打开脚本 使用zsh中装的sublime插件打开脚本文件\n1 st apkcompare 编辑脚本内容 1 2 3 4 5 6 7 #!/bin/bash echo &#34;请输入改变前的apk路径：&#34; read path1 echo &#34;请输入改变后的apk路径：&#34; read path2 cd /Users/xiangcheng/downloads java -jar apkcompare-1.0.jar $path1 $path2 compare_result_file 执行脚本 1 ./apkcompare 将脚本定制成应用 平时使用shell脚本的时候，每次都要找到shell脚本的执行文件非常麻烦，然后想到如果能将shell脚本制作成一个应用那就非常nice了。 下面就以平时用的比较多的反编译脚本jadx为例来实践。\n先通过Alfred工具搜索出本机的Automator工具： 选取应用程序 添加shell脚本 在左侧搜索 “运行 Shell 脚本”（Run Shell Script）。 拖动到右侧工作区。 在 Shell 选项里，选择 /bin/bash（或 /bin/zsh）。 在文本框里输入如下代码： 1 2 #!/bin/bash /opt/homebrew/Cellar/jadx/1.5.1/bin/jadx-gui 我是通过homebrew装的jadx工具，所以指定下自己的jadx目录。\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -455,7 +455,7 @@
 </h4><p><img src="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2Automator%E5%B7%A5%E5%85%B7.png"
 	width="1436"
 	height="298"
-	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2Automator%E5%B7%A5%E5%85%B7_hu13576890229934251208.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2Automator%E5%B7%A5%E5%85%B7_hu2821974695366956086.png 1024w"
+	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2Automator%E5%B7%A5%E5%85%B7_hu_ad79738b4e51ca26.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2Automator%E5%B7%A5%E5%85%B7_hu_591fd28d74ec11a5.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -470,7 +470,7 @@
 </h4><p><img src="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E5%8F%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F.png"
 	width="1074"
 	height="954"
-	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E5%8F%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F_hu7383789163043902577.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E5%8F%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F_hu4829022659480578753.png 1024w"
+	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E5%8F%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F_hu_a83a2e3216e3127b.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E5%8F%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F_hu_44bed4b4576099d0.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -487,7 +487,7 @@
 <img src="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2shell%E8%84%9A%E6%9C%AC.png"
 	width="2000"
 	height="1768"
-	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2shell%E8%84%9A%E6%9C%AC_hu781375108408735742.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2shell%E8%84%9A%E6%9C%AC_hu14615199015857252835.png 1024w"
+	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2shell%E8%84%9A%E6%9C%AC_hu_b78f7349e92c4de4.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%90%9C%E7%B4%A2shell%E8%84%9A%E6%9C%AC_hu_ca0227aae929c014.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -502,7 +502,7 @@
 <img src="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%8B%96%E5%8A%A8shell%E8%84%9A%E6%9C%AC%E5%88%B0%E5%8F%B3%E4%BE%A7.png"
 	width="1998"
 	height="1756"
-	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%8B%96%E5%8A%A8shell%E8%84%9A%E6%9C%AC%E5%88%B0%E5%8F%B3%E4%BE%A7_hu11765521415516910728.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%8B%96%E5%8A%A8shell%E8%84%9A%E6%9C%AC%E5%88%B0%E5%8F%B3%E4%BE%A7_hu11696295268397146098.png 1024w"
+	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%8B%96%E5%8A%A8shell%E8%84%9A%E6%9C%AC%E5%88%B0%E5%8F%B3%E4%BE%A7_hu_9ecd78dea6333d51.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E6%8B%96%E5%8A%A8shell%E8%84%9A%E6%9C%AC%E5%88%B0%E5%8F%B3%E4%BE%A7_hu_6ffd5d4128aeb47f.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -517,7 +517,7 @@
 <img src="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E6%8B%A9shell%E7%B1%BB%E5%9E%8B.png"
 	width="1220"
 	height="356"
-	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E6%8B%A9shell%E7%B1%BB%E5%9E%8B_hu16876359859905355104.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E6%8B%A9shell%E7%B1%BB%E5%9E%8B_hu10732417014375881329.png 1024w"
+	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E6%8B%A9shell%E7%B1%BB%E5%9E%8B_hu_b73837666a39b59f.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E9%80%89%E6%8B%A9shell%E7%B1%BB%E5%9E%8B_hu_9090da8d52051d8b.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -543,7 +543,7 @@
 </div><p><img src="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%86%85%E5%AE%B9%E5%8C%BA%E5%9F%9F%E5%A1%AB%E4%B8%8A%E8%84%9A%E6%9C%AC%E8%A6%81%E6%89%A7%E8%A1%8C%E7%9A%84%E5%86%85%E5%AE%B9.png"
 	width="1240"
 	height="370"
-	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%86%85%E5%AE%B9%E5%8C%BA%E5%9F%9F%E5%A1%AB%E4%B8%8A%E8%84%9A%E6%9C%AC%E8%A6%81%E6%89%A7%E8%A1%8C%E7%9A%84%E5%86%85%E5%AE%B9_hu8520234096856523437.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%86%85%E5%AE%B9%E5%8C%BA%E5%9F%9F%E5%A1%AB%E4%B8%8A%E8%84%9A%E6%9C%AC%E8%A6%81%E6%89%A7%E8%A1%8C%E7%9A%84%E5%86%85%E5%AE%B9_hu15242097777827069684.png 1024w"
+	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%86%85%E5%AE%B9%E5%8C%BA%E5%9F%9F%E5%A1%AB%E4%B8%8A%E8%84%9A%E6%9C%AC%E8%A6%81%E6%89%A7%E8%A1%8C%E7%9A%84%E5%86%85%E5%AE%B9_hu_13ff9911988af418.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%86%85%E5%AE%B9%E5%8C%BA%E5%9F%9F%E5%A1%AB%E4%B8%8A%E8%84%9A%E6%9C%AC%E8%A6%81%E6%89%A7%E8%A1%8C%E7%9A%84%E5%86%85%E5%AE%B9_hu_92997576174d2c06.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -559,7 +559,7 @@
 </h4><p><img src="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%AD%98%E5%82%A8%E5%BA%94%E7%94%A8.png"
 	width="2000"
 	height="1806"
-	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%AD%98%E5%82%A8%E5%BA%94%E7%94%A8_hu11487500343413603622.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%AD%98%E5%82%A8%E5%BA%94%E7%94%A8_hu5754731901232872703.png 1024w"
+	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%AD%98%E5%82%A8%E5%BA%94%E7%94%A8_hu_5c7c9bfa9d6862e6.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%AD%98%E5%82%A8%E5%BA%94%E7%94%A8_hu_764e5ed09205637e.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -573,7 +573,7 @@
 <img src="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E8%BE%93%E5%85%A5%E5%BA%94%E7%94%A8%E7%9A%84%E5%90%8D%E5%AD%97.png"
 	width="1986"
 	height="1740"
-	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E8%BE%93%E5%85%A5%E5%BA%94%E7%94%A8%E7%9A%84%E5%90%8D%E5%AD%97_hu14553101990345728185.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E8%BE%93%E5%85%A5%E5%BA%94%E7%94%A8%E7%9A%84%E5%90%8D%E5%AD%97_hu12867887965541032475.png 1024w"
+	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E8%BE%93%E5%85%A5%E5%BA%94%E7%94%A8%E7%9A%84%E5%90%8D%E5%AD%97_hu_69712edd46639350.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E8%BE%93%E5%85%A5%E5%BA%94%E7%94%A8%E7%9A%84%E5%90%8D%E5%AD%97_hu_9873b8099b9c4e48.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -589,7 +589,7 @@
 <img src="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E7%9A%84%E5%9B%BE%E6%A0%87%E5%AD%97%E6%AE%B5.png"
 	width="1902"
 	height="1492"
-	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E7%9A%84%E5%9B%BE%E6%A0%87%E5%AD%97%E6%AE%B5_hu2268879132930354375.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E7%9A%84%E5%9B%BE%E6%A0%87%E5%AD%97%E6%AE%B5_hu15258672040487590265.png 1024w"
+	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E7%9A%84%E5%9B%BE%E6%A0%87%E5%AD%97%E6%AE%B5_hu_c5a064a701fc336a.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E7%9A%84%E5%9B%BE%E6%A0%87%E5%AD%97%E6%AE%B5_hu_13faa8ec7bd90222.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -604,7 +604,7 @@
 <img src="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E5%9B%BE%E6%A0%87%E7%9A%84%E4%BD%8D%E7%BD%AE.png"
 	width="2374"
 	height="1010"
-	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E5%9B%BE%E6%A0%87%E7%9A%84%E4%BD%8D%E7%BD%AE_hu5856973507782400123.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E5%9B%BE%E6%A0%87%E7%9A%84%E4%BD%8D%E7%BD%AE_hu2639029172732527205.png 1024w"
+	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E5%9B%BE%E6%A0%87%E7%9A%84%E4%BD%8D%E7%BD%AE_hu_d143061dc71660d0.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/%E5%BA%94%E7%94%A8%E5%9B%BE%E6%A0%87%E7%9A%84%E4%BD%8D%E7%BD%AE_hu_1ec98b9f046f446.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -631,7 +631,7 @@
 <img src="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/Jadx%E5%BA%94%E7%94%A8%E7%9A%84%E4%BD%8D%E7%BD%AE.png"
 	width="1088"
 	height="112"
-	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/Jadx%E5%BA%94%E7%94%A8%E7%9A%84%E4%BD%8D%E7%BD%AE_hu8631475480901247838.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/Jadx%E5%BA%94%E7%94%A8%E7%9A%84%E4%BD%8D%E7%BD%AE_hu10782278666947502510.png 1024w"
+	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/Jadx%E5%BA%94%E7%94%A8%E7%9A%84%E4%BD%8D%E7%BD%AE_hu_34844b825101636c.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/Jadx%E5%BA%94%E7%94%A8%E7%9A%84%E4%BD%8D%E7%BD%AE_hu_621f8b38580db7fe.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -646,7 +646,7 @@
 <img src="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/~%E8%A1%A8%E7%A4%BAUsers_%E7%94%A8%E6%88%B7%E5%90%8D.png"
 	width="884"
 	height="344"
-	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/~%E8%A1%A8%E7%A4%BAUsers_%E7%94%A8%E6%88%B7%E5%90%8D_hu13844569872443408533.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/~%E8%A1%A8%E7%A4%BAUsers_%E7%94%A8%E6%88%B7%E5%90%8D_hu3699519055810490239.png 1024w"
+	srcset="/p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/~%E8%A1%A8%E7%A4%BAUsers_%E7%94%A8%E6%88%B7%E5%90%8D_hu_9fc3a1ccf2e58d0c.png 480w, /p/mac%E4%B8%8B%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%80%E4%B8%AA%E8%84%9A%E6%9C%AC/~%E8%A1%A8%E7%A4%BAUsers_%E7%94%A8%E6%88%B7%E5%90%8D_hu_f6567e94cc3be8f2.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -751,7 +751,7 @@
     
     <section class="powerby">
         Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.29.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
     </section>
 </footer>
 
@@ -840,7 +840,7 @@
                 src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
                 
                 >
-            </script><script type="text/javascript" src="/ts/main.b013e5e1e738f40f172163608dbf040d8f4866fdc9d3d19c87ea979df1ac3395.js" defer></script>
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
 <script>
     (function () {
         const customFont = document.createElement('link');

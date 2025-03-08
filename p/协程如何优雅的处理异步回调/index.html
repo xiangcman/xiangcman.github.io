@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
-    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="suspendCoroutine 在android中无处不在获取view的宽高，而获取宽高是需要在view绘制完后才能获取，所以这是一个时机问题，通常通过view.post来获取，那么用协程如何形如同步获取宽高呢？下面来试试：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 GlobalScope.launch { val wh = getViewWh(view) Log.d(TAG, &#34;width:${wh.first}&#34;) Log.d(TAG, &#34;height:${wh.second}&#34;) } Log.d(TAG, &#34;outer coroutine&#34;) private suspend fun getViewWh(view: View) = suspendCoroutine&lt;Pair&lt;Int, Int&gt;&gt; { continuation -&gt; view.post { val width = view.width val height = view.height continuation.resume(Pair(width, height)) } } ">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="suspendCoroutine 在android中无处不在获取view的宽高，而获取宽高是需要在view绘制完后才能获取，所以这是一个时机问题，通常通过view.post来获取，那么用协程如何形如同步获取宽高呢？下面来试试：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 GlobalScope.launch { val wh = getViewWh(view) Log.d(TAG, &#34;width:${wh.first}&#34;) Log.d(TAG, &#34;height:${wh.second}&#34;) } Log.d(TAG, &#34;outer coroutine&#34;) private suspend fun getViewWh(view: View) = suspendCoroutine&lt;Pair&lt;Int, Int&gt;&gt; { continuation -&gt; view.post { val width = view.width val height = view.height continuation.resume(Pair(width, height)) } } 日志如下：\n">
 <title>协程如何优雅的处理异步回调</title>
 
-<link rel='canonical' href='http://localhost:1313/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/'>
+<link rel='canonical' href='https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程如何优雅的处理异步回调">
-<meta property='og:description' content="suspendCoroutine 在android中无处不在获取view的宽高，而获取宽高是需要在view绘制完后才能获取，所以这是一个时机问题，通常通过view.post来获取，那么用协程如何形如同步获取宽高呢？下面来试试：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 GlobalScope.launch { val wh = getViewWh(view) Log.d(TAG, &#34;width:${wh.first}&#34;) Log.d(TAG, &#34;height:${wh.second}&#34;) } Log.d(TAG, &#34;outer coroutine&#34;) private suspend fun getViewWh(view: View) = suspendCoroutine&lt;Pair&lt;Int, Int&gt;&gt; { continuation -&gt; view.post { val width = view.width val height = view.height continuation.resume(Pair(width, height)) } } ">
-<meta property='og:url' content='http://localhost:1313/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/'>
+<meta property='og:description' content="suspendCoroutine 在android中无处不在获取view的宽高，而获取宽高是需要在view绘制完后才能获取，所以这是一个时机问题，通常通过view.post来获取，那么用协程如何形如同步获取宽高呢？下面来试试：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 GlobalScope.launch { val wh = getViewWh(view) Log.d(TAG, &#34;width:${wh.first}&#34;) Log.d(TAG, &#34;height:${wh.second}&#34;) } Log.d(TAG, &#34;outer coroutine&#34;) private suspend fun getViewWh(view: View) = suspendCoroutine&lt;Pair&lt;Int, Int&gt;&gt; { continuation -&gt; view.post { val width = view.width val height = view.height continuation.resume(Pair(width, height)) } } 日志如下：\n">
+<meta property='og:url' content='https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-12-30T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-12-30T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="协程如何优雅的处理异步回调">
-<meta name="twitter:description" content="suspendCoroutine 在android中无处不在获取view的宽高，而获取宽高是需要在view绘制完后才能获取，所以这是一个时机问题，通常通过view.post来获取，那么用协程如何形如同步获取宽高呢？下面来试试：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 GlobalScope.launch { val wh = getViewWh(view) Log.d(TAG, &#34;width:${wh.first}&#34;) Log.d(TAG, &#34;height:${wh.second}&#34;) } Log.d(TAG, &#34;outer coroutine&#34;) private suspend fun getViewWh(view: View) = suspendCoroutine&lt;Pair&lt;Int, Int&gt;&gt; { continuation -&gt; view.post { val width = view.width val height = view.height continuation.resume(Pair(width, height)) } } ">
+<meta name="twitter:description" content="suspendCoroutine 在android中无处不在获取view的宽高，而获取宽高是需要在view绘制完后才能获取，所以这是一个时机问题，通常通过view.post来获取，那么用协程如何形如同步获取宽高呢？下面来试试：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 GlobalScope.launch { val wh = getViewWh(view) Log.d(TAG, &#34;width:${wh.first}&#34;) Log.d(TAG, &#34;height:${wh.second}&#34;) } Log.d(TAG, &#34;outer coroutine&#34;) private suspend fun getViewWh(view: View) = suspendCoroutine&lt;Pair&lt;Int, Int&gt;&gt; { continuation -&gt; view.post { val width = view.width val height = view.height continuation.resume(Pair(width, height)) } } 日志如下：\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -438,7 +438,7 @@
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda.png"
 	width="2642"
 	height="258"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda_hu14097702124814213999.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda_hu17192307366598367171.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda_hu_2c182a92d1b92ae7.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda_hu_64974adc4173dd24.png 1024w"
 	loading="lazy"
 	
 		alt="第一个suspendLambda.png"
@@ -453,7 +453,7 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda%E7%9A%84invokeSuspend%E8%B0%83%E7%94%A8.png"
 	width="1658"
 	height="1276"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda%E7%9A%84invokeSuspend%E8%B0%83%E7%94%A8_hu16417627267592779043.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda%E7%9A%84invokeSuspend%E8%B0%83%E7%94%A8_hu1679443516468477813.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda%E7%9A%84invokeSuspend%E8%B0%83%E7%94%A8_hu_2dd5b8d9cb1f0528.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda%E7%9A%84invokeSuspend%E8%B0%83%E7%94%A8_hu_8b77d1d52385a7fe.png 1024w"
 	loading="lazy"
 	
 		alt="第一个suspendLambda的invokeSuspend调用.png"
@@ -468,7 +468,7 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
 <p><img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95.png"
 	width="1678"
 	height="146"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95_hu13548752819762860392.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95_hu15883271798943608869.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95_hu_9feff405ee4a1f33.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95_hu_bb2fb791f96628a2.png 1024w"
 	loading="lazy"
 	
 		alt="编译完后的静态方法.png"
@@ -483,7 +483,7 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
 <p><img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/getViewWh%E5%AE%9E%E7%8E%B0.png"
 	width="1258"
 	height="388"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/getViewWh%E5%AE%9E%E7%8E%B0_hu10570735859445880428.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/getViewWh%E5%AE%9E%E7%8E%B0_hu14777933462803913676.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/getViewWh%E5%AE%9E%E7%8E%B0_hu_99b588d44ecb2518.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/getViewWh%E5%AE%9E%E7%8E%B0_hu_c756ad18174f993d.png 1024w"
 	loading="lazy"
 	
 		alt="getViewWh实现.png"
@@ -499,7 +499,7 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%BA%8C%E4%B8%AAsuspendLambda.png"
 	width="1302"
 	height="560"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%BA%8C%E4%B8%AAsuspendLambda_hu330050223390960213.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%BA%8C%E4%B8%AAsuspendLambda_hu6722906830079867919.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%BA%8C%E4%B8%AAsuspendLambda_hu_f363d7e57fd3a4f6.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%BA%8C%E4%B8%AAsuspendLambda_hu_f92e4955dc1f0a4d.png 1024w"
 	loading="lazy"
 	
 		alt="第二个suspendLambda.png"
@@ -514,7 +514,7 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeCoroutinuation%E7%9A%84resumeWith%E5%AE%9E%E7%8E%B0.png"
 	width="2082"
 	height="704"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeCoroutinuation%E7%9A%84resumeWith%E5%AE%9E%E7%8E%B0_hu16837726931409671345.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeCoroutinuation%E7%9A%84resumeWith%E5%AE%9E%E7%8E%B0_hu10254024179238748528.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeCoroutinuation%E7%9A%84resumeWith%E5%AE%9E%E7%8E%B0_hu_17fd81a8a9d57a00.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeCoroutinuation%E7%9A%84resumeWith%E5%AE%9E%E7%8E%B0_hu_6ebb6ee0abc49714.png 1024w"
 	loading="lazy"
 	
 		alt="safeCoroutinuation的resumeWith实现.png"
@@ -529,7 +529,7 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84result%E9%BB%98%E8%AE%A4%E5%80%BC.png"
 	width="1678"
 	height="536"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84result%E9%BB%98%E8%AE%A4%E5%80%BC_hu10608557206849595022.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84result%E9%BB%98%E8%AE%A4%E5%80%BC_hu15085830967628855851.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84result%E9%BB%98%E8%AE%A4%E5%80%BC_hu_9c8ad4bcc2eace52.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84result%E9%BB%98%E8%AE%A4%E5%80%BC_hu_596ec85c97a387f1.png 1024w"
 	loading="lazy"
 	
 		alt="safeContinuation的result默认值.png"
@@ -544,7 +544,7 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84getOrThrow%E5%AE%9E%E7%8E%B0.png"
 	width="2278"
 	height="702"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84getOrThrow%E5%AE%9E%E7%8E%B0_hu792203031661181147.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84getOrThrow%E5%AE%9E%E7%8E%B0_hu18186991626624812063.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84getOrThrow%E5%AE%9E%E7%8E%B0_hu_6f711601aed2ac2d.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84getOrThrow%E5%AE%9E%E7%8E%B0_hu_d8213e508b79e545.png 1024w"
 	loading="lazy"
 	
 		alt="safeContinuation的getOrThrow实现.png"
@@ -649,7 +649,7 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95%E5%A4%84%E7%90%86%E5%BC%82%E5%B8%B8.png"
 	width="1988"
 	height="1644"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95%E5%A4%84%E7%90%86%E5%BC%82%E5%B8%B8_hu2755707626282868773.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95%E5%A4%84%E7%90%86%E5%BC%82%E5%B8%B8_hu11453194581464200910.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95%E5%A4%84%E7%90%86%E5%BC%82%E5%B8%B8_hu_64f8e9b2fc0a11b3.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95%E5%A4%84%E7%90%86%E5%BC%82%E5%B8%B8_hu_609f696d7fa79946.png 1024w"
 	loading="lazy"
 	
 		alt="DispatchedTask的run方法处理异常.png"
@@ -756,7 +756,7 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
     
     <section class="powerby">
         Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.29.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
     </section>
 </footer>
 
@@ -845,7 +845,7 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
                 src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
                 
                 >
-            </script><script type="text/javascript" src="/ts/main.b013e5e1e738f40f172163608dbf040d8f4866fdc9d3d19c87ea979df1ac3395.js" defer></script>
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
 <script>
     (function () {
         const customFont = document.createElement('link');
