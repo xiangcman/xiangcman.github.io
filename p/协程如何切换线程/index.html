@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。\nCoroutineScope(协程作用域) CoroutineScope组成 可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：\nCoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它 Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob CoroutineName：用来给协程起名字的作用 CoroutineExceptionHandler：它是用来捕捉协程异常的回调器 所以完整的CoroutineContext组成部分如下： job+dispatchers+CoroutineName+CoroutineExceptionHandler\nCoroutineScope分类 目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别\nGlobalScope 上面用到的GlobalScope就是一个协程作用域： 可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它\n">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。\nCoroutineScope(协程作用域) CoroutineScope组成 可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：\nCoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它 Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob CoroutineName：用来给协程起名字的作用 CoroutineExceptionHandler：它是用来捕捉协程异常的回调器 所以完整的CoroutineContext组成部分如下： job+dispatchers+CoroutineName+CoroutineExceptionHandler\nCoroutineScope分类 目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别\nGlobalScope 上面用到的GlobalScope就是一个协程作用域： 可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它\nrunBlocking 是一个阻塞式的协程作用域，会阻塞协程外面的线程，内部是通过java的LockSupport.park阻塞住线程来实现的。 MainScope 它是一个指定协程分发在主线程中，并且使用到的Job是SupervisorJob，它的作用是当子协程出错的时候，不影响到父协程中的其他子协程 它是一个ContextScope，继承自CoroutineScope，并且它的context是由SupervisorJob()和Dispatchers.Main组成的一个context。我们一般自定义CoroutineScope的时候也是定义一个ContextScope，他的构造方法需要传入一个CoroutineContext。 CoroutineScope顶级方法 它也是一个ContextScope，它的上下文先看传进来的context中的job是否为空，如果为空，则初始化一个job。如果不为空，则使用传进来的context。\ncoroutineScope顶级方法 它是一个suspend方法，它是通过闭包的形式返回一个CoroutineScope，对应的字节码如下： 会将ScopeCoroutine给到block，也就是闭包中的CoroutineScope，接着会调用UndispatchedKt.startUndispatchedOrReturn: 最终调用了block.invoke方法，写个demo看下效果： 日志如下： 从日志可以看出来，它是先等到coroutineScope里面delay执行完了，才执行外面的逻辑。在字节码层面，它会把coroutineScope外面的代码编译成SuspendLambda，它也是个Continuation，等到执行完了coroutineScope内部的代码，才会回调到coroutineScope外面的SuspendLambda中来： 上面分析过UndispatchedKt.startUndispatchedOrReturn中调用了block的invoke方法，此处的block正对应了CoroutineDispatchersActivity$demo7$1这个SuspendLambda对象： 在demo7中将CoroutineDispatchersActivity$demo7$1这个continuation传递到coroutineScope中，而它的invoke方法如下： 创建了CoroutineDispatchersActivity$demo7$1后，继而调用了invokeSuspend方法，而invokeSuspend里面是要等到coroutineScope闭包中的delay挂起结束后，才会再次回到invokeSuspend方法，最后才会输出「demo7: coroutineScope outside」的日志，这也是协程挂起的调用顺序。\n">
 <title>协程如何切换线程</title>
 
 <link rel='canonical' href='https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程如何切换线程">
-<meta property='og:description' content="在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。\nCoroutineScope(协程作用域) CoroutineScope组成 可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：\nCoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它 Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob CoroutineName：用来给协程起名字的作用 CoroutineExceptionHandler：它是用来捕捉协程异常的回调器 所以完整的CoroutineContext组成部分如下： job+dispatchers+CoroutineName+CoroutineExceptionHandler\nCoroutineScope分类 目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别\nGlobalScope 上面用到的GlobalScope就是一个协程作用域： 可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它\n">
+<meta property='og:description' content="在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。\nCoroutineScope(协程作用域) CoroutineScope组成 可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：\nCoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它 Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob CoroutineName：用来给协程起名字的作用 CoroutineExceptionHandler：它是用来捕捉协程异常的回调器 所以完整的CoroutineContext组成部分如下： job+dispatchers+CoroutineName+CoroutineExceptionHandler\nCoroutineScope分类 目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别\nGlobalScope 上面用到的GlobalScope就是一个协程作用域： 可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它\nrunBlocking 是一个阻塞式的协程作用域，会阻塞协程外面的线程，内部是通过java的LockSupport.park阻塞住线程来实现的。 MainScope 它是一个指定协程分发在主线程中，并且使用到的Job是SupervisorJob，它的作用是当子协程出错的时候，不影响到父协程中的其他子协程 它是一个ContextScope，继承自CoroutineScope，并且它的context是由SupervisorJob()和Dispatchers.Main组成的一个context。我们一般自定义CoroutineScope的时候也是定义一个ContextScope，他的构造方法需要传入一个CoroutineContext。 CoroutineScope顶级方法 它也是一个ContextScope，它的上下文先看传进来的context中的job是否为空，如果为空，则初始化一个job。如果不为空，则使用传进来的context。\ncoroutineScope顶级方法 它是一个suspend方法，它是通过闭包的形式返回一个CoroutineScope，对应的字节码如下： 会将ScopeCoroutine给到block，也就是闭包中的CoroutineScope，接着会调用UndispatchedKt.startUndispatchedOrReturn: 最终调用了block.invoke方法，写个demo看下效果： 日志如下： 从日志可以看出来，它是先等到coroutineScope里面delay执行完了，才执行外面的逻辑。在字节码层面，它会把coroutineScope外面的代码编译成SuspendLambda，它也是个Continuation，等到执行完了coroutineScope内部的代码，才会回调到coroutineScope外面的SuspendLambda中来： 上面分析过UndispatchedKt.startUndispatchedOrReturn中调用了block的invoke方法，此处的block正对应了CoroutineDispatchersActivity$demo7$1这个SuspendLambda对象： 在demo7中将CoroutineDispatchersActivity$demo7$1这个continuation传递到coroutineScope中，而它的invoke方法如下： 创建了CoroutineDispatchersActivity$demo7$1后，继而调用了invokeSuspend方法，而invokeSuspend里面是要等到coroutineScope闭包中的delay挂起结束后，才会再次回到invokeSuspend方法，最后才会输出「demo7: coroutineScope outside」的日志，这也是协程挂起的调用顺序。\n">
 <meta property='og:url' content='https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-11-05T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-05T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="协程如何切换线程">
-<meta name="twitter:description" content="在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。\nCoroutineScope(协程作用域) CoroutineScope组成 可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：\nCoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它 Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob CoroutineName：用来给协程起名字的作用 CoroutineExceptionHandler：它是用来捕捉协程异常的回调器 所以完整的CoroutineContext组成部分如下： job+dispatchers+CoroutineName+CoroutineExceptionHandler\nCoroutineScope分类 目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别\nGlobalScope 上面用到的GlobalScope就是一个协程作用域： 可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它\n">
+<meta name="twitter:description" content="在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。\nCoroutineScope(协程作用域) CoroutineScope组成 可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：\nCoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它 Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob CoroutineName：用来给协程起名字的作用 CoroutineExceptionHandler：它是用来捕捉协程异常的回调器 所以完整的CoroutineContext组成部分如下： job+dispatchers+CoroutineName+CoroutineExceptionHandler\nCoroutineScope分类 目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别\nGlobalScope 上面用到的GlobalScope就是一个协程作用域： 可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它\nrunBlocking 是一个阻塞式的协程作用域，会阻塞协程外面的线程，内部是通过java的LockSupport.park阻塞住线程来实现的。 MainScope 它是一个指定协程分发在主线程中，并且使用到的Job是SupervisorJob，它的作用是当子协程出错的时候，不影响到父协程中的其他子协程 它是一个ContextScope，继承自CoroutineScope，并且它的context是由SupervisorJob()和Dispatchers.Main组成的一个context。我们一般自定义CoroutineScope的时候也是定义一个ContextScope，他的构造方法需要传入一个CoroutineContext。 CoroutineScope顶级方法 它也是一个ContextScope，它的上下文先看传进来的context中的job是否为空，如果为空，则初始化一个job。如果不为空，则使用传进来的context。\ncoroutineScope顶级方法 它是一个suspend方法，它是通过闭包的形式返回一个CoroutineScope，对应的字节码如下： 会将ScopeCoroutine给到block，也就是闭包中的CoroutineScope，接着会调用UndispatchedKt.startUndispatchedOrReturn: 最终调用了block.invoke方法，写个demo看下效果： 日志如下： 从日志可以看出来，它是先等到coroutineScope里面delay执行完了，才执行外面的逻辑。在字节码层面，它会把coroutineScope外面的代码编译成SuspendLambda，它也是个Continuation，等到执行完了coroutineScope内部的代码，才会回调到coroutineScope外面的SuspendLambda中来： 上面分析过UndispatchedKt.startUndispatchedOrReturn中调用了block的invoke方法，此处的block正对应了CoroutineDispatchersActivity$demo7$1这个SuspendLambda对象： 在demo7中将CoroutineDispatchersActivity$demo7$1这个continuation传递到coroutineScope中，而它的invoke方法如下： 创建了CoroutineDispatchersActivity$demo7$1后，继而调用了invokeSuspend方法，而invokeSuspend里面是要等到coroutineScope闭包中的delay挂起结束后，才会再次回到invokeSuspend方法，最后才会输出「demo7: coroutineScope outside」的日志，这也是协程挂起的调用顺序。\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -399,7 +399,7 @@
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope.png"
 	width="1378"
 	height="374"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope_hu10515070486545298200.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope_hu9693859680287893447.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope_hu_3714574eb28b244d.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope_hu_a865cf66b32ed715.png 1024w"
 	loading="lazy"
 	
 		alt="CoroutineScope"
@@ -419,8 +419,7 @@
 </ul>
 <blockquote>
 <p>所以完整的CoroutineContext组成部分如下：</br>
-job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
-</blockquote>
+job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p></blockquote>
 <h3 id="coroutinescope分类">CoroutineScope分类
 </h3><p>目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别</p>
 <h4 id="globalscope">GlobalScope
@@ -428,7 +427,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/GlobalScope%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class.png"
 	width="1316"
 	height="682"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/GlobalScope%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class_hu8203666247243285961.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/GlobalScope%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class_hu15699466784984887439.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/GlobalScope%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class_hu_24b3ae837300d4af.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/GlobalScope%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84class_hu_a0ac29fb8a169264.png 1024w"
 	loading="lazy"
 	
 		alt="GlobalScope编译后的class"
@@ -445,7 +444,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B.png"
 	width="1228"
 	height="376"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B_hu6633060864144420853.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B_hu15727827750802902641.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B_hu_b6e69a153d2a4691.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B_hu_479a1906c297006b.png 1024w"
 	loading="lazy"
 	
 		alt="runBlocking事例"
@@ -459,7 +458,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B%E6%97%A5%E5%BF%97.png"
 	width="2332"
 	height="128"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B%E6%97%A5%E5%BF%97_hu1419401693410403504.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B%E6%97%A5%E5%BF%97_hu14344192372589501213.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B%E6%97%A5%E5%BF%97_hu_837b48ed5f0b0ba0.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/runBlocking%E4%BA%8B%E4%BE%8B%E6%97%A5%E5%BF%97_hu_db9c534937bd8434.png 1024w"
 	loading="lazy"
 	
 		alt="runBlocking事例日志"
@@ -475,7 +474,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/MainScope.png"
 	width="1846"
 	height="68"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/MainScope_hu2650145257960126316.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/MainScope_hu14566258088185660321.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/MainScope_hu_bdb48504e597c500.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/MainScope_hu_16d12cf6600102ed.png 1024w"
 	loading="lazy"
 	
 		alt="MainScope"
@@ -490,7 +489,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContextScope.png"
 	width="1690"
 	height="286"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContextScope_hu5904792650026458433.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContextScope_hu11244608147019618049.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContextScope_hu_77701bbf117613fa.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContextScope_hu_9fe05136937a8c95.png 1024w"
 	loading="lazy"
 	
 		alt="ContextScope"
@@ -505,7 +504,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 </h4><p><img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95.png"
 	width="1332"
 	height="122"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95_hu15491615658799400581.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95_hu11094062684700260274.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95_hu_efb52335c4921fae.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95_hu_c4c7c4011619cb79.png 1024w"
 	loading="lazy"
 	
 		alt="CoroutineScope顶级方法"
@@ -521,7 +520,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 </h4><p><img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7.png"
 	width="1498"
 	height="482"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7_hu2384519224697842459.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7_hu1738105744462854734.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7_hu_6152a71bee2cd302.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7_hu_3b66d1969c1feaee.png 1024w"
 	loading="lazy"
 	
 		alt="coroutineScope顶级"
@@ -536,7 +535,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95%E5%AF%B9%E5%BA%94%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81.png"
 	width="1646"
 	height="476"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95%E5%AF%B9%E5%BA%94%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu3580153989874363924.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95%E5%AF%B9%E5%BA%94%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu5783132045477592587.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95%E5%AF%B9%E5%BA%94%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu_c3dcf4d8df33d67c.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E9%A1%B6%E7%BA%A7%E6%96%B9%E6%B3%95%E5%AF%B9%E5%BA%94%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu_422a7d87495a92a.png 1024w"
 	loading="lazy"
 	
 		alt="coroutineScope顶级方法对应的字节码"
@@ -551,7 +550,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UndispatchedKt.startUndispatchedOrReturn%E7%9A%84%E8%B0%83%E7%94%A8.png"
 	width="3006"
 	height="1614"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UndispatchedKt.startUndispatchedOrReturn%E7%9A%84%E8%B0%83%E7%94%A8_hu9382291955095618687.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UndispatchedKt.startUndispatchedOrReturn%E7%9A%84%E8%B0%83%E7%94%A8_hu17061662428155340183.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UndispatchedKt.startUndispatchedOrReturn%E7%9A%84%E8%B0%83%E7%94%A8_hu_1e91bd43043b5bc0.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UndispatchedKt.startUndispatchedOrReturn%E7%9A%84%E8%B0%83%E7%94%A8_hu_53280a87da70c44f.png 1024w"
 	loading="lazy"
 	
 		alt="UndispatchedKt.startUndispatchedOrReturn的调用"
@@ -566,7 +565,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8.png"
 	width="552"
 	height="197"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8_hu13475430610481151502.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8_hu1205718284101671899.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8_hu_94dbc3f24f19ffe5.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8_hu_f45b8047ffe81bec.png 1024w"
 	loading="lazy"
 	
 		alt="coroutineScope使用"
@@ -581,7 +580,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8%E7%9A%84%E6%97%A5%E5%BF%97.png"
 	width="1189"
 	height="62"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8%E7%9A%84%E6%97%A5%E5%BF%97_hu823353845382947140.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8%E7%9A%84%E6%97%A5%E5%BF%97_hu16621909048894641806.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8%E7%9A%84%E6%97%A5%E5%BF%97_hu_ae545e21660bb9d7.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BD%BF%E7%94%A8%E7%9A%84%E6%97%A5%E5%BF%97_hu_42f7becf44391751.png 1024w"
 	loading="lazy"
 	
 		alt="coroutineScope使用的日志"
@@ -596,7 +595,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81.png"
 	width="1796"
 	height="1530"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu4832081726369057974.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu1365193881422392735.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu_5e217c9f491b73b3.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu_22e7e0746a57a6d9.png 1024w"
 	loading="lazy"
 	
 		alt="coroutineScope事例编译后的字节码"
@@ -611,7 +610,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/demo7%E4%B8%AD%E7%9A%84continuation%E4%BC%A0%E9%80%92.png"
 	width="1618"
 	height="1476"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/demo7%E4%B8%AD%E7%9A%84continuation%E4%BC%A0%E9%80%92_hu4372493753038637836.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/demo7%E4%B8%AD%E7%9A%84continuation%E4%BC%A0%E9%80%92_hu817652179057638967.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/demo7%E4%B8%AD%E7%9A%84continuation%E4%BC%A0%E9%80%92_hu_9c30b46d1c26c3cf.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/demo7%E4%B8%AD%E7%9A%84continuation%E4%BC%A0%E9%80%92_hu_bc02a6f0766a8218.png 1024w"
 	loading="lazy"
 	
 		alt="demo7中的continuation传递"
@@ -626,7 +625,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81.png"
 	width="1796"
 	height="1530"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu4832081726369057974.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu1365193881422392735.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu_5e217c9f491b73b3.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E4%BA%8B%E4%BE%8B%E7%BC%96%E8%AF%91%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu_22e7e0746a57a6d9.png 1024w"
 	loading="lazy"
 	
 		alt="coroutineScope事例编译后的字节码"
@@ -643,7 +642,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E5%AE%9E%E7%8E%B0.png"
 	width="1678"
 	height="1106"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E5%AE%9E%E7%8E%B0_hu8407134942574158311.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E5%AE%9E%E7%8E%B0_hu11898583491231899997.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E5%AE%9E%E7%8E%B0_hu_5beaeb9dfcf38e3c.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E5%AE%9E%E7%8E%B0_hu_e46c8af8d1201512.png 1024w"
 	loading="lazy"
 	
 		alt="supervisorScope实现"
@@ -658,7 +657,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8.png"
 	width="1618"
 	height="858"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8_hu7684433086447637883.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8_hu1690630912590362899.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8_hu_fd5d5055ca4f7d8f.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/supervisorScope%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8_hu_5f0081640a3d60de.png 1024w"
 	loading="lazy"
 	
 		alt="supervisorScope中子协程发生异常"
@@ -672,7 +671,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8.png"
 	width="1580"
 	height="856"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8_hu10866282615193727810.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8_hu11646905280443896393.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8_hu_8bd6f6e872cafeb2.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScope%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%8F%91%E7%94%9F%E5%BC%82%E5%B8%B8_hu_2bc70e44b2f10b57.png 1024w"
 	loading="lazy"
 	
 		alt="coroutineScope子协程发生异常"
@@ -700,7 +699,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%90%E7%B1%BB.png"
 	width="1088"
 	height="940"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%90%E7%B1%BB_hu13526632218070048829.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%90%E7%B1%BB_hu16929618538592697605.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%90%E7%B1%BB_hu_3b5abf7a94124eba.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%90%E7%B1%BB_hu_a39535f7c77efc11.png 1024w"
 	loading="lazy"
 	
 		alt="Job的关键子类"
@@ -717,7 +716,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E4%BE%8B%E5%AD%90.png"
 	width="1672"
 	height="892"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E4%BE%8B%E5%AD%90_hu17337118227619651397.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E4%BE%8B%E5%AD%90_hu553287269408731359.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E4%BE%8B%E5%AD%90_hu_156536cb263953ff.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E4%BE%8B%E5%AD%90_hu_2f69d6a1f924e0ff.png 1024w"
 	loading="lazy"
 	
 		alt="例子"
@@ -736,8 +735,7 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 <blockquote>
 <p>Dispatchers.Main.immediate：指定的主线程会最先执行<br/>
 Dispatchers.Main：指定的主线程会晚于协程外面的主线程<br/>
-Dispatchers.IO和Dispatchers.Default：指定的线程没有先后之分<br/></p>
-</blockquote>
+Dispatchers.IO和Dispatchers.Default：指定的线程没有先后之分<br/></p></blockquote>
 <h2 id="coroutinescopelanuch">CoroutineScope.lanuch
 </h2><p>lanuch方法是协程作用域的扩展方法，比如上面例子中的GlobalScope它就是继承自CoroutineScope:</p>
 <div class="highlight"><div class="chroma">
@@ -793,13 +791,12 @@ Dispatchers.IO和Dispatchers.Default：指定的线程没有先后之分<br/></p
 <li>默认是DEFAULT模式，所以会初始化一个StandaloneCoroutine，会把newContext作为自己的parentContext，它既是一个Continuation，也是一个CoroutineScope<br/></li>
 <li>调用StandaloneCoroutine的start方法，并把启动模式，StandaloneCoroutine，协程挂起函数传进去了<br/></li>
 <li>StandaloneCoroutine作为lauch的返回值<br/></li>
-</ol>
-</blockquote>
+</ol></blockquote>
 <p>StandaloneCoroutine它是一个Job类型，也是继承自AbstractCoroutine，看下它的start方法：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84start%E6%96%B9%E6%B3%95.png"
 	width="1602"
 	height="166"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84start%E6%96%B9%E6%B3%95_hu2385019956047133295.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84start%E6%96%B9%E6%B3%95_hu16951205477294670412.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84start%E6%96%B9%E6%B3%95_hu_bd935a1236c426ef.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84start%E6%96%B9%E6%B3%95_hu_8883ca25d0e6d47e.png 1024w"
 	loading="lazy"
 	
 		alt="AbstractCoroutine的start方法"
@@ -814,7 +811,7 @@ Dispatchers.IO和Dispatchers.Default：指定的线程没有先后之分<br/></p
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineStart%E7%9A%84invoke%E6%96%B9%E6%B3%95.png"
 	width="2066"
 	height="430"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineStart%E7%9A%84invoke%E6%96%B9%E6%B3%95_hu5959275550047201512.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineStart%E7%9A%84invoke%E6%96%B9%E6%B3%95_hu6805083386775693098.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineStart%E7%9A%84invoke%E6%96%B9%E6%B3%95_hu_b2d6a872109b1815.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineStart%E7%9A%84invoke%E6%96%B9%E6%B3%95_hu_343de3441c9c0c17.png 1024w"
 	loading="lazy"
 	
 		alt="CoroutineStart的invoke方法"
@@ -834,7 +831,7 @@ Dispatchers.IO和Dispatchers.Default：指定的线程没有先后之分<br/></p
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable%E6%96%B9%E6%B3%95.png"
 	width="2466"
 	height="398"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable%E6%96%B9%E6%B3%95_hu17186429614307135800.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable%E6%96%B9%E6%B3%95_hu448124321977532596.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable%E6%96%B9%E6%B3%95_hu_32049143bfe08fde.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable%E6%96%B9%E6%B3%95_hu_fa8296aba2bafe9.png 1024w"
 	loading="lazy"
 	
 		alt="挂起函数的startCoroutineCancellable方法"
@@ -849,7 +846,7 @@ Dispatchers.IO和Dispatchers.Default：指定的线程没有先后之分<br/></p
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContinuationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95.png"
 	width="1836"
 	height="864"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContinuationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu4336296675113343457.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContinuationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu18438232634827292976.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContinuationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu_342a42d11bc5ae0a.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/ContinuationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu_8e969be9250e5f5d.png 1024w"
 	loading="lazy"
 	
 		alt="ContinuationImpl的intercepted方法"
@@ -864,7 +861,7 @@ intercepted方法里面取context变量中的key为ContinuationInterceptor的con
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine.png"
 	width="1562"
 	height="1116"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine_hu14231270573080683048.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine_hu15049815017369954498.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine_hu_26d604d16afcdc98.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine_hu_77d81441b24dd34f.png 1024w"
 	loading="lazy"
 	
 		alt="AbstractCoroutine"
@@ -882,7 +879,7 @@ this：AbstractCoroutine实现了job接口，job也是一个CoroutineContext</br
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineDispatcher%E7%9A%84interceptContinuation%E6%96%B9%E6%B3%95.png"
 	width="1880"
 	height="130"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineDispatcher%E7%9A%84interceptContinuation%E6%96%B9%E6%B3%95_hu18001666239388207925.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineDispatcher%E7%9A%84interceptContinuation%E6%96%B9%E6%B3%95_hu11804013529792046915.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineDispatcher%E7%9A%84interceptContinuation%E6%96%B9%E6%B3%95_hu_20b9b74238b2c728.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/CoroutineDispatcher%E7%9A%84interceptContinuation%E6%96%B9%E6%B3%95_hu_56ec67cf34a8089f.png 1024w"
 	loading="lazy"
 	
 		alt="CoroutineDispatcher的interceptContinuation方法"
@@ -898,7 +895,7 @@ this：AbstractCoroutine实现了job接口，job也是一个CoroutineContext</br
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedContinuation%E7%9A%84resumeCancellableWith%E6%96%B9%E6%B3%95.png"
 	width="1148"
 	height="898"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedContinuation%E7%9A%84resumeCancellableWith%E6%96%B9%E6%B3%95_hu13206942740980082187.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedContinuation%E7%9A%84resumeCancellableWith%E6%96%B9%E6%B3%95_hu4930282993920454948.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedContinuation%E7%9A%84resumeCancellableWith%E6%96%B9%E6%B3%95_hu_75b8e9ed2fcb5c42.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedContinuation%E7%9A%84resumeCancellableWith%E6%96%B9%E6%B3%95_hu_e3a15c9bbf465b8f.png 1024w"
 	loading="lazy"
 	
 		alt="DispatchedContinuation的resumeCancellableWith方法"
@@ -913,7 +910,7 @@ this：AbstractCoroutine实现了job接口，job也是一个CoroutineContext</br
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95.png"
 	width="1816"
 	height="1286"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95_hu8403619297634966989.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95_hu8350517073580662725.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95_hu_533344a5e7de2ed1.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95_hu_8e81f710481496af.png 1024w"
 	loading="lazy"
 	
 		alt="DefaultIoScheduler的dispatch方法"
@@ -928,7 +925,7 @@ this：AbstractCoroutine实现了job接口，job也是一个CoroutineContext</br
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UnlimitedIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95.png"
 	width="1590"
 	height="186"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UnlimitedIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95_hu3423051884872648517.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UnlimitedIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95_hu15704900135410725670.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UnlimitedIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95_hu_adf815d762aebd4b.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/UnlimitedIoScheduler%E7%9A%84dispatch%E6%96%B9%E6%B3%95_hu_e8c2cd46f1a81882.png 1024w"
 	loading="lazy"
 	
 		alt="UnlimitedIoScheduler的dispatch方法"
@@ -943,7 +940,7 @@ DefaultScheduler的dispatchWithContext方法如下：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultScheduler%E7%9A%84dispatchWithContext%E6%96%B9%E6%B3%95.png"
 	width="1802"
 	height="194"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultScheduler%E7%9A%84dispatchWithContext%E6%96%B9%E6%B3%95_hu5477308402990905241.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultScheduler%E7%9A%84dispatchWithContext%E6%96%B9%E6%B3%95_hu5434347950090076247.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultScheduler%E7%9A%84dispatchWithContext%E6%96%B9%E6%B3%95_hu_a7345ef6676a10dc.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DefaultScheduler%E7%9A%84dispatchWithContext%E6%96%B9%E6%B3%95_hu_7f4a7ea93953afd9.png 1024w"
 	loading="lazy"
 	
 		alt="DefaultScheduler的dispatchWithContext"
@@ -958,7 +955,7 @@ coroutineScheduler创建如下：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScheduler%E7%9A%84%E5%88%9B%E5%BB%BA.png"
 	width="1654"
 	height="224"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScheduler%E7%9A%84%E5%88%9B%E5%BB%BA_hu9783744180214531165.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScheduler%E7%9A%84%E5%88%9B%E5%BB%BA_hu1790058845328857383.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScheduler%E7%9A%84%E5%88%9B%E5%BB%BA_hu_7c0845bf5a88632e.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/coroutineScheduler%E7%9A%84%E5%88%9B%E5%BB%BA_hu_1b407b61eb2b5320.png 1024w"
 	loading="lazy"
 	
 		alt="coroutineScheduler的创建"
@@ -973,7 +970,7 @@ coroutineScheduler创建如下：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95.png"
 	width="1001"
 	height="976"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95_hu13702227487613152692.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95_hu10856747154020235078.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95_hu_c26544562a6d681e.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95_hu_5f943453274514bb.png 1024w"
 	loading="lazy"
 	
 		alt="DispatchedTask的run方法"
@@ -988,7 +985,7 @@ coroutineScheduler创建如下：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E4%B8%AD%E7%9A%84resumeWith%E6%96%B9%E6%B3%95.png"
 	width="1550"
 	height="730"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E4%B8%AD%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu2428648398246169480.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E4%B8%AD%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu12246288167136455501.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E4%B8%AD%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu_601e73c97a84bdab.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E4%B8%AD%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu_5601b42fd8783678.png 1024w"
 	loading="lazy"
 	
 		alt="AbstractCoroutine中的resumeWith方法"
@@ -1003,7 +1000,7 @@ AbstractCoroutine的afterCompletion：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84afterCompletion%E6%96%B9%E6%B3%95.png"
 	width="1018"
 	height="94"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84afterCompletion%E6%96%B9%E6%B3%95_hu14820723451743709595.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84afterCompletion%E6%96%B9%E6%B3%95_hu8849401298563670511.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84afterCompletion%E6%96%B9%E6%B3%95_hu_9554379c98cfe73c.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84afterCompletion%E6%96%B9%E6%B3%95_hu_99acf3510a212dd.png 1024w"
 	loading="lazy"
 	
 		alt="AbstractCoroutine的afterCompletion方法"
@@ -1019,7 +1016,7 @@ AbstractCoroutine的afterCompletion：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84createCoroutineUnintercepted%E6%96%B9%E6%B3%95.png"
 	width="1556"
 	height="694"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84createCoroutineUnintercepted%E6%96%B9%E6%B3%95_hu17050012182861041299.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84createCoroutineUnintercepted%E6%96%B9%E6%B3%95_hu9421584298643481085.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84createCoroutineUnintercepted%E6%96%B9%E6%B3%95_hu_e966668f07755a09.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84createCoroutineUnintercepted%E6%96%B9%E6%B3%95_hu_329366dd9a7c2d29.png 1024w"
 	loading="lazy"
 	
 		alt="挂起函数的createCoroutineUnintercepted方法"
@@ -1034,7 +1031,7 @@ AbstractCoroutine的afterCompletion：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/SuspendLambda%E9%BB%98%E8%AE%A4%E7%9A%84create%E6%96%B9%E6%B3%95.png"
 	width="1726"
 	height="190"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/SuspendLambda%E9%BB%98%E8%AE%A4%E7%9A%84create%E6%96%B9%E6%B3%95_hu9943885230134530173.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/SuspendLambda%E9%BB%98%E8%AE%A4%E7%9A%84create%E6%96%B9%E6%B3%95_hu15254487373604861991.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/SuspendLambda%E9%BB%98%E8%AE%A4%E7%9A%84create%E6%96%B9%E6%B3%95_hu_e700761c6601a043.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/SuspendLambda%E9%BB%98%E8%AE%A4%E7%9A%84create%E6%96%B9%E6%B3%95_hu_ac25349cd3d73ad8.png 1024w"
 	loading="lazy"
 	
 		alt="SuspendLambda默认的create方法"
@@ -1049,7 +1046,7 @@ AbstractCoroutine的afterCompletion：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E7%BC%96%E8%AF%91%E5%90%8ESuspendLamda%E7%9A%84%E5%AD%90%E7%B1%BB%E7%9A%84create%E6%96%B9%E6%B3%95.png"
 	width="1700"
 	height="1554"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E7%BC%96%E8%AF%91%E5%90%8ESuspendLamda%E7%9A%84%E5%AD%90%E7%B1%BB%E7%9A%84create%E6%96%B9%E6%B3%95_hu18226079645214200200.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E7%BC%96%E8%AF%91%E5%90%8ESuspendLamda%E7%9A%84%E5%AD%90%E7%B1%BB%E7%9A%84create%E6%96%B9%E6%B3%95_hu5632307504937424671.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E7%BC%96%E8%AF%91%E5%90%8ESuspendLamda%E7%9A%84%E5%AD%90%E7%B1%BB%E7%9A%84create%E6%96%B9%E6%B3%95_hu_cc66f25fc0ca63b6.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E7%BC%96%E8%AF%91%E5%90%8ESuspendLamda%E7%9A%84%E5%AD%90%E7%B1%BB%E7%9A%84create%E6%96%B9%E6%B3%95_hu_1bf70ef41ae46b95.png 1024w"
 	loading="lazy"
 	
 		alt="编译后SuspendLamda的子类的create方法"
@@ -1068,7 +1065,7 @@ AbstractCoroutine的afterCompletion：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E5%8D%8F%E7%A8%8B%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%97%B6%E5%BA%8F%E5%9B%BE.png"
 	width="1862"
 	height="1347"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E5%8D%8F%E7%A8%8B%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%97%B6%E5%BA%8F%E5%9B%BE_hu9346735665133454039.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E5%8D%8F%E7%A8%8B%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%97%B6%E5%BA%8F%E5%9B%BE_hu9538128425541646936.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E5%8D%8F%E7%A8%8B%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%97%B6%E5%BA%8F%E5%9B%BE_hu_e1e084cc1984e1e0.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E5%8D%8F%E7%A8%8B%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%97%B6%E5%BA%8F%E5%9B%BE_hu_f97ab23dabb13a17.png 1024w"
 	loading="lazy"
 	
 		alt="协程线程调度时序图"
@@ -1078,8 +1075,7 @@ AbstractCoroutine的afterCompletion：
 		data-flex-grow="138"
 		data-flex-basis="331px"
 	
-></p>
-</blockquote>
+></p></blockquote>
 
 </section>
 

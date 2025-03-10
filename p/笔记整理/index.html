@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 crossinline算是在内联和非内联之间做智能化选择，如果你将lambda表达式当做变量来使用，此时编译器不会内联该lambda，比如： 1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } ">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 crossinline算是在内联和非内联之间做智能化选择，如果你将lambda表达式当做变量来使用，此时编译器不会内联该lambda，比如： 1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } 上面我将hello4中的run表达式传给了hello5，而hello5不是一个内联函数，所以此时会把lambda作为一个变量传到hello5中： 如果改成如下方式：\n1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } inline fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } 相关文档：https://juejin.cn/post/6869954460634841101\n">
 <title>笔记整理</title>
 
 <link rel='canonical' href='https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="笔记整理">
-<meta property='og:description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 crossinline算是在内联和非内联之间做智能化选择，如果你将lambda表达式当做变量来使用，此时编译器不会内联该lambda，比如： 1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } ">
+<meta property='og:description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 crossinline算是在内联和非内联之间做智能化选择，如果你将lambda表达式当做变量来使用，此时编译器不会内联该lambda，比如： 1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } 上面我将hello4中的run表达式传给了hello5，而hello5不是一个内联函数，所以此时会把lambda作为一个变量传到hello5中： 如果改成如下方式：\n1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } inline fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } 相关文档：https://juejin.cn/post/6869954460634841101\n">
 <meta property='og:url' content='https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-11-04T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-04T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="笔记整理">
-<meta name="twitter:description" content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 crossinline算是在内联和非内联之间做智能化选择，如果你将lambda表达式当做变量来使用，此时编译器不会内联该lambda，比如： 1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } ">
+<meta name="twitter:description" content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 crossinline算是在内联和非内联之间做智能化选择，如果你将lambda表达式当做变量来使用，此时编译器不会内联该lambda，比如： 1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } 上面我将hello4中的run表达式传给了hello5，而hello5不是一个内联函数，所以此时会把lambda作为一个变量传到hello5中： 如果改成如下方式：\n1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } inline fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } 相关文档：https://juejin.cn/post/6869954460634841101\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -416,7 +416,7 @@
 <img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%BD%93%E5%81%9A%E5%8F%98%E9%87%8F%E4%BD%BF%E7%94%A8.png"
 	width="912"
 	height="154"
-	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%BD%93%E5%81%9A%E5%8F%98%E9%87%8F%E4%BD%BF%E7%94%A8_hu16063132311198559754.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%BD%93%E5%81%9A%E5%8F%98%E9%87%8F%E4%BD%BF%E7%94%A8_hu7787248245772434655.png 1024w"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%BD%93%E5%81%9A%E5%8F%98%E9%87%8F%E4%BD%BF%E7%94%A8_hu_167b83b96ddbd0cb.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%BD%93%E5%81%9A%E5%8F%98%E9%87%8F%E4%BD%BF%E7%94%A8_hu_701970acb669044.png 1024w"
 	loading="lazy"
 	
 		alt="crossinline将lambda当做变量使用"
@@ -459,7 +459,7 @@
 </div><p><img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%86%85%E8%81%94.png"
 	width="786"
 	height="242"
-	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%86%85%E8%81%94_hu6655413015420714954.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%86%85%E8%81%94_hu767503778842152748.png 1024w"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%86%85%E8%81%94_hu_1631e7d49eb75fc4.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%86%85%E8%81%94_hu_38b701258089bf20.png 1024w"
 	loading="lazy"
 	
 		alt="crossinline将lambda内联"
@@ -496,13 +496,11 @@ remove：移除头部节点，如果没有头部节点则抛异常，有的话�
 push：给链表头部插入元素，没有返回值
 pop：和remove一样的，都是移除头部节点，如果没有头部节点则抛异常，有的话，则返回</p>
 <blockquote>
-<p>如果想实现队列的话，则使用offer和poll这一对方法；如果想实现栈的话，可以通过offerLast和pollLast来实现，或者通过offerFirst和pollFirst来实现。</p>
-</blockquote>
+<p>如果想实现队列的话，则使用offer和poll这一对方法；如果想实现栈的话，可以通过offerLast和pollLast来实现，或者通过offerFirst和pollFirst来实现。</p></blockquote>
 <h3 id="arraydeque特性">ArrayDeque特性
 </h3><p>它也是继承自Deque，和LinkedList的特性一样的，只不过ArrayDeque是通过数组实现的双端队列，内部用一个数组来放所有的节点，并且有两个int值用来存放头结点和尾结点的索引。并且ArrayDeque内部的默认节点容量是16个，也可以初始化容量大小。</p>
 <blockquote>
-<p>区别：如果频繁要插入和删除操作，那么使用LinkedList，如果是查询情况比较多，可以优先使用ArrayDeque。</p>
-</blockquote>
+<p>区别：如果频繁要插入和删除操作，那么使用LinkedList，如果是查询情况比较多，可以优先使用ArrayDeque。</p></blockquote>
 <h3 id="poolspool">Pools.Pool
 </h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
