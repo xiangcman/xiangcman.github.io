@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n主题设置 回到performLaunchActivity，给activity设置主题：\n将theme的resid传进来，最终会把resid这个theme追加到mTheme上。这里牵扯到资源加载，后面再说。\nLayoutInflater中的context LayoutInflater.from(context)： 此处的context一般是activity，看activity.getSystemService方法，如果传入的不是activity，比如是ContextThemeWrapper，Application会怎么样：\n">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n">
 <title>Android context总结</title>
 
 <link rel='canonical' href='https://example.com/p/android-context%E6%80%BB%E7%BB%93/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Android context总结">
-<meta property='og:description' content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n主题设置 回到performLaunchActivity，给activity设置主题：\n将theme的resid传进来，最终会把resid这个theme追加到mTheme上。这里牵扯到资源加载，后面再说。\nLayoutInflater中的context LayoutInflater.from(context)： 此处的context一般是activity，看activity.getSystemService方法，如果传入的不是activity，比如是ContextThemeWrapper，Application会怎么样：\n">
+<meta property='og:description' content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n">
 <meta property='og:url' content='https://example.com/p/android-context%E6%80%BB%E7%BB%93/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-10-25T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-10-25T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="Android context总结">
-<meta name="twitter:description" content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n主题设置 回到performLaunchActivity，给activity设置主题：\n将theme的resid传进来，最终会把resid这个theme追加到mTheme上。这里牵扯到资源加载，后面再说。\nLayoutInflater中的context LayoutInflater.from(context)： 此处的context一般是activity，看activity.getSystemService方法，如果传入的不是activity，比如是ContextThemeWrapper，Application会怎么样：\n">
+<meta name="twitter:description" content="类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建contextimpl ActivityThread.performLaunchActivity\n接着会调用contextimpl的setOuterContext，传入的是activity。\n结论：contextImpl中的outerContext指向了activity。\nContext传递 attach调用了attachBaseContext，并把contextimpl传进去了：\n该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：\ngetBaseContext指向了刚刚attach方法传进来的contextimpl。\n指向了mBase.getApplicationContext：\nmPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：\n结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
+                        <img src="/img/logo_hu16514757392605978522.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -400,7 +400,8 @@ ActivityThread.performLaunchActivity</p>
 <img src=setOuterContext.png width=60% />
 <img src=setOuterContext过程.png width=60% />
 <blockquote>
-<p>结论：contextImpl中的outerContext指向了activity。</p></blockquote>
+<p>结论：contextImpl中的outerContext指向了activity。</p>
+</blockquote>
 <h3 id="context传递">Context传递
 </h3><img src=attach调用.png width=60% />
 <p>attach调用了attachBaseContext，并把contextimpl传进去了：</p>
@@ -414,7 +415,8 @@ ActivityThread.performLaunchActivity</p>
 <p>mPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：</p>
 <img src=创建application.png width=60% />
 <blockquote>
-<p>结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。</p></blockquote>
+<p>结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。</p>
+</blockquote>
 <h3 id="主题设置">主题设置
 </h3><p>回到performLaunchActivity，给activity设置主题：</p>
 <img src=给activity设置主题.png width=60% />
@@ -425,28 +427,35 @@ ActivityThread.performLaunchActivity</p>
 <h3 id="layoutinflater中的context">LayoutInflater中的context
 </h3><h4 id="layoutinflaterfromcontext">LayoutInflater.from(context)：
 </h4><img src=layoutinflater.png width=60% />
-<p>此处的context一般是activity，看activity.getSystemService方法，如果传入的不是activity，比如是ContextThemeWrapper，Application会怎么样：</p>
-<img src=getSystemService.png width=60% />
-<p>通过base调用getSystemService，而base其实也是activity。Application是继承自ContextWrapper：</p>
+<p>此处的context一般是activity，看activity.getSystemService方法，activity是继承自ContextThemeWrapper，所以会调用ContextThemeWrapper的getSystemService：</p>
+<p><img src=getSystemService.png width=60% /></br>
+如果name是LAYOUT_INFLATER_SERVICE，则通过LayoutInflater.from(getBaseContext()).cloneInContext(this)来创建，上面分析过activity中的getBaseContext()是指向了contextImpl对象，所以兜兜转转，最终调用了contextImpl中的getSystemService来获取LayoutInflater对象。</p>
+<p>那如果from传进来的不是Activity，而是application会怎么样呢？application它是继承自ContextWrapper：</p>
 <img src=getSystemService详细过程.png width=60% />
 <p>base是contextimpl，最终调用的是contextimpl的getSystemService，activity亦是如此：</p>
 <img src=context的getSystemservice.png width=60% />
 <img src=从服务中心中获取对应的service.png width=60% />
 <p>从SYSTEM_SERVICE_FETCHERS中获取：</p>
 <img src=从SYSTEM_SERVICE_FETCHERS中获取.png width=60% />
-<p>最终是在此处添加了一个PhoneLayoutInflater对象，并把contextimpl.getOuterContext传进去了，此处传进去的是Activity对象。</p>
+<p>最终是在此处添加了一个PhoneLayoutInflater对象，并把contextimpl.getOuterContext传进去了，此处传进去的是Activity或者是application对象。</br>
+如果from中传入的是activity，在contextThemeWrapper的getSystemService方法中获取到PhoneLayoutInflater后，又调用了cloneInContext，将当前的context传入其中：
+<img src=cloneInContext详细过程.png width=60% /></p>
+<p>此处为什么要通过cloneInContext构造一个新的PhoneLayoutInflater呢？</br>
+因为layoutinflater解析xml是强依赖于context，所以为了确保当前activity创建的layoutinflater使用的是当前context，所以将当前的context传入其中构造一个新的layoutinflater。比如在from的时候传入的是view的context，而view的context是有可能不是activity类型的context，比如是一个contextThemewrapper类型的，那么是有可能PhoneLayoutInflater的origin context是一个activity，而newContext传入的是contextThemeWrapper。所以此处用cloneInContext是为了保证当前的context是即将要展示的theme样式。关于分析可以看下面的layoutinflater.inflate。</p>
 <h4 id="layoutinflaterinflate">layoutinflater.inflate:
 </h4><p>此过程调用createViewFromTag来创建view：</p>
 <img src=createViewFromTag.png width=60% />
 <p>此处看view有没有theme属性，有的话，则构造一个contextthemeWrapper出来，举个例子：</p>
 <img src=布局例子.png width=60% />
-<p>此处定义了一个theme属性，那么给该view的构造器传入的context就是一个contextThemeWrapper对象。</p>
-<img src=传入context.png width=60% />
-<p>在from方法里面，传入一个contextthemewrapper对象，并携带一个style。根据上面分析from方法时，contextthemewrapper是通过base.getSystemService。此处的base又是activity，又因为activity.getSystemService，调用base.getSystemService，所以最终又回到了contextimpl.getSystemService。而在创建PhoneLayoutInflater的时候，又通过contextimpl.getOuterContext传入到PhoneLayoutInflater构造器中，但是在contextthemewrapper中最后又调了PhoneLayoutInflater的cloneInContext：</p>
+<p>此处定义了一个theme属性，那么给该view的构造器传入的context就是一个contextThemeWrapper对象。所以view的context不一定是activity的context，如果设置了theme属性，那么就是一个contextThemeWrapper的context。</p>
+<p>再来看一个例子，创建创建layoutinflater的时候指定contextThemeWrapper对象：
+<img src=传入context.png width=60% /></p>
+<p>在from方法里面，传入一个contextthemewrapper对象，并携带一个style。根据上面分析from方法时，contextthemewrapper是通过LayoutInflater.from(getBaseContext()).cloneInContext(this)。此处的getBaseContext()又是activity，又因为activity.getSystemService，调用base.getSystemService，所以最终又回到了contextimpl.getSystemService。而在创建PhoneLayoutInflater的时候，又通过contextimpl.getOuterContext传入到PhoneLayoutInflater构造器中，但是在contextthemewrapper中最后又调了PhoneLayoutInflater的cloneInContext：</p>
 <img src=cloneInContext.png width=60% />
 <img src=cloneInContext详细过程.png width=60% />
 <blockquote>
-<p>所以此种情况下，最终给view传的context也是一个contextthemewrapper的context。</p></blockquote>
+<p>所以此种情况下，最终给view传的context也是一个contextthemewrapper的context。</p>
+</blockquote>
 <h3 id="attr部分">Attr部分
 </h3><p>从主题中获取属性：</p>
 <img src=主题属性.png width=60% />
@@ -469,7 +478,8 @@ attrs表示的是要从哪个属性集中取到属性。
 <p>可以看出来生出来一个R.styleable.TestView的数组和两个int值，分别是R.styleable.TestView_attr1和R.styleable.TestView_attr2，它两分别代表TestView数组的索引，而对应的值是定义在resource.arsc文件中：</p>
 <img src=resource.arsc结果.png width=60% />
 <blockquote>
-<p>所以最终得出结论是：通过context.obtainStyledAttributes传入attrbuteset和attrs数组，得到了typearray，然后通过typearray的索引得到所有的属性：</p></blockquote>
+<p>所以最终得出结论是：通过context.obtainStyledAttributes传入attrbuteset和attrs数组，得到了typearray，然后通过typearray的索引得到所有的属性：</p>
+</blockquote>
 <img src=取出attr中的属性.png width=60% /> 
 <h4 id="defstyleattrdefstyleres">defStyleAttr、defStyleRes
 </h4><img src=view构造器.png width=60% /> 
