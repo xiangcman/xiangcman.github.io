@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Booster on xiangcman</title>
+        <link>https://example.com/categories/booster/</link>
+        <description>Recent content in Booster on xiangcman</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en-us</language>
+        <copyright>Example Person</copyright>
+        <lastBuildDate>Tue, 18 Mar 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/categories/booster/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Booster其他插件介绍</title>
+        <link>https://example.com/p/booster%E5%85%B6%E4%BB%96%E6%8F%92%E4%BB%B6%E4%BB%8B%E7%BB%8D/</link>
+        <pubDate>Tue, 18 Mar 2025 00:00:00 +0000</pubDate>
+        
+        <guid>https://example.com/p/booster%E5%85%B6%E4%BB%96%E6%8F%92%E4%BB%B6%E4%BB%8B%E7%BB%8D/</guid>
+        <description>&lt;h3 id=&#34;booster-transform-activity-thread&#34;&gt;booster-transform-activity-thread
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;作用：捕捉异常信息，是抛异常还是捕捉到异常，可以通过捕捉到异常后，上传到服务端&lt;/li&gt;
+&lt;li&gt;插件入口：&lt;code&gt;ActivityThreadTransformer&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;通过解析manifest中的application标签，然后在application的onCreate方法最后插入ActivityThreadHooker.hook(&amp;quot;&amp;quot;)方法，其中参数传入的是忽略的包名，获取的是gradle.properties中的&lt;code&gt;booster.transform.activity.thread.packages.ignore&lt;/code&gt;配置：
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-gradle&#34; data-lang=&#34;gradle&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;booster&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;transform&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;activity&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;thread&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;packages&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;ignore&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;com&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;demo&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;cdh&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;cardswipedemo&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;在ActivityThreadHooker中获取到ActivityThread类的mH，它是一个handler，然后给它的&lt;code&gt;mCallback&lt;/code&gt;替换为ActivityThreadCallback，所以最终会回调到ActivityThreadCallback的handleMessage方法中，该方法会处理各种异常信息，在处理异常的时候，如果不是忽略的包名，则认为是需要处理的异常，然后把该异常抛出去了，交给系统去处理。否则不抛给系统，应用不会崩溃。&lt;/li&gt;
+&lt;li&gt;理解：在apk构建阶段，它是没有android环境的，所以在transform阶段只是在自定义的application的onCreate方法最后插入了ActivityThreadHooker.hook()方法，在该方法里面构建了ActivityThreadCallback对象，在该对象的构造器中通过重新定义一个和android一样的ActivityThread的包名和类名。所以等到apk运行的时候，通过启动了android的虚拟机，会优先找到系统的ActivityThread类。我可以理解有点偷梁换柱的感觉。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;booster-transform-logcat&#34;&gt;booster-transform-logcat
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;作用：将系统调用Log.&lt;strong&gt;()、e.printStackTrace()、System.out或System.err的方法分别替换成ShadowLog.&lt;/strong&gt;()、ShadowThrowable.printStackTrace(e:Exception)、ShadowSystem.out或ShadowSystem.err等方法，而这些方法中都是空实现。&lt;/li&gt;
+&lt;li&gt;插件入口：&lt;code&gt;LogcatTransformer&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;在transform方法中，通过ClassNode遍历方法，然后在方法的指令中如果遇到opcode是INVOKESTATIC，那么此时的指令是一个MethodInsnNode，如果MethodInsnNode的owner是&lt;code&gt;android/util/Log&lt;/code&gt;并且是感兴趣的方法则命中；如果opcode是INVOKEVIRTUAL（java实例的普通方法的调用），此时也是一个MethodInsnNode，获取方法的name是printStackTrace，并且方法的描述是()V，并且通过判断当前owner的class类型是java.lang.throwable的class子类型时就命中；如果opcode是GETSTATIC，并且owner是java/lang/System，方法的name是out或是err时候也命中。&lt;/li&gt;
+&lt;li&gt;在上面判断当前MethodInsnNode的owner的class类型是java.lang.throwable的class子类型源码分析：
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;context&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;klassPool&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;get&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;THROWABLE&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;).&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;isAssignableFrom&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;it&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;owner&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;context.klassPool.get(THROWABLE)拿到的是一个AbstractKlassPool，它表示的是transform阶段所有已经加载过的class的池子，它是在BoosterTransformInvocation中初始化的，初始化的时候接收compileClasspath和transform.bootKlassPool，其中compileClasspath表示的transform阶段所有的输入class（包括所有transform阶段可以修改和不可修改的输入class和jar文件路径），此处的不可修改表示当前transform识别到的其它插件生成的class，例如dagger2、ButterKnife等。transform.bootKlassPool是获取AndroidExtensions的bootClasspath的路径，然后生成一个AbstractKlassPool，AndroidExtensions的bootClasspath的路径指的是编译时 JDK + Android Framework 的基础类库路径。所以此处有两个AbstractKlassPool，一个是用来表示bootClasspath的父类池子，另外一个就是compileClasspath的池子，bootClasspath的父类池子的classloader指向了compileClasspath的池子的父classloader，此处用到的classloader是一个URLClassLoader，用它是为了和gradle主类加载器避免冲突，能够独立管理项目类路径，支持按需加载类和资源，适应字节码操作需求，隔离Booster内部依赖，防止与项目依赖冲突，允许动态添加插件或模块的类路径。最后加载过的class会放到map中，下次直接拿到该class，最终通过class的isAssignableFrom方法来判断传入的class是否是父class的子类。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;booster-transform-shared-preferences&#34;&gt;booster-transform-shared-preferences
+&lt;/h3&gt;</description>
+        </item>
+        
+    </channel>
+</rss>
