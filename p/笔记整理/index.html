@@ -298,6 +298,10 @@
         <li><a href="#poolspool">Pools.Pool</a></li>
         <li><a href="#java中类加载机制">java中类加载机制</a></li>
         <li><a href="#android中类加载机制">android中类加载机制</a></li>
+        <li><a href="#android中choreographer工作内容android-29">android中Choreographer工作内容（android 29）</a></li>
+        <li><a href="#vsync信号的作用">vsync信号的作用</a></li>
+        <li><a href="#消息队列中的消息屏障">消息队列中的消息屏障</a></li>
+        <li><a href="#android中异常处理">android中异常处理</a></li>
       </ol>
     </li>
   </ol>
@@ -364,7 +368,7 @@
 
 
                 <time class="article-time--reading">
-                    6 minute read
+                    8 minute read
                 </time>
             </div>
         
@@ -1047,6 +1051,226 @@ pop：和remove一样的，都是移除头部节点，如果没有头部节点�
 </ol>
 </li>
 </ol>
+<h3 id="android中choreographer工作内容android-29">android中Choreographer工作内容（android 29）
+</h3><ul>
+<li>当某个view发起绘制（requestLayout或invalidate）的时候，会调用到ViewRootImpl的scheduleTraversals，该方法里面会给主线程的looper中的消息队列插入了一条消息屏障，接着给Choreographer插入了一条CALLBACK_TRAVERSAL类型的callback：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">scheduleTraversals</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//如果没有发起绘制，才会往下走</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">mTraversalScheduled</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">mTraversalScheduled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//给主线程的looper中的消息队列插入了一条消息屏障</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">mTraversalBarrier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mHandler</span><span class="p">.</span><span class="na">getLooper</span><span class="p">().</span><span class="na">getQueue</span><span class="p">().</span><span class="na">postSyncBarrier</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//给Choreographer插入了一条CALLBACK_TRAVERSAL类型的callback</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">mChoreographer</span><span class="p">.</span><span class="na">postCallback</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="n">Choreographer</span><span class="p">.</span><span class="na">CALLBACK_TRAVERSAL</span><span class="p">,</span><span class="w"> </span><span class="n">mTraversalRunnable</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">mUnbufferedInputDispatch</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">scheduleConsumeBatchedInput</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">notifyRendererOfFramePending</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">pokeDrawLockIfNeeded</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>最终会走到Choreographer的scheduleFrameLocked，默认会走USE_VSYNC，并且默认该线程的looper是主线程的looper，走到如下逻辑，会走到scheduleVsyncLocked，最终会走到DisplayEventReceiver的native方法nativeScheduleVsync，表示监听底层的vsync信号，当vsync信号来的时候会回调onVsync方法，该方法会给主线程发送一条异步消息到消息队列中：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">//timestampNanos：VSync脉冲的时间戳</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//frame：帧号码，自增</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onVsync</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">timestampNanos</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">physicalDisplayId</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">frame</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mTimestampNanos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">timestampNanos</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mFrame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frame</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Message</span><span class="w"> </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Message</span><span class="p">.</span><span class="na">obtain</span><span class="p">(</span><span class="n">mHandler</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">msg</span><span class="p">.</span><span class="na">setAsynchronous</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mHandler</span><span class="p">.</span><span class="na">sendMessageAtTime</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="w"> </span><span class="n">timestampNanos</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">TimeUtils</span><span class="p">.</span><span class="na">NANOS_PER_MS</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>可以看到onVsync中将自己（FrameDisplayEventReceiver）发送到任务队列中，并且执行时间是timestampNanos，说明该任务是要等到vsync信号指定的时间才会执行，它是一个runnable对象，到了执行该任务的时候会执行它的run方法，run方法会执行doFrame，任务队列是执行完上一个任务才会执行下一个任务，所以如果前面的任务一直阻塞着，doFrame其实不会在timestampNanos时间到了的时候，会立马执行的，看下doFrame处理逻辑：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">doFrame</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">frameTimeNanos</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">frame</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">startNanos</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">synchronized</span><span class="w"> </span><span class="p">(</span><span class="n">mLock</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//期望的时间</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="kt">long</span><span class="w"> </span><span class="n">intendedFrameTimeNanos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frameTimeNanos</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">startNanos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">nanoTime</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//当前时间-期望时间=延迟时间</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="kd">final</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">jitterNanos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">startNanos</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">frameTimeNanos</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//延迟时间如果大于一帧所需要的时间</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">jitterNanos</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">mFrameIntervalNanos</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="kd">final</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">skippedFrames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jitterNanos</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">mFrameIntervalNanos</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="c1">//如果延迟执行的时间大于30帧的时间则给出提示</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">skippedFrames</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">SKIPPED_FRAME_WARNING_LIMIT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="n">Log</span><span class="p">.</span><span class="na">i</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;Skipped &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">skippedFrames</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34; frames!  &#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;The application may be doing too much work on its main thread.&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="kd">final</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">lastFrameOffset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jitterNanos</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">mFrameIntervalNanos</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="c1">//重新计算vsync信号来的时间</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">frameTimeNanos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">startNanos</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">lastFrameOffset</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//如果期望的时间比上一帧的时间还小，则说明上一帧还没结束，所以当前帧不处理，直接监听下一个vsync信号</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">frameTimeNanos</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">mLastFrameTimeNanos</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">scheduleVsyncLocked</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="k">return</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">mFrameInfo</span><span class="p">.</span><span class="na">setVsync</span><span class="p">(</span><span class="n">intendedFrameTimeNanos</span><span class="p">,</span><span class="w"> </span><span class="n">frameTimeNanos</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">mFrameScheduled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//给上一帧的时间附上标记</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">mLastFrameTimeNanos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frameTimeNanos</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Trace</span><span class="p">.</span><span class="na">traceBegin</span><span class="p">(</span><span class="n">Trace</span><span class="p">.</span><span class="na">TRACE_TAG_VIEW</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;Choreographer#doFrame&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">AnimationUtils</span><span class="p">.</span><span class="na">lockAnimationClock</span><span class="p">(</span><span class="n">frameTimeNanos</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">TimeUtils</span><span class="p">.</span><span class="na">NANOS_PER_MS</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">mFrameInfo</span><span class="p">.</span><span class="na">markInputHandlingStart</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//处理input类型的callback</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">doCallbacks</span><span class="p">(</span><span class="n">Choreographer</span><span class="p">.</span><span class="na">CALLBACK_INPUT</span><span class="p">,</span><span class="w"> </span><span class="n">frameTimeNanos</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">mFrameInfo</span><span class="p">.</span><span class="na">markAnimationsStart</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//处理animation类型的callback</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">doCallbacks</span><span class="p">(</span><span class="n">Choreographer</span><span class="p">.</span><span class="na">CALLBACK_ANIMATION</span><span class="p">,</span><span class="w"> </span><span class="n">frameTimeNanos</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">doCallbacks</span><span class="p">(</span><span class="n">Choreographer</span><span class="p">.</span><span class="na">CALLBACK_INSETS_ANIMATION</span><span class="p">,</span><span class="w"> </span><span class="n">frameTimeNanos</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">mFrameInfo</span><span class="p">.</span><span class="na">markPerformTraversalsStart</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//处理traversal类型的callback</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">doCallbacks</span><span class="p">(</span><span class="n">Choreographer</span><span class="p">.</span><span class="na">CALLBACK_TRAVERSAL</span><span class="p">,</span><span class="w"> </span><span class="n">frameTimeNanos</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//处理commit类型的callback</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">doCallbacks</span><span class="p">(</span><span class="n">Choreographer</span><span class="p">.</span><span class="na">CALLBACK_COMMIT</span><span class="p">,</span><span class="w"> </span><span class="n">frameTimeNanos</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">finally</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">AnimationUtils</span><span class="p">.</span><span class="na">unlockAnimationClock</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Trace</span><span class="p">.</span><span class="na">traceEnd</span><span class="p">(</span><span class="n">Trace</span><span class="p">.</span><span class="na">TRACE_TAG_VIEW</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>doFrame主要是先看当前时间和期望的时间进行比较，得到延迟时间，如果该时间大于一帧所需要的时间（60hz刷新率的设备，那么一帧的时间是1000/60=16ms），并且该时间大于30帧的时间时候给出提示，这个时间跟view绘制的anr时间差不多。如果期望的时间比上一帧的时间还小，则说明上一帧还没结束，所以当前帧不处理，直接监听下一个vsync信号。接着就是处理各种callback（input、animation、traversal、commit）。而开头view发起绘制的时候，会插入一条traversal类型的callback，所以会执行到view的绘制流程。</li>
+<li>当view发起绘制的时候，不会立马执行，而是先给Choreographer插入一条traversal类型的callback，同时让Choreographer监听下一个vsync信号的到来，当vsync信号来的时候，会给主线程的消息队列发送一条异步消息，当处理该消息的时候校验是否有掉帧处理，如果有掉30帧的时候，会给出提示，最后处理各种类型的callback。</li>
+</ul>
+<h3 id="vsync信号的作用">vsync信号的作用
+</h3><ul>
+<li>VSync（垂直同步）在安卓屏幕刷新中的作用主要是协调屏幕刷新与图像渲染，避免画面撕裂并提升显示流畅度。具体作用如下：
+<ul>
+<li>防止画面撕裂
+<ul>
+<li>当屏幕刷新与图像渲染不同步时，可能出现画面撕裂。VSync通过同步两者的频率，确保屏幕在完整刷新一帧后再显示下一帧，从而避免这一问题。</li>
+</ul>
+</li>
+<li>提升流畅度
+<ul>
+<li>VSync确保帧率与屏幕刷新率一致，减少帧率波动，使动画和滚动更加平滑。</li>
+</ul>
+</li>
+<li>优化性能
+<ul>
+<li>VSync通过控制渲染节奏，避免GPU过度渲染，减少资源浪费，提升系统效率。</li>
+</ul>
+</li>
+<li>双缓冲与三缓冲
+<ul>
+<li>VSync常与双缓冲或三缓冲结合使用。双缓冲通过交替使用前后缓冲区减少等待时间，而三缓冲进一步减少卡顿，提升性能。</li>
+</ul>
+</li>
+<li>减少延迟
+<ul>
+<li>虽然VSync可能增加少量延迟，但通过合理使用双缓冲或三缓冲，可以在保证流畅度的同时尽量降低延迟。</li>
+</ul>
+</li>
+<li>总结来说，VSync通过同步屏幕刷新与图像渲染，防止画面撕裂、提升流畅度、优化性能，并减少延迟。</li>
+</ul>
+</li>
+</ul>
+<h3 id="消息队列中的消息屏障">消息队列中的消息屏障
+</h3><ul>
+<li>消息屏障主要是不处理屏障后面的同步消息，优先处理异步消息，实现原理是消息屏障本身是一个没有持有handler的消息，在获取消息的时候，如果发现队列头部是一个消息屏障，则不获取后面的同步消息，只获取后面的异步消息，一般作用于优先级比较高的场景，比如view的绘制流程。当处理完异步消息后，需要移除掉该消息屏障。</li>
+</ul>
+<h3 id="android中异常处理">android中异常处理
+</h3><p>首先理解下java中线程异常机制，如果线程中发生异常了，没有进行try-catch默认会抛给<code>defaultUncaughtExceptionHandler</code>的uncaughtException，而android中启动进程后会在RuntimeInit的commonInit方法中给主线程设置上defaultUncaughtExceptionHandler，对应的是KillApplicationHandler，在它的uncaughtException方法中先收集日志，然后kill掉进程。如果有设置线程的uncaughtExceptionHandler，那么此时java异常机制是就不走defaultUncaughtExceptionHandler了，所以不会走KillApplicationHandler，如果没有设置uncaughtExceptionHandler，而通过Thread.uncaughtExceptionHandler.uncaughtException(Exception)的时候，其实是先获取到线程的ThreadGroup，而在ThreadGroup中的uncaughtException中先看parent有没有，如果没有则也是回调到defaultUncaughtExceptionHandler中。</p>
 
 </section>
 
