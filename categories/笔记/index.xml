@@ -901,6 +901,74 @@ pop：和remove一样的，都是移除头部节点，如果没有头部节点�
 &lt;/ul&gt;
 &lt;h3 id=&#34;android中异常处理&#34;&gt;android中异常处理
 &lt;/h3&gt;&lt;p&gt;首先理解下java中线程异常机制，如果线程中发生异常了，没有进行try-catch默认会抛给&lt;code&gt;defaultUncaughtExceptionHandler&lt;/code&gt;的uncaughtException，而android中启动进程后会在RuntimeInit的commonInit方法中给主线程设置上defaultUncaughtExceptionHandler，对应的是KillApplicationHandler，在它的uncaughtException方法中先收集日志，然后kill掉进程。如果有设置线程的uncaughtExceptionHandler，那么此时java异常机制是就不走defaultUncaughtExceptionHandler了，所以不会走KillApplicationHandler，如果没有设置uncaughtExceptionHandler，而通过Thread.uncaughtExceptionHandler.uncaughtException(Exception)的时候，其实是先获取到线程的ThreadGroup，而在ThreadGroup中的uncaughtException中先看parent有没有，如果没有则也是回调到defaultUncaughtExceptionHandler中。&lt;/p&gt;
+&lt;h3 id=&#34;关于多张bitmap转成webp的原理&#34;&gt;关于多张bitmap转成webp的原理
+&lt;/h3&gt;&lt;p&gt;首先得理解webp是基于VP8/VP8L/VP9视频编码技术，支持有损压缩、无损压缩、透明度和动画。其内部格式基于RIFF（Resource Interchange File Format）文件结构，类似于WAV或AVI的容器格式。webp文件以RIFF头部开始，整体结构如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-txt&#34; data-lang=&#34;txt&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;RIFF {FileSize} WEBP {Chunks...}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;RIFF：固定 4 字节标识符。&lt;/li&gt;
+&lt;li&gt;FileSize：4 字节，表示文件总大小（包括 RIFF 头部和 WEBP 标签）。&lt;/li&gt;
+&lt;li&gt;WEBP：固定 4 字节标识符，表明文件类型。
+其中RIFF、FileSize、WEBP这三个归为header部分，chunks归为块部分。其中块可以分为如下部分：
+&lt;ul&gt;
+&lt;li&gt;VP8/VP8L/VP9 图像数据块：
+&lt;ul&gt;
+&lt;li&gt;VP8：用于有损压缩图像（类似 JPEG），块标识符为 VP8 （注意末尾空格）。&lt;/li&gt;
+&lt;li&gt;VP8L：用于无损压缩图像（类似 PNG），块标识符为 VP8L。&lt;/li&gt;
+&lt;li&gt;VP9：用于更高效的压缩（较少见），块标识符为 VP9 。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;VP8X（扩展元数据块）：
+&lt;ul&gt;
+&lt;li&gt;标识符为 VP8X，用于存储扩展信息（如宽度、高度、动画标志、Alpha 通道等）。&lt;/li&gt;
+&lt;li&gt;必须出现在其他块之前（除 RIFF 和 WEBP 外）。&lt;/li&gt;
+&lt;li&gt;包含以下标志位：
+&lt;ul&gt;
+&lt;li&gt;动画（Animation）&lt;/li&gt;
+&lt;li&gt;Alpha 通道（Alpha）&lt;/li&gt;
+&lt;li&gt;EXIF 元数据&lt;/li&gt;
+&lt;li&gt;XMP 元数据&lt;/li&gt;
+&lt;li&gt;ICC 颜色配置文件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;ANIM（动画控制块）：
+&lt;ul&gt;
+&lt;li&gt;标识符为 ANIM，仅用于动画 WebP。&lt;/li&gt;
+&lt;li&gt;包含背景颜色和循环次数。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;ANMF（动画帧块）：
+&lt;ul&gt;
+&lt;li&gt;标识符为 ANMF，每个动画帧对应一个 ANMF 块。&lt;/li&gt;
+&lt;li&gt;包含帧的位置、时间延迟、宽度、高度等。
+了解文件结构后，下面来介绍如何将多个bitmap生成webp：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;首先将bitmap压缩成webp格式的图片，按照50的压缩比，放到字节输入流中&lt;/li&gt;
+&lt;li&gt;读取webp的header部分
+&lt;ul&gt;
+&lt;li&gt;读取RIFF部分&lt;/li&gt;
+&lt;li&gt;读取文件大小&lt;/li&gt;
+&lt;li&gt;读取WEBP部分&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;读取第一个带有playload的chunk块
+&lt;ul&gt;
+&lt;li&gt;由于前面指定了bitmap转webp的时候是有损，因此读取chunk的时候直接去读WP8块，接着读取它的payload信息，playload大小就是chunk大小，4字节。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;读取完后，接着就是写入到输出流中，判断如果是第一个bitmap，则创建header部分，其中header也是按照RIFF、FileSize、WEBP三个区域写会，接着写入VP8X数据块，标明宽高等信息。最后创建VP8的chunk，将刚才读取到的单个bitmap的playload写会到VP8的chunk中。&lt;/li&gt;
+&lt;/ul&gt;
 </description>
         </item>
         

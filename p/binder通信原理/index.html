@@ -456,7 +456,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="n">at</span><span class="w"> </span><span class="n">com</span><span class="p">.</span><span class="na">android</span><span class="p">.</span><span class="na">internal</span><span class="p">.</span><span class="na">os</span><span class="p">.</span><span class="na">ZygoteInit</span><span class="p">.</span><span class="na">main</span><span class="p">(</span><span class="n">ZygoteInit</span><span class="p">.</span><span class="na">java</span><span class="p">:</span><span class="n">1045</span><span class="p">)</span><span class="w"> 
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>可以看到异常分两块，一块是上面的<code>java.lang.RuntimeException: Failure from system</code>，它是Instrumentation中的execStartActivity抛的异常，最终是因为在android.os.BinderProxy.transactNative(Native Method)中抛了<code>android.os.TransactionTooLargeException: data parcel size 1049092 bytes</code>异常，异常堆栈越是往上面是异常所在点，越往下面是上层代码。我们都知道点击一个按钮</p>
+</div><p>可以看到异常分两块，一块是上面的<code>java.lang.RuntimeException: Failure from system</code>，它是Instrumentation中的execStartActivity抛的异常，最终是因为在android.os.BinderProxy.transactNative(Native Method)中抛了<code>android.os.TransactionTooLargeException: data parcel size 1049092 bytes</code>异常，异常堆栈越是往上面是异常所在点，越往下面是上层代码。当点击按钮的时候底层会给</p>
 
 </section>
 

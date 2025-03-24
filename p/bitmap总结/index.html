@@ -366,7 +366,7 @@
 
 
                 <time class="article-time--reading">
-                    1 minute read
+                    5 minute read
                 </time>
             </div>
         
@@ -540,8 +540,444 @@
 		data-flex-basis="340px"
 	
 >
-上面逻辑是如果没获取到drawable的density，那么就设置为160，否则直接给Options.inDensity设置为density。然后将设备的density设置到Options.inTargetDensity。
-关于drawable的densityDpi的值如下：
+上面逻辑是如果没获取到drawable的density，那么就设置为160，否则直接给Options.inDensity设置为density。然后将设备的density设置到Options.inTargetDensity。</p>
+<p>接着调用了decodeStream方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Nullable</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">Bitmap</span><span class="w"> </span><span class="nf">decodeStream</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">InputStream</span><span class="w"> </span><span class="n">is</span><span class="p">,</span><span class="w"> </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Rect</span><span class="w"> </span><span class="n">outPadding</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="n">opts</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">validate</span><span class="p">(</span><span class="n">opts</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Bitmap</span><span class="w"> </span><span class="n">bm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//如果是asset目录中的图片，则走if</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">AssetManager</span><span class="p">.</span><span class="na">AssetInputStream</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kd">final</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">asset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="n">AssetManager</span><span class="p">.</span><span class="na">AssetInputStream</span><span class="p">)</span><span class="w"> </span><span class="n">is</span><span class="p">).</span><span class="na">getNativeAsset</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">bm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nativeDecodeAsset</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span><span class="w"> </span><span class="n">outPadding</span><span class="p">,</span><span class="w"> </span><span class="n">opts</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="p">.</span><span class="na">nativeInBitmap</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">Options</span><span class="p">.</span><span class="na">nativeColorSpace</span><span class="p">(</span><span class="n">opts</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//如果是drawable目录下的图片，则走这里</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">bm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">decodeStreamInternal</span><span class="p">(</span><span class="n">is</span><span class="p">,</span><span class="w"> </span><span class="n">outPadding</span><span class="p">,</span><span class="w"> </span><span class="n">opts</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">setDensityFromOptions</span><span class="p">(</span><span class="n">bm</span><span class="p">,</span><span class="w"> </span><span class="n">opts</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">bm</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以看到如果是drawable目录下的图片，则走decodeStreamInternal：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">Bitmap</span><span class="w"> </span><span class="nf">decodeStreamInternal</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">InputStream</span><span class="w"> </span><span class="n">is</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Rect</span><span class="w"> </span><span class="n">outPadding</span><span class="p">,</span><span class="w"> </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="n">opts</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// ASSERT(is != null);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">byte</span><span class="w"> </span><span class="o">[]</span><span class="w"> </span><span class="n">tempStorage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">opts</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="n">tempStorage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">opts</span><span class="p">.</span><span class="na">inTempStorage</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tempStorage</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="n">tempStorage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">byte</span><span class="o">[</span><span class="n">DECODE_BUFFER_SIZE</span><span class="o">]</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">nativeDecodeStream</span><span class="p">(</span><span class="n">is</span><span class="p">,</span><span class="w"> </span><span class="n">tempStorage</span><span class="p">,</span><span class="w"> </span><span class="n">outPadding</span><span class="p">,</span><span class="w"> </span><span class="n">opts</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Options</span><span class="p">.</span><span class="na">nativeInBitmap</span><span class="p">(</span><span class="n">opts</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Options</span><span class="p">.</span><span class="na">nativeColorSpace</span><span class="p">(</span><span class="n">opts</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">native</span><span class="w"> </span><span class="n">Bitmap</span><span class="w"> </span><span class="nf">nativeDecodeStream</span><span class="p">(</span><span class="n">InputStream</span><span class="w"> </span><span class="n">is</span><span class="p">,</span><span class="w"> </span><span class="kt">byte</span><span class="o">[]</span><span class="w"> </span><span class="n">storage</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Rect</span><span class="w"> </span><span class="n">padding</span><span class="p">,</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="n">opts</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">inBitmapHandle</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">colorSpaceHandle</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>最终会调用nativeDecodeStream方法，此处通过aosp来查看源码，该c++代码在<code>/frameworks/base/libs/hwui/jni/BitmapFactory.cpp</code>下，找到cpp文件后，然后再看c++层的方法注册：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">static</span> <span class="k">const</span> <span class="n">JNINativeMethod</span> <span class="n">gMethods</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>   <span class="s">&#34;nativeDecodeStream&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s">&#34;(Ljava/io/InputStream;[BLandroid/graphics/Rect;Landroid/graphics/BitmapFactory$Options;JJ)Landroid/graphics/Bitmap;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">nativeDecodeStream</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>   <span class="s">&#34;nativeDecodeFileDescriptor&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s">&#34;(Ljava/io/FileDescriptor;Landroid/graphics/Rect;Landroid/graphics/BitmapFactory$Options;JJ)Landroid/graphics/Bitmap;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">nativeDecodeFileDescriptor</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>   <span class="s">&#34;nativeDecodeAsset&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s">&#34;(JLandroid/graphics/Rect;Landroid/graphics/BitmapFactory$Options;JJ)Landroid/graphics/Bitmap;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">nativeDecodeAsset</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>   <span class="s">&#34;nativeDecodeByteArray&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s">&#34;([BIILandroid/graphics/BitmapFactory$Options;JJ)Landroid/graphics/Bitmap;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">nativeDecodeByteArray</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>   <span class="s">&#34;nativeIsSeekable&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s">&#34;(Ljava/io/FileDescriptor;)Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">nativeIsSeekable</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>此处对应到第一个方法nativeDecodeStream：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">static</span> <span class="n">jobject</span> <span class="nf">nativeDecodeStream</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">clazz</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">is</span><span class="p">,</span> <span class="n">jbyteArray</span> <span class="n">storage</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">jobject</span> <span class="n">padding</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">options</span><span class="p">,</span> <span class="n">jlong</span> <span class="n">inBitmapHandle</span><span class="p">,</span> <span class="n">jlong</span> <span class="n">colorSpaceHandle</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">jobject</span> <span class="n">bitmap</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">SkStream</span><span class="o">&gt;</span> <span class="n">stream</span><span class="p">(</span><span class="n">CreateJavaInputStreamAdaptor</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">is</span><span class="p">,</span> <span class="n">storage</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">stream</span><span class="p">.</span><span class="n">get</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">SkStreamRewindable</span><span class="o">&gt;</span> <span class="n">bufferedStream</span><span class="p">(</span><span class="n">skia</span><span class="o">::</span><span class="n">FrontBufferedStream</span><span class="o">::</span><span class="n">Make</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">stream</span><span class="p">),</span> <span class="n">SkCodec</span><span class="o">::</span><span class="n">MinBufferedBytesNeeded</span><span class="p">()));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SkASSERT</span><span class="p">(</span><span class="n">bufferedStream</span><span class="p">.</span><span class="n">get</span><span class="p">()</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">bitmap</span> <span class="o">=</span> <span class="n">doDecode</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">bufferedStream</span><span class="p">),</span> <span class="n">padding</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">inBitmapHandle</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                          <span class="n">colorSpaceHandle</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">bitmap</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol>
+<li>JNIEnv* env</li>
+</ol>
+<ul>
+<li>
+<p>作用</p>
+<ul>
+<li>JNIEnv 是 JNI 环境指针，提供所有 JNI 函数（如调用 Java 方法、操作 Java 对象等）的接口。
+它是线程相关的，每个线程的 JNIEnv 独立，不可跨线程使用。</li>
+</ul>
+</li>
+<li>
+<p>关键功能</p>
+<ul>
+<li>访问 Java 对象：例如通过 GetFieldID、GetMethodID 获取字段或方法。</li>
+<li>调用 Java 方法：例如 CallVoidMethod、CallStaticIntMethod。</li>
+<li>异常处理：例如 ExceptionCheck、ExceptionDescribe。</li>
+<li>内存管理：例如 NewStringUTF 创建字符串，DeleteLocalRef 释放局部引用。</li>
+</ul>
+</li>
+</ul>
+<ol start="2">
+<li>jobject clazz</li>
+</ol>
+<ul>
+<li>作用
+<ul>
+<li>如果本地方法是 静态方法（static），jobject clazz 表示调用该方法的 Java 类对象（对应 Class 对象）。</li>
+<li>如果本地方法是 实例方法（非静态），参数应为 jobject thiz，表示调用该方法的 Java 对象实例。
+可以看到调用了另外一个静态方法doDecode：</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">static</span> <span class="n">jobject</span> <span class="nf">doDecode</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">SkStreamRewindable</span><span class="o">&gt;</span> <span class="n">stream</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">jobject</span> <span class="n">padding</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">options</span><span class="p">,</span> <span class="n">jlong</span> <span class="n">inBitmapHandle</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">jlong</span> <span class="n">colorSpaceHandle</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// Set default values for the options parameters.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">int</span> <span class="n">sampleSize</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="n">onlyDecodeSize</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">SkColorType</span> <span class="n">prefColorType</span> <span class="o">=</span> <span class="n">kN32_SkColorType</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="n">isHardware</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="n">isMutable</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">scale</span> <span class="o">=</span> <span class="mf">1.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="n">requireUnpremultiplied</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">jobject</span> <span class="n">javaBitmap</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">sk_sp</span><span class="o">&lt;</span><span class="n">SkColorSpace</span><span class="o">&gt;</span> <span class="n">prefColorSpace</span> <span class="o">=</span> <span class="n">GraphicsJNI</span><span class="o">::</span><span class="n">getNativeColorSpace</span><span class="p">(</span><span class="n">colorSpaceHandle</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Update with options supplied by the client.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">options</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">sampleSize</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">GetIntField</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">gOptions_sampleSizeFieldID</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Correct a non-positive sampleSize.  sampleSize defaults to zero within the
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// options object, which is strange.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="p">(</span><span class="n">sampleSize</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">sampleSize</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">env</span><span class="o">-&gt;</span><span class="n">GetBooleanField</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">gOptions_scaledFieldID</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">//获取图片所在文件夹的density
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">const</span> <span class="kt">int</span> <span class="n">density</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">GetIntField</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">gOptions_densityFieldID</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">//获取屏幕所在的density
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">const</span> <span class="kt">int</span> <span class="n">targetDensity</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">GetIntField</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">gOptions_targetDensityFieldID</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">const</span> <span class="kt">int</span> <span class="n">screenDensity</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">GetIntField</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">gOptions_screenDensityFieldID</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(</span><span class="n">density</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">targetDensity</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">density</span> <span class="o">!=</span> <span class="n">screenDensity</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">//得到bitmap的缩放比例
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">scale</span> <span class="o">=</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span> <span class="n">targetDensity</span> <span class="o">/</span> <span class="n">density</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Determine the output size.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">//得到bitmap的大小
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">SkISize</span> <span class="n">size</span> <span class="o">=</span> <span class="n">codec</span><span class="o">-&gt;</span><span class="n">getSampledDimensions</span><span class="p">(</span><span class="n">sampleSize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">scaledWidth</span> <span class="o">=</span> <span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">scaledHeight</span> <span class="o">=</span> <span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="n">willScale</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Apply a fine scaling step if necessary.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">needsFineScale</span><span class="p">(</span><span class="n">codec</span><span class="o">-&gt;</span><span class="n">getInfo</span><span class="p">().</span><span class="n">dimensions</span><span class="p">(),</span> <span class="n">size</span><span class="p">,</span> <span class="n">sampleSize</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">willScale</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">scaledWidth</span> <span class="o">=</span> <span class="n">codec</span><span class="o">-&gt;</span><span class="n">getInfo</span><span class="p">().</span><span class="n">width</span><span class="p">()</span> <span class="o">/</span> <span class="n">sampleSize</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">scaledHeight</span> <span class="o">=</span> <span class="n">codec</span><span class="o">-&gt;</span><span class="n">getInfo</span><span class="p">().</span><span class="n">height</span><span class="p">()</span> <span class="o">/</span> <span class="n">sampleSize</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Scale is necessary due to density differences.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">//根据前面算的缩放比例，得到最终的bitmap大小
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">scale</span> <span class="o">!=</span> <span class="mf">1.0f</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">willScale</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">scaledWidth</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">scaledWidth</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">+</span> <span class="mf">0.5f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">scaledHeight</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">scaledHeight</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">+</span> <span class="mf">0.5f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//算出最终的缩放比例
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">const</span> <span class="kt">float</span> <span class="n">scaleX</span> <span class="o">=</span> <span class="n">scaledWidth</span> <span class="o">/</span> <span class="kt">float</span><span class="p">(</span><span class="n">decodingBitmap</span><span class="p">.</span><span class="n">width</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="kt">float</span> <span class="n">scaleY</span> <span class="o">=</span> <span class="n">scaledHeight</span> <span class="o">/</span> <span class="kt">float</span><span class="p">(</span><span class="n">decodingBitmap</span><span class="p">.</span><span class="n">height</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">SkBitmap</span> <span class="n">outputBitmap</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">willScale</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Set the allocator for the outputBitmap.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">SkBitmap</span><span class="o">::</span><span class="n">Allocator</span><span class="o">*</span> <span class="n">outputAllocator</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">javaBitmap</span> <span class="o">!=</span> <span class="k">nullptr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">outputAllocator</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">recyclingAllocator</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">//最终的数据在outputAllocator中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">outputAllocator</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">defaultAllocator</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">SkColorType</span> <span class="n">scaledColorType</span> <span class="o">=</span> <span class="n">decodingBitmap</span><span class="p">.</span><span class="n">colorType</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// FIXME: If the alphaType is kUnpremul and the image has alpha, the
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// colors may not be correct, since Skia does not yet support drawing
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// to/from unpremultiplied bitmaps.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">outputBitmap</span><span class="p">.</span><span class="n">setInfo</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">bitmapInfo</span><span class="p">.</span><span class="n">makeWH</span><span class="p">(</span><span class="n">scaledWidth</span><span class="p">,</span> <span class="n">scaledHeight</span><span class="p">).</span><span class="n">makeColorType</span><span class="p">(</span><span class="n">scaledColorType</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">outputBitmap</span><span class="p">.</span><span class="n">tryAllocPixels</span><span class="p">(</span><span class="n">outputAllocator</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// This should only fail on OOM.  The recyclingAllocator should have
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="c1">// enough memory since we check this before decoding using the
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="c1">// scaleCheckingAllocator.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">return</span> <span class="n">nullObjectReturn</span><span class="p">(</span><span class="s">&#34;allocation failed for scaled bitmap&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">SkPaint</span> <span class="n">paint</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// kSrc_Mode instructs us to overwrite the uninitialized pixels in
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// outputBitmap.  Otherwise we would blend by default, which is not
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// what we want.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">paint</span><span class="p">.</span><span class="n">setBlendMode</span><span class="p">(</span><span class="n">SkBlendMode</span><span class="o">::</span><span class="n">kSrc</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//最终解码的bitmap在outputBitmap上
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">SkCanvas</span> <span class="n">canvas</span><span class="p">(</span><span class="n">outputBitmap</span><span class="p">,</span> <span class="n">SkCanvas</span><span class="o">::</span><span class="n">ColorBehavior</span><span class="o">::</span><span class="n">kLegacy</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//使用最终的缩放比例
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">canvas</span><span class="p">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scaleX</span><span class="p">,</span> <span class="n">scaleY</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">decodingBitmap</span><span class="p">.</span><span class="n">setImmutable</span><span class="p">();</span> <span class="c1">// so .asImage() doesn&#39;t make a copy
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">canvas</span><span class="p">.</span><span class="n">drawImage</span><span class="p">(</span><span class="n">decodingBitmap</span><span class="p">.</span><span class="n">asImage</span><span class="p">(),</span> <span class="mf">0.0f</span><span class="p">,</span> <span class="mf">0.0f</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                         <span class="n">SkSamplingOptions</span><span class="p">(</span><span class="n">SkFilterMode</span><span class="o">::</span><span class="n">kLinear</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">paint</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Bitmap</span><span class="o">*</span> <span class="n">heapBitmap</span> <span class="o">=</span> <span class="n">defaultAllocator</span><span class="p">.</span><span class="n">getStorageObjAndReset</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">hasGainmap</span> <span class="o">&amp;&amp;</span> <span class="n">heapBitmap</span> <span class="o">!=</span> <span class="k">nullptr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">heapBitmap</span><span class="o">-&gt;</span><span class="n">setGainmap</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">gainmap</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uirenderer</span><span class="o">::</span><span class="n">logBitmapDecode</span><span class="p">(</span><span class="o">*</span><span class="n">heapBitmap</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// now create the java bitmap
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">//创建bitmap
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">return</span> <span class="n">bitmap</span><span class="o">::</span><span class="n">createBitmap</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">heapBitmap</span><span class="p">,</span> <span class="n">bitmapCreateFlags</span><span class="p">,</span> <span class="n">ninePatchChunk</span><span class="p">,</span> <span class="n">ninePatchInsets</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>decode中就是关于bitmap的缩放处理，根据option中的targetDensity/density，也就是屏幕的density/drawable的density得到scale，然后根据原始尺寸再乘以该scale得到最终的宽高像素。</p>
+<p>关于drawable的densityDpi的值如下：
 <img src="/p/bitmap%E6%80%BB%E7%BB%93/drawable%E5%AF%B9%E5%BA%94%E7%9A%84density%E5%80%BC.png"
 	width="1514"
 	height="382"
