@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="初始化过程 当我们app收到choregrapher的vsync信号的时候，choregrapher中会给主线程的messageQueue发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的messageQueue设置一个callback（runnable），所以会触发handler的dispatchmessage-&gt;handleCallback，接着就是触发FrameDisplayEventReceiver（runnable）的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。\ntrace图如下： 接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren\n有动画的条件是： 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。 调用链如下： linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;recycler.getviewforposition-&gt;recycler.tryGeyViewHolderForPostionByDeadline-&gt;adapter.createViewHolder-&gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。 上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。 接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行\n到这里，测量和layout已经梳理完了，最后就剩draw了： draw里面基本没干什么，还是沿用了viewgroup的drawchild方法，绿色表示非系统方法，因此可以看出来recyclerview是重写了该方法： 总结： 初始化分为onmeasure阶段：如果recyclerview设置了固定宽高，则直接跳过测量，调用到mLayout中，如果不是固定宽高，则会走dispatchLayoutStep1，dispatchLayoutStep2。其中dispatchLayoutStep1是预布局处理，如果有动画要处理才会在该阶段调用到layout的onLayoutChildren。在dispatchLayoutStep2中处理表项的测量。 在onlayout阶段：会判断step还是不是start状态，如果是的话，则再次执行dispatchLayoutStep1和dispatchLayoutStep2。最后调用dispatchLayoutStep3用来做动画执行并释放相关资源。 在draw阶段基本什么都没做，dispatchDraw本身会调用到drawChild，recyclerview只是重写了该方法。\n滑动过程 滑动过程中会调用到scrollByInternal-&gt;layoutmanager.scrollBy-&gt;fill-&gt;layoutchunck。 layoutchunck里面会从缓存中取数据，如果有则命中，没有则走create和bind，接着划出屏幕的表项会先加入到cache缓存中，如果cache缓存满了，则重置该表项，加入到recyclerpool中，下次所以取的时候从recyclerpool根据viewtype取需要重新bind，不需要create，所以在滑动过程中create的次数是cache的大小次数，等到recyclerpool中有缓存的时候就不需要create了。\n在fill过程中，会找到划出屏幕的表项，然后先调用recycleByLayoutState，接着调用到了Linearlayoutmanager.recycleChildren，接着会触发recyclerview.removeAndRecycleViewAt方法，接着就触发了adapter.onViewDetachedFromWindow(viewHolder)，接着就把viewholder缓存到cache和recyclerpool中，对应的方法是recycler.recycleView-&gt;recycleViewHolderInternal,其中cache缓存中默认是2个，如果大于2的话，会把最前面的那个给放到recyclerpool中，接着再把新的viewholder放进来。\n在fiil过程中，会通过LayoutState.next从缓存中获取viewholder，获取的时候会先判断是不是preLayout状态，如果是则从changeScrap缓存中获取，从changeScrap中获取缓存先通过position获取，如果用position获取不到，则再用id去获取（必须adapter设置setHasStableIds为true，并且adapter重写了getItemId）。如果没获取到则从attacheScrap和cache中获取，如果从attach和cache中找不到，则继续通过id从attachScrap中获取，如果还没获取到则从viewcacheExtension中去获取，如果还获取不到则再从recyclerpool中去获取，如果还获取不到则通过create来创建viewholder，接着走bind逻辑。\n所以整个缓存获取顺序： changeScrap(preLayout状态，先通过position获取，没获取到再通过id获取)-&gt;attacheScrap-&gt;cache-&gt;attachScrap(id方式获取)-&gt;viewcacheExtension-&gt;recyclerpool-&gt;createholder-&gt;bindholder 这就是layoutstate.next获取viewholder整个逻辑，上面哪些会触发createholder和bindholder 如果从几个缓存中都拿不到viewholder，则会走createholder的逻辑。\n">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="初始化过程 当我们app收到choregrapher的vsync信号的时候，choregrapher中会给主线程的messageQueue发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的messageQueue设置一个callback（runnable），所以会触发handler的dispatchmessage-&gt;handleCallback，接着就是触发FrameDisplayEventReceiver（runnable）的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。\ntrace图如下： 接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren\n有动画的条件是： 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。 调用链如下： linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;recycler.getviewforposition-&gt;recycler.tryGeyViewHolderForPostionByDeadline-&gt;adapter.createViewHolder-&gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。 上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。 接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行\n">
 <title>RecyclerView源码走读</title>
 
 <link rel='canonical' href='https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="RecyclerView源码走读">
-<meta property='og:description' content="初始化过程 当我们app收到choregrapher的vsync信号的时候，choregrapher中会给主线程的messageQueue发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的messageQueue设置一个callback（runnable），所以会触发handler的dispatchmessage-&gt;handleCallback，接着就是触发FrameDisplayEventReceiver（runnable）的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。\ntrace图如下： 接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren\n有动画的条件是： 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。 调用链如下： linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;recycler.getviewforposition-&gt;recycler.tryGeyViewHolderForPostionByDeadline-&gt;adapter.createViewHolder-&gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。 上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。 接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行\n到这里，测量和layout已经梳理完了，最后就剩draw了： draw里面基本没干什么，还是沿用了viewgroup的drawchild方法，绿色表示非系统方法，因此可以看出来recyclerview是重写了该方法： 总结： 初始化分为onmeasure阶段：如果recyclerview设置了固定宽高，则直接跳过测量，调用到mLayout中，如果不是固定宽高，则会走dispatchLayoutStep1，dispatchLayoutStep2。其中dispatchLayoutStep1是预布局处理，如果有动画要处理才会在该阶段调用到layout的onLayoutChildren。在dispatchLayoutStep2中处理表项的测量。 在onlayout阶段：会判断step还是不是start状态，如果是的话，则再次执行dispatchLayoutStep1和dispatchLayoutStep2。最后调用dispatchLayoutStep3用来做动画执行并释放相关资源。 在draw阶段基本什么都没做，dispatchDraw本身会调用到drawChild，recyclerview只是重写了该方法。\n滑动过程 滑动过程中会调用到scrollByInternal-&gt;layoutmanager.scrollBy-&gt;fill-&gt;layoutchunck。 layoutchunck里面会从缓存中取数据，如果有则命中，没有则走create和bind，接着划出屏幕的表项会先加入到cache缓存中，如果cache缓存满了，则重置该表项，加入到recyclerpool中，下次所以取的时候从recyclerpool根据viewtype取需要重新bind，不需要create，所以在滑动过程中create的次数是cache的大小次数，等到recyclerpool中有缓存的时候就不需要create了。\n在fill过程中，会找到划出屏幕的表项，然后先调用recycleByLayoutState，接着调用到了Linearlayoutmanager.recycleChildren，接着会触发recyclerview.removeAndRecycleViewAt方法，接着就触发了adapter.onViewDetachedFromWindow(viewHolder)，接着就把viewholder缓存到cache和recyclerpool中，对应的方法是recycler.recycleView-&gt;recycleViewHolderInternal,其中cache缓存中默认是2个，如果大于2的话，会把最前面的那个给放到recyclerpool中，接着再把新的viewholder放进来。\n在fiil过程中，会通过LayoutState.next从缓存中获取viewholder，获取的时候会先判断是不是preLayout状态，如果是则从changeScrap缓存中获取，从changeScrap中获取缓存先通过position获取，如果用position获取不到，则再用id去获取（必须adapter设置setHasStableIds为true，并且adapter重写了getItemId）。如果没获取到则从attacheScrap和cache中获取，如果从attach和cache中找不到，则继续通过id从attachScrap中获取，如果还没获取到则从viewcacheExtension中去获取，如果还获取不到则再从recyclerpool中去获取，如果还获取不到则通过create来创建viewholder，接着走bind逻辑。\n所以整个缓存获取顺序： changeScrap(preLayout状态，先通过position获取，没获取到再通过id获取)-&gt;attacheScrap-&gt;cache-&gt;attachScrap(id方式获取)-&gt;viewcacheExtension-&gt;recyclerpool-&gt;createholder-&gt;bindholder 这就是layoutstate.next获取viewholder整个逻辑，上面哪些会触发createholder和bindholder 如果从几个缓存中都拿不到viewholder，则会走createholder的逻辑。\n">
+<meta property='og:description' content="初始化过程 当我们app收到choregrapher的vsync信号的时候，choregrapher中会给主线程的messageQueue发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的messageQueue设置一个callback（runnable），所以会触发handler的dispatchmessage-&gt;handleCallback，接着就是触发FrameDisplayEventReceiver（runnable）的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。\ntrace图如下： 接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren\n有动画的条件是： 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。 调用链如下： linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;recycler.getviewforposition-&gt;recycler.tryGeyViewHolderForPostionByDeadline-&gt;adapter.createViewHolder-&gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。 上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。 接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行\n">
 <meta property='og:url' content='https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-01-02T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-01-02T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="RecyclerView源码走读">
-<meta name="twitter:description" content="初始化过程 当我们app收到choregrapher的vsync信号的时候，choregrapher中会给主线程的messageQueue发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的messageQueue设置一个callback（runnable），所以会触发handler的dispatchmessage-&gt;handleCallback，接着就是触发FrameDisplayEventReceiver（runnable）的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。\ntrace图如下： 接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren\n有动画的条件是： 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。 调用链如下： linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;recycler.getviewforposition-&gt;recycler.tryGeyViewHolderForPostionByDeadline-&gt;adapter.createViewHolder-&gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。 上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。 接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行\n到这里，测量和layout已经梳理完了，最后就剩draw了： draw里面基本没干什么，还是沿用了viewgroup的drawchild方法，绿色表示非系统方法，因此可以看出来recyclerview是重写了该方法： 总结： 初始化分为onmeasure阶段：如果recyclerview设置了固定宽高，则直接跳过测量，调用到mLayout中，如果不是固定宽高，则会走dispatchLayoutStep1，dispatchLayoutStep2。其中dispatchLayoutStep1是预布局处理，如果有动画要处理才会在该阶段调用到layout的onLayoutChildren。在dispatchLayoutStep2中处理表项的测量。 在onlayout阶段：会判断step还是不是start状态，如果是的话，则再次执行dispatchLayoutStep1和dispatchLayoutStep2。最后调用dispatchLayoutStep3用来做动画执行并释放相关资源。 在draw阶段基本什么都没做，dispatchDraw本身会调用到drawChild，recyclerview只是重写了该方法。\n滑动过程 滑动过程中会调用到scrollByInternal-&gt;layoutmanager.scrollBy-&gt;fill-&gt;layoutchunck。 layoutchunck里面会从缓存中取数据，如果有则命中，没有则走create和bind，接着划出屏幕的表项会先加入到cache缓存中，如果cache缓存满了，则重置该表项，加入到recyclerpool中，下次所以取的时候从recyclerpool根据viewtype取需要重新bind，不需要create，所以在滑动过程中create的次数是cache的大小次数，等到recyclerpool中有缓存的时候就不需要create了。\n在fill过程中，会找到划出屏幕的表项，然后先调用recycleByLayoutState，接着调用到了Linearlayoutmanager.recycleChildren，接着会触发recyclerview.removeAndRecycleViewAt方法，接着就触发了adapter.onViewDetachedFromWindow(viewHolder)，接着就把viewholder缓存到cache和recyclerpool中，对应的方法是recycler.recycleView-&gt;recycleViewHolderInternal,其中cache缓存中默认是2个，如果大于2的话，会把最前面的那个给放到recyclerpool中，接着再把新的viewholder放进来。\n在fiil过程中，会通过LayoutState.next从缓存中获取viewholder，获取的时候会先判断是不是preLayout状态，如果是则从changeScrap缓存中获取，从changeScrap中获取缓存先通过position获取，如果用position获取不到，则再用id去获取（必须adapter设置setHasStableIds为true，并且adapter重写了getItemId）。如果没获取到则从attacheScrap和cache中获取，如果从attach和cache中找不到，则继续通过id从attachScrap中获取，如果还没获取到则从viewcacheExtension中去获取，如果还获取不到则再从recyclerpool中去获取，如果还获取不到则通过create来创建viewholder，接着走bind逻辑。\n所以整个缓存获取顺序： changeScrap(preLayout状态，先通过position获取，没获取到再通过id获取)-&gt;attacheScrap-&gt;cache-&gt;attachScrap(id方式获取)-&gt;viewcacheExtension-&gt;recyclerpool-&gt;createholder-&gt;bindholder 这就是layoutstate.next获取viewholder整个逻辑，上面哪些会触发createholder和bindholder 如果从几个缓存中都拿不到viewholder，则会走createholder的逻辑。\n">
+<meta name="twitter:description" content="初始化过程 当我们app收到choregrapher的vsync信号的时候，choregrapher中会给主线程的messageQueue发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的messageQueue设置一个callback（runnable），所以会触发handler的dispatchmessage-&gt;handleCallback，接着就是触发FrameDisplayEventReceiver（runnable）的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。\ntrace图如下： 接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren\n有动画的条件是： 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。 调用链如下： linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;recycler.getviewforposition-&gt;recycler.tryGeyViewHolderForPostionByDeadline-&gt;adapter.createViewHolder-&gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。 上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。 接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
+                        <img src="/img/logo_hu16514757392605978522.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -409,7 +409,7 @@
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onLayoutChildren%E8%B0%83%E7%94%A8%E9%93%BE.png"
 	width="730"
 	height="310"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onLayoutChildren%E8%B0%83%E7%94%A8%E9%93%BE_hu_97482407f684ee84.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onLayoutChildren%E8%B0%83%E7%94%A8%E9%93%BE_hu_f2441793f72e3fb7.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onLayoutChildren%E8%B0%83%E7%94%A8%E9%93%BE_hu5828821809185960976.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onLayoutChildren%E8%B0%83%E7%94%A8%E9%93%BE_hu8187109392892001354.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -425,7 +425,7 @@ linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/layoutChunk%E8%B0%83%E7%94%A8.png"
 	width="960"
 	height="112"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/layoutChunk%E8%B0%83%E7%94%A8_hu_4bbf5e30f60d559f.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/layoutChunk%E8%B0%83%E7%94%A8_hu_9deaba6d6c29418e.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/layoutChunk%E8%B0%83%E7%94%A8_hu18152347720928290541.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/layoutChunk%E8%B0%83%E7%94%A8_hu6142699420215196773.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -441,7 +441,7 @@ linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;
 <p><img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E5%9C%A8dispatchLayoutStep3.png"
 	width="790"
 	height="452"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E5%9C%A8dispatchLayoutStep3_hu_a2ab682c5338d005.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E5%9C%A8dispatchLayoutStep3_hu_374bf0eec12b2d93.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E5%9C%A8dispatchLayoutStep3_hu7512520137607188626.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E5%9C%A8dispatchLayoutStep3_hu10306827451365754912.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -456,7 +456,7 @@ linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E7%9A%84draw%E6%96%B9%E6%B3%95.png"
 	width="896"
 	height="344"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E7%9A%84draw%E6%96%B9%E6%B3%95_hu_a3fd41a89d9c83.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E7%9A%84draw%E6%96%B9%E6%B3%95_hu_f9bdf9056adfa0c9.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E7%9A%84draw%E6%96%B9%E6%B3%95_hu15709130609700736038.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E7%9A%84draw%E6%96%B9%E6%B3%95_hu15576703910561250186.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -471,7 +471,7 @@ draw里面基本没干什么，还是沿用了viewgroup的drawchild方法，绿�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E9%87%8D%E5%86%99drawChild%E6%96%B9%E6%B3%95.png"
 	width="1986"
 	height="870"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E9%87%8D%E5%86%99drawChild%E6%96%B9%E6%B3%95_hu_36b78d873e6d0860.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E9%87%8D%E5%86%99drawChild%E6%96%B9%E6%B3%95_hu_f8ef9525bd74e207.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E9%87%8D%E5%86%99drawChild%E6%96%B9%E6%B3%95_hu6175052918576826346.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/recyclerview%E9%87%8D%E5%86%99drawChild%E6%96%B9%E6%B3%95_hu13262063013138657709.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -486,7 +486,8 @@ draw里面基本没干什么，还是沿用了viewgroup的drawchild方法，绿�
 <p>总结：
 初始化分为onmeasure阶段：如果recyclerview设置了固定宽高，则直接跳过测量，调用到mLayout中，如果不是固定宽高，则会走dispatchLayoutStep1，dispatchLayoutStep2。其中dispatchLayoutStep1是预布局处理，如果有动画要处理才会在该阶段调用到layout的onLayoutChildren。在dispatchLayoutStep2中处理表项的测量。
 在onlayout阶段：会判断step还是不是start状态，如果是的话，则再次执行dispatchLayoutStep1和dispatchLayoutStep2。最后调用dispatchLayoutStep3用来做动画执行并释放相关资源。
-在draw阶段基本什么都没做，dispatchDraw本身会调用到drawChild，recyclerview只是重写了该方法。</p></blockquote>
+在draw阶段基本什么都没做，dispatchDraw本身会调用到drawChild，recyclerview只是重写了该方法。</p>
+</blockquote>
 <h3 id="滑动过程">滑动过程
 </h3><p>滑动过程中会调用到scrollByInternal-&gt;layoutmanager.scrollBy-&gt;fill-&gt;layoutchunck。</br>
 layoutchunck里面会从缓存中取数据，如果有则命中，没有则走create和bind，接着划出屏幕的表项会先加入到cache缓存中，如果cache缓存满了，则重置该表项，加入到recyclerpool中，下次所以取的时候从recyclerpool根据viewtype取需要重新bind，不需要create，所以在滑动过程中create的次数是cache的大小次数，等到recyclerpool中有缓存的时候就不需要create了。</p>
@@ -500,7 +501,7 @@ changeScrap(preLayout状态，先通过position获取，没获取到再通过id�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onBindViewHolder%E5%89%8D%E7%BD%AE%E6%9D%A1%E4%BB%B6.png"
 	width="1884"
 	height="500"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onBindViewHolder%E5%89%8D%E7%BD%AE%E6%9D%A1%E4%BB%B6_hu_21b75e10f9f0088f.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onBindViewHolder%E5%89%8D%E7%BD%AE%E6%9D%A1%E4%BB%B6_hu_1a563f1d87c322d5.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onBindViewHolder%E5%89%8D%E7%BD%AE%E6%9D%A1%E4%BB%B6_hu10681849255634320567.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onBindViewHolder%E5%89%8D%E7%BD%AE%E6%9D%A1%E4%BB%B6_hu13857616217112637933.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -518,7 +519,7 @@ bound标志位：是在bindViewHolder的时候设置的，因此不是bound表�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/bindViewHolder%E5%90%8E%E8%AE%BE%E7%BD%AEbound%E7%8A%B6%E6%80%81.png"
 	width="1756"
 	height="630"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/bindViewHolder%E5%90%8E%E8%AE%BE%E7%BD%AEbound%E7%8A%B6%E6%80%81_hu_57c4574d505da29a.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/bindViewHolder%E5%90%8E%E8%AE%BE%E7%BD%AEbound%E7%8A%B6%E6%80%81_hu_bc10ece3848f6d2c.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/bindViewHolder%E5%90%8E%E8%AE%BE%E7%BD%AEbound%E7%8A%B6%E6%80%81_hu16526521526694848863.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/bindViewHolder%E5%90%8E%E8%AE%BE%E7%BD%AEbound%E7%8A%B6%E6%80%81_hu9180695930292097991.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -535,7 +536,7 @@ bound标志位：是在bindViewHolder的时候设置的，因此不是bound表�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/needsUpdate%E6%BA%90%E7%A0%81.png"
 	width="810"
 	height="220"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/needsUpdate%E6%BA%90%E7%A0%81_hu_d4f7aa48308f775e.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/needsUpdate%E6%BA%90%E7%A0%81_hu_a8b070f521fd9a40.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/needsUpdate%E6%BA%90%E7%A0%81_hu16745625206395077354.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/needsUpdate%E6%BA%90%E7%A0%81_hu9313751603204677791.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -549,7 +550,7 @@ bound标志位：是在bindViewHolder的时候设置的，因此不是bound表�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0update%E6%A0%87%E5%BF%97%E4%BD%8D.png"
 	width="1876"
 	height="1254"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0update%E6%A0%87%E5%BF%97%E4%BD%8D_hu_76cd14ed0c69812a.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0update%E6%A0%87%E5%BF%97%E4%BD%8D_hu_7cf9a9fefcf5a400.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0update%E6%A0%87%E5%BF%97%E4%BD%8D_hu15558857031045118622.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0update%E6%A0%87%E5%BF%97%E4%BD%8D_hu1326698609201363619.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -566,7 +567,7 @@ bound标志位：是在bindViewHolder的时候设置的，因此不是bound表�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/viewRangeUpdate%E8%B0%83%E7%94%A8%E9%93%BE.png"
 	width="1022"
 	height="564"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/viewRangeUpdate%E8%B0%83%E7%94%A8%E9%93%BE_hu_db056901af6b7b4e.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/viewRangeUpdate%E8%B0%83%E7%94%A8%E9%93%BE_hu_e6c3975d7f616886.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/viewRangeUpdate%E8%B0%83%E7%94%A8%E9%93%BE_hu17190880417699981030.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/viewRangeUpdate%E8%B0%83%E7%94%A8%E9%93%BE_hu15352844701357235208.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -587,7 +588,7 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&gt;AdapterHelper.preProc
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0invalid%E6%A0%87%E5%BF%97%E4%BD%8D.png"
 	width="1816"
 	height="1336"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0invalid%E6%A0%87%E5%BF%97%E4%BD%8D_hu_8bf152a71757866d.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0invalid%E6%A0%87%E5%BF%97%E4%BD%8D_hu_2f523dd7cc32e2a2.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0invalid%E6%A0%87%E5%BF%97%E4%BD%8D_hu16950391817488934260.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%B7%BB%E5%8A%A0invalid%E6%A0%87%E5%BF%97%E4%BD%8D_hu10367533619850967308.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -601,7 +602,7 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&gt;AdapterHelper.preProc
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%8B%BF%E5%88%B0viewholder%E5%90%8E%E9%AA%8C%E8%AF%81viewtype%E6%88%96id.png"
 	width="1884"
 	height="1456"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%8B%BF%E5%88%B0viewholder%E5%90%8E%E9%AA%8C%E8%AF%81viewtype%E6%88%96id_hu_ebfa80c6b10f170d.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%8B%BF%E5%88%B0viewholder%E5%90%8E%E9%AA%8C%E8%AF%81viewtype%E6%88%96id_hu_e879f5dbff92d1d7.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%8B%BF%E5%88%B0viewholder%E5%90%8E%E9%AA%8C%E8%AF%81viewtype%E6%88%96id_hu918169050588587341.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%8B%BF%E5%88%B0viewholder%E5%90%8E%E9%AA%8C%E8%AF%81viewtype%E6%88%96id_hu7861640089052609632.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -622,7 +623,7 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&gt;AdapterHelper.preProc
 <p><img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5recyclerview%E7%9A%84%E6%97%A5%E5%BF%97.png"
 	width="2478"
 	height="1172"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5recyclerview%E7%9A%84%E6%97%A5%E5%BF%97_hu_bf5f5d93006acbbd.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5recyclerview%E7%9A%84%E6%97%A5%E5%BF%97_hu_5e4ea70e60280e34.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5recyclerview%E7%9A%84%E6%97%A5%E5%BF%97_hu91514335887064232.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5recyclerview%E7%9A%84%E6%97%A5%E5%BF%97_hu6938636746900088994.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -637,7 +638,7 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&gt;AdapterHelper.preProc
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B90%E7%9A%84%E6%97%A5%E5%BF%97.png"
 	width="2440"
 	height="244"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B90%E7%9A%84%E6%97%A5%E5%BF%97_hu_9c185eefc186aeca.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B90%E7%9A%84%E6%97%A5%E5%BF%97_hu_3f7b4a451df82ae4.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B90%E7%9A%84%E6%97%A5%E5%BF%97_hu15013294563690583670.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B90%E7%9A%84%E6%97%A5%E5%BF%97_hu871190689318315447.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -652,7 +653,7 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&gt;AdapterHelper.preProc
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B9%E7%BB%8F%E5%8E%86%E4%BA%86dispatchLayout%E6%96%B9%E6%B3%95.png"
 	width="2560"
 	height="670"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B9%E7%BB%8F%E5%8E%86%E4%BA%86dispatchLayout%E6%96%B9%E6%B3%95_hu_d696c021f02f859a.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B9%E7%BB%8F%E5%8E%86%E4%BA%86dispatchLayout%E6%96%B9%E6%B3%95_hu_9ab47dcdecbac77e.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B9%E7%BB%8F%E5%8E%86%E4%BA%86dispatchLayout%E6%96%B9%E6%B3%95_hu124744611528498832.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9B%B4%E6%96%B0%E8%A1%A8%E9%A1%B9%E7%BB%8F%E5%8E%86%E4%BA%86dispatchLayout%E6%96%B9%E6%B3%95_hu2147917480937809368.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -670,7 +671,7 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&gt;AdapterHelper.preProc
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E8%B0%83%E7%94%A8%E5%9B%BE.png"
 	width="1116"
 	height="402"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E8%B0%83%E7%94%A8%E5%9B%BE_hu_ca75994fae500d82.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E8%B0%83%E7%94%A8%E5%9B%BE_hu_524d8c227159aa0f.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E8%B0%83%E7%94%A8%E5%9B%BE_hu7324296050700314140.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E8%B0%83%E7%94%A8%E5%9B%BE_hu4239267430507870126.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -685,7 +686,7 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&gt;AdapterHelper.preProc
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews%E6%BA%90%E7%A0%81.png"
 	width="1448"
 	height="434"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews%E6%BA%90%E7%A0%81_hu_51e5d87d3a29e8e4.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews%E6%BA%90%E7%A0%81_hu_6e3fc07a0f8a2740.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews%E6%BA%90%E7%A0%81_hu13513585749035787664.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews%E6%BA%90%E7%A0%81_hu14328154479888032833.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -700,7 +701,7 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&gt;AdapterHelper.preProc
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E6%BA%90%E7%A0%81.png"
 	width="1602"
 	height="1060"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E6%BA%90%E7%A0%81_hu_7b48b7cc9e7698a5.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E6%BA%90%E7%A0%81_hu_f05eae55a07a944b.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E6%BA%90%E7%A0%81_hu4952515986636910101.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E6%BA%90%E7%A0%81_hu2737012357838191121.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -714,7 +715,7 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&gt;AdapterHelper.preProc
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E7%9A%84trace%E8%B0%83%E7%94%A8.png"
 	width="726"
 	height="74"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E7%9A%84trace%E8%B0%83%E7%94%A8_hu_6a0e292836339c17.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E7%9A%84trace%E8%B0%83%E7%94%A8_hu_a9cb9808e6e53c4b.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E7%9A%84trace%E8%B0%83%E7%94%A8_hu10016181308022056134.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapOrRecycleView%E7%9A%84trace%E8%B0%83%E7%94%A8_hu10819192399364155107.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -729,7 +730,7 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&gt;AdapterHelper.preProc
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapeView%E6%BA%90%E7%A0%81.png"
 	width="1966"
 	height="1094"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapeView%E6%BA%90%E7%A0%81_hu_538809a45bfc8c84.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapeView%E6%BA%90%E7%A0%81_hu_ed6746068cdff60d.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapeView%E6%BA%90%E7%A0%81_hu10187188417008490168.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrapeView%E6%BA%90%E7%A0%81_hu6404884140834061296.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -744,7 +745,7 @@ scrap缓存分两种，attachScrap和changeScrap。不是update的会放到attac
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84scrapOrRecycleView%E8%B0%83%E7%94%A8%E9%93%BE.png"
 	width="2852"
 	height="1030"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84scrapOrRecycleView%E8%B0%83%E7%94%A8%E9%93%BE_hu_beddd7ac02afa6c3.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84scrapOrRecycleView%E8%B0%83%E7%94%A8%E9%93%BE_hu_8eae94702244336c.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84scrapOrRecycleView%E8%B0%83%E7%94%A8%E9%93%BE_hu1007847353858532735.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84scrapOrRecycleView%E8%B0%83%E7%94%A8%E9%93%BE_hu2341111996943070772.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -758,13 +759,14 @@ scrap缓存分两种，attachScrap和changeScrap。不是update的会放到attac
 从这里看第0个表项在detach的时候会加入到changeScrap中。</li>
 </ul>
 <blockquote>
-<p>结论：在dispatchLayout1中，先将页面上可见的viewholder从页面上分离，然后将update的viewholder放入到changeScrap中，把非update的viewholder放入到attachScrap中。</p></blockquote>
+<p>结论：在dispatchLayout1中，先将页面上可见的viewholder从页面上分离，然后将update的viewholder放入到changeScrap中，把非update的viewholder放入到attachScrap中。</p>
+</blockquote>
 <ul>
 <li>fill
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/fill%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE.png"
 	width="2024"
 	height="624"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/fill%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu_b62d7725fc9f7f60.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/fill%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu_ee21971ed6327024.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/fill%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu6293445583858693448.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/fill%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu17315454615200976220.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -780,7 +782,7 @@ fill阶段发生了layoutChunk11次，而我们刚开始列表是初始化了10�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%A4%9A%E6%B7%BB%E5%8A%A0%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84%E9%80%BB%E8%BE%91%E5%A4%84%E7%90%86.png"
 	width="1924"
 	height="392"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%A4%9A%E6%B7%BB%E5%8A%A0%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84%E9%80%BB%E8%BE%91%E5%A4%84%E7%90%86_hu_131b270a43880374.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%A4%9A%E6%B7%BB%E5%8A%A0%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84%E9%80%BB%E8%BE%91%E5%A4%84%E7%90%86_hu_ce9d7a2f7e0060dd.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%A4%9A%E6%B7%BB%E5%8A%A0%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84%E9%80%BB%E8%BE%91%E5%A4%84%E7%90%86_hu7686239755621698600.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%A4%9A%E6%B7%BB%E5%8A%A0%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E7%9A%84%E9%80%BB%E8%BE%91%E5%A4%84%E7%90%86_hu3522024776232266067.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -795,7 +797,7 @@ fill阶段发生了layoutChunk11次，而我们刚开始列表是初始化了10�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%BF%BD%E7%95%A5%E7%9A%84%E6%9D%A1%E4%BB%B6.png"
 	width="1312"
 	height="182"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%BF%BD%E7%95%A5%E7%9A%84%E6%9D%A1%E4%BB%B6_hu_75893b2acae1d0d2.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%BF%BD%E7%95%A5%E7%9A%84%E6%9D%A1%E4%BB%B6_hu_4683f33a4928f51d.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%BF%BD%E7%95%A5%E7%9A%84%E6%9D%A1%E4%BB%B6_hu11796148271956042158.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%BF%BD%E7%95%A5%E7%9A%84%E6%9D%A1%E4%BB%B6_hu1743069324301611932.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -810,7 +812,7 @@ layoutChunk中判断viewholder如果是remove或者是change时候，才会忽�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0create%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE.png"
 	width="1652"
 	height="470"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0create%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu_7a05cdccb894d4fe.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0create%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu_37604edd55270f38.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0create%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu10236812452427939999.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0create%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu9359342499526153522.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -824,13 +826,14 @@ layoutChunk中判断viewholder如果是remove或者是change时候，才会忽�
 </ul>
 <blockquote>
 <p>结论：
-dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了attacheScrap中，并且创建了索引为10的viewhodler。</p></blockquote>
+dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了attacheScrap中，并且创建了索引为10的viewhodler。</p>
+</blockquote>
 <p>注意：
 在dispatchLayout1过程中，如果viewholder经过了addView之后，则会把它从changescrap或者是attachscrap缓存中移除，所以在dispatchlayout2过程中change和attach的缓存为空的。
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%BB%8Escrap%E7%BC%93%E5%AD%98%E4%B8%AD%E7%A7%BB%E9%99%A4%E7%9A%84%E9%80%BB%E8%BE%91.png"
 	width="2938"
 	height="1200"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%BB%8Escrap%E7%BC%93%E5%AD%98%E4%B8%AD%E7%A7%BB%E9%99%A4%E7%9A%84%E9%80%BB%E8%BE%91_hu_9aeb8a440065dcdd.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%BB%8Escrap%E7%BC%93%E5%AD%98%E4%B8%AD%E7%A7%BB%E9%99%A4%E7%9A%84%E9%80%BB%E8%BE%91_hu_fc3ae6ce4a361e97.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%BB%8Escrap%E7%BC%93%E5%AD%98%E4%B8%AD%E7%A7%BB%E9%99%A4%E7%9A%84%E9%80%BB%E8%BE%91_hu6948141193760266227.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%BB%8Escrap%E7%BC%93%E5%AD%98%E4%B8%AD%E7%A7%BB%E9%99%A4%E7%9A%84%E9%80%BB%E8%BE%91_hu6558568232153135207.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -849,7 +852,7 @@ dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了at
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews11%E6%AC%A1scrap%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE.png"
 	width="1556"
 	height="424"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews11%E6%AC%A1scrap%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu_88eae841b1be7ba9.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews11%E6%AC%A1scrap%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu_5f8c4736672e2380.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews11%E6%AC%A1scrap%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu14586035892234685750.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/detachAndScrapAttachedViews11%E6%AC%A1scrap%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE_hu17397155685038326043.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -867,7 +870,7 @@ dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了at
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%BA%8C%E6%AC%A1fill%E8%B0%83%E7%94%A8%E9%93%BE.png"
 	width="1542"
 	height="890"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%BA%8C%E6%AC%A1fill%E8%B0%83%E7%94%A8%E9%93%BE_hu_17bb141fbb54f8a6.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%BA%8C%E6%AC%A1fill%E8%B0%83%E7%94%A8%E9%93%BE_hu_e1750cfbe09de443.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%BA%8C%E6%AC%A1fill%E8%B0%83%E7%94%A8%E9%93%BE_hu10441854612835266796.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E7%AC%AC%E4%BA%8C%E6%AC%A1fill%E8%B0%83%E7%94%A8%E9%93%BE_hu9741231612223222767.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -882,7 +885,7 @@ dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了at
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%B8%8D%E6%98%AFpre%E9%98%B6%E6%AE%B5%E7%9B%B4%E6%8E%A5%E5%87%8F%E5%B0%8FremainingSpace%E5%80%BC.png"
 	width="1866"
 	height="402"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%B8%8D%E6%98%AFpre%E9%98%B6%E6%AE%B5%E7%9B%B4%E6%8E%A5%E5%87%8F%E5%B0%8FremainingSpace%E5%80%BC_hu_2f703c999f11148c.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%B8%8D%E6%98%AFpre%E9%98%B6%E6%AE%B5%E7%9B%B4%E6%8E%A5%E5%87%8F%E5%B0%8FremainingSpace%E5%80%BC_hu_7ce00a888295a7d0.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%B8%8D%E6%98%AFpre%E9%98%B6%E6%AE%B5%E7%9B%B4%E6%8E%A5%E5%87%8F%E5%B0%8FremainingSpace%E5%80%BC_hu10998018353477114851.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%B8%8D%E6%98%AFpre%E9%98%B6%E6%AE%B5%E7%9B%B4%E6%8E%A5%E5%87%8F%E5%B0%8FremainingSpace%E5%80%BC_hu461246108867776147.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -901,7 +904,7 @@ dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了at
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%9C%A8post-layout%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%AC%AC0%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0%E4%BA%86create%E5%92%8Cbind.png"
 	width="2884"
 	height="1250"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%9C%A8post-layout%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%AC%AC0%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0%E4%BA%86create%E5%92%8Cbind_hu_ca32d5b5dc974abb.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%9C%A8post-layout%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%AC%AC0%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0%E4%BA%86create%E5%92%8Cbind_hu_3deacd2e5a4fd90b.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%9C%A8post-layout%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%AC%AC0%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0%E4%BA%86create%E5%92%8Cbind_hu8801799141734457681.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%9C%A8post-layout%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%AC%AC0%E4%B8%AA%E8%A1%A8%E9%A1%B9%E8%B5%B0%E4%BA%86create%E5%92%8Cbind_hu5081780588629873050.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -916,7 +919,7 @@ dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了at
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/changeScrap%E5%8F%AA%E5%9C%A8pre-layout%E7%94%9F%E6%95%88.png"
 	width="1700"
 	height="814"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/changeScrap%E5%8F%AA%E5%9C%A8pre-layout%E7%94%9F%E6%95%88_hu_f582362e8b581b78.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/changeScrap%E5%8F%AA%E5%9C%A8pre-layout%E7%94%9F%E6%95%88_hu_721af903d4d73a82.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/changeScrap%E5%8F%AA%E5%9C%A8pre-layout%E7%94%9F%E6%95%88_hu5303461125221831714.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/changeScrap%E5%8F%AA%E5%9C%A8pre-layout%E7%94%9F%E6%95%88_hu6895378180604863517.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -935,7 +938,8 @@ dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了at
 更新表项的时候，会经历dispatchLayout1，dispatchLayout2，其中在dispatchLayout1（pre-layout阶段）会先把可见的表项给回收到scrap缓存中，回收后，会把可见的表项从recyclerview中分离，其中需要变化的表项会加入到
 changeScrap中（第1个表项），不变化的加入到attachScrap中（第2个到第10个表项）。接着在fill阶段会从scrap缓存中取表项，由于有表项更新，所以此时会去创建不可见的表项（第11个表项），最后会添加到recyclerview上。
 在dispatchLayout2（post-layout阶段）同样会把dispatchLayout1添加进来的表项给添加到changeScrap（第1个表项）和attachScrap（第2个到第11个表项）缓存中，注意此时的表项会是11个表项。在fill阶段会去创建表项0，
-因为post-layout阶段不会去取changeScrap中的viewholder，所以表项0会经历创建。</p></blockquote>
+因为post-layout阶段不会去取changeScrap中的viewholder，所以表项0会经历创建。</p>
+</blockquote>
 <h3 id="删除表项">删除表项
 </h3><p>notifyItemRemove(0)</p>
 <h4 id="dispatchlayout1">dispatchLayout1
@@ -944,7 +948,7 @@ changeScrap中（第1个表项），不变化的加入到attachScrap中（第2�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6detachAndScrapAttachedViews.png"
 	width="2006"
 	height="140"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6detachAndScrapAttachedViews_hu_ce3b8d1a38002926.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6detachAndScrapAttachedViews_hu_a693ab02519eb88c.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6detachAndScrapAttachedViews_hu15559714083964177442.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6detachAndScrapAttachedViews_hu3558814002079755925.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -959,7 +963,7 @@ changeScrap中（第1个表项），不变化的加入到attachScrap中（第2�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9scrapView%E8%B0%83%E7%94%A8%E9%93%BE.png"
 	width="1530"
 	height="600"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9scrapView%E8%B0%83%E7%94%A8%E9%93%BE_hu_e3d98a3d2101e33b.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9scrapView%E8%B0%83%E7%94%A8%E9%93%BE_hu_693b4e4464be2392.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9scrapView%E8%B0%83%E7%94%A8%E9%93%BE_hu13335460596666919717.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9scrapView%E8%B0%83%E7%94%A8%E9%93%BE_hu6133566821039666233.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -974,7 +978,7 @@ changeScrap中（第1个表项），不变化的加入到attachScrap中（第2�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E8%B0%83%E7%94%A8%E7%9A%84scrapView%E6%96%B9%E6%B3%95.png"
 	width="1886"
 	height="1124"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E8%B0%83%E7%94%A8%E7%9A%84scrapView%E6%96%B9%E6%B3%95_hu_b39d71adf0bec065.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E8%B0%83%E7%94%A8%E7%9A%84scrapView%E6%96%B9%E6%B3%95_hu_5dac24ffe629d574.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E8%B0%83%E7%94%A8%E7%9A%84scrapView%E6%96%B9%E6%B3%95_hu1966757282013689752.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E8%B0%83%E7%94%A8%E7%9A%84scrapView%E6%96%B9%E6%B3%95_hu13840855879849957773.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -990,7 +994,7 @@ changeScrap中（第1个表项），不变化的加入到attachScrap中（第2�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9layoutChunk%E8%B0%83%E7%94%A8%E6%AC%A1%E6%95%B0.png"
 	width="1118"
 	height="556"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9layoutChunk%E8%B0%83%E7%94%A8%E6%AC%A1%E6%95%B0_hu_e72a997c4a3c1fa5.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9layoutChunk%E8%B0%83%E7%94%A8%E6%AC%A1%E6%95%B0_hu_be03563676abed5e.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9layoutChunk%E8%B0%83%E7%94%A8%E6%AC%A1%E6%95%B0_hu14181821887712644263.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9layoutChunk%E8%B0%83%E7%94%A8%E6%AC%A1%E6%95%B0_hu12238187118200893387.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1006,7 +1010,7 @@ changeScrap中（第1个表项），不变化的加入到attachScrap中（第2�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E6%97%B6bind%E8%BF%87%E7%A8%8Bposition%E8%AE%A1%E7%AE%97.png"
 	width="2268"
 	height="1372"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E6%97%B6bind%E8%BF%87%E7%A8%8Bposition%E8%AE%A1%E7%AE%97_hu_120ab403139b93e3.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E6%97%B6bind%E8%BF%87%E7%A8%8Bposition%E8%AE%A1%E7%AE%97_hu_808e994455eba91f.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E6%97%B6bind%E8%BF%87%E7%A8%8Bposition%E8%AE%A1%E7%AE%97_hu6531937130357433727.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E6%97%B6bind%E8%BF%87%E7%A8%8Bposition%E8%AE%A1%E7%AE%97_hu11031882881033833206.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1021,7 +1025,7 @@ changeScrap中（第1个表项），不变化的加入到attachScrap中（第2�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E7%9A%84create%E5%92%8Cbind%E6%97%A5%E5%BF%97.png"
 	width="2762"
 	height="1038"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E7%9A%84create%E5%92%8Cbind%E6%97%A5%E5%BF%97_hu_8e8e83cd727696e6.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E7%9A%84create%E5%92%8Cbind%E6%97%A5%E5%BF%97_hu_adb474a75fe566e0.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E7%9A%84create%E5%92%8Cbind%E6%97%A5%E5%BF%97_hu1187624272639721065.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9B%E5%BB%BA%E6%96%B0%E7%9A%84%E8%A1%A8%E9%A1%B9%E7%9A%84create%E5%92%8Cbind%E6%97%A5%E5%BF%97_hu8025288239082785719.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1039,7 +1043,7 @@ changeScrap中（第1个表项），不变化的加入到attachScrap中（第2�
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6post-layout%E8%B0%83%E7%94%A8detachAndScrapAttachedViews.png"
 	width="1092"
 	height="398"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6post-layout%E8%B0%83%E7%94%A8detachAndScrapAttachedViews_hu_d6228f269131146b.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6post-layout%E8%B0%83%E7%94%A8detachAndScrapAttachedViews_hu_5a10b08329c21b7.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6post-layout%E8%B0%83%E7%94%A8detachAndScrapAttachedViews_hu11849760230423166667.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9%E6%97%B6post-layout%E8%B0%83%E7%94%A8detachAndScrapAttachedViews_hu12534804983501352838.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1056,7 +1060,7 @@ layoutChunk调用了10次：
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9post-layout%E7%9A%84fill%E9%98%B6%E6%AE%B5.png"
 	width="1290"
 	height="396"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9post-layout%E7%9A%84fill%E9%98%B6%E6%AE%B5_hu_4093e11ddac80bf4.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9post-layout%E7%9A%84fill%E9%98%B6%E6%AE%B5_hu_8d94e695686935fb.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9post-layout%E7%9A%84fill%E9%98%B6%E6%AE%B5_hu4015001145168480306.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%A0%E9%99%A4%E8%A1%A8%E9%A1%B9post-layout%E7%9A%84fill%E9%98%B6%E6%AE%B5_hu11184435817882272445.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1070,7 +1074,7 @@ layoutChunk调用了10次：
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/debug%E4%B8%8B%E8%A1%A8%E9%A1%B9%E7%9A%84%E4%BF%A1%E6%81%AF.png"
 	width="2322"
 	height="918"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/debug%E4%B8%8B%E8%A1%A8%E9%A1%B9%E7%9A%84%E4%BF%A1%E6%81%AF_hu_84e74a0dba307684.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/debug%E4%B8%8B%E8%A1%A8%E9%A1%B9%E7%9A%84%E4%BF%A1%E6%81%AF_hu_9d9bf9a487f17b40.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/debug%E4%B8%8B%E8%A1%A8%E9%A1%B9%E7%9A%84%E4%BF%A1%E6%81%AF_hu4090402503977829258.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/debug%E4%B8%8B%E8%A1%A8%E9%A1%B9%E7%9A%84%E4%BF%A1%E6%81%AF_hu13894348912378565212.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1087,7 +1091,7 @@ layoutChunk调用了10次：
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/position%E9%87%8D%E6%96%B0%E8%B5%8B%E5%80%BC%E7%9A%84%E5%9C%B0%E6%96%B9.png"
 	width="2672"
 	height="1242"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/position%E9%87%8D%E6%96%B0%E8%B5%8B%E5%80%BC%E7%9A%84%E5%9C%B0%E6%96%B9_hu_8d42196443049f92.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/position%E9%87%8D%E6%96%B0%E8%B5%8B%E5%80%BC%E7%9A%84%E5%9C%B0%E6%96%B9_hu_888814032e28cd27.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/position%E9%87%8D%E6%96%B0%E8%B5%8B%E5%80%BC%E7%9A%84%E5%9C%B0%E6%96%B9_hu18302557035837899842.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/position%E9%87%8D%E6%96%B0%E8%B5%8B%E5%80%BC%E7%9A%84%E5%9C%B0%E6%96%B9_hu10553134707112358411.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1106,7 +1110,7 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA.png"
 	width="1840"
 	height="1580"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA_hu_3e8a392cceab0144.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA_hu_924ec37cbd2bf1db.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA_hu2062606384590137876.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E8%B0%83%E7%94%A8%E6%97%B6%E6%9C%BA_hu5533808204089803104.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1121,7 +1125,7 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E6%B8%85%E7%A9%BA%E6%97%B6%E6%9C%BA.png"
 	width="1494"
 	height="552"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E6%B8%85%E7%A9%BA%E6%97%B6%E6%9C%BA_hu_bc1bbb8f149475e5.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E6%B8%85%E7%A9%BA%E6%97%B6%E6%9C%BA_hu_c41efb7004149e9a.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E6%B8%85%E7%A9%BA%E6%97%B6%E6%9C%BA_hu17972904002480082676.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/scrap%E7%BC%93%E5%AD%98%E6%B8%85%E7%A9%BA%E6%97%B6%E6%9C%BA_hu4993562920150645737.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1136,7 +1140,7 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/clearScrap.png"
 	width="1006"
 	height="408"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/clearScrap_hu_11700f6267a9637c.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/clearScrap_hu_2ed98465e0d32bf2.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/clearScrap_hu15526074584371715853.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/clearScrap_hu11797324585153395010.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1153,7 +1157,7 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 </h3><p><img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5%E5%B1%8F%E5%B9%95onViewAttachedToWindow%E8%B0%83%E7%94%A8%E6%97%A5%E5%BF%97.png"
 	width="2704"
 	height="1272"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5%E5%B1%8F%E5%B9%95onViewAttachedToWindow%E8%B0%83%E7%94%A8%E6%97%A5%E5%BF%97_hu_294c049e82f22ccd.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5%E5%B1%8F%E5%B9%95onViewAttachedToWindow%E8%B0%83%E7%94%A8%E6%97%A5%E5%BF%97_hu_1dbd23a82b3b1ebf.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5%E5%B1%8F%E5%B9%95onViewAttachedToWindow%E8%B0%83%E7%94%A8%E6%97%A5%E5%BF%97_hu2627668828657398580.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5%E5%B1%8F%E5%B9%95onViewAttachedToWindow%E8%B0%83%E7%94%A8%E6%97%A5%E5%BF%97_hu16691033016759521706.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1168,7 +1172,7 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onViewAttachedToWindow%E7%9A%84trace%E8%B0%83%E7%94%A8.png"
 	width="1768"
 	height="810"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onViewAttachedToWindow%E7%9A%84trace%E8%B0%83%E7%94%A8_hu_7d4a801e151d613e.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onViewAttachedToWindow%E7%9A%84trace%E8%B0%83%E7%94%A8_hu_573d250cc35df122.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onViewAttachedToWindow%E7%9A%84trace%E8%B0%83%E7%94%A8_hu12049605815002463942.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/onViewAttachedToWindow%E7%9A%84trace%E8%B0%83%E7%94%A8_hu10079197346103463146.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1184,7 +1188,7 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/addViewInt%E9%80%BB%E8%BE%91.png"
 	width="2100"
 	height="1924"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/addViewInt%E9%80%BB%E8%BE%91_hu_525d710e6f8b7d4b.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/addViewInt%E9%80%BB%E8%BE%91_hu_f0baf76f2a52f600.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/addViewInt%E9%80%BB%E8%BE%91_hu18038378171916241379.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/addViewInt%E9%80%BB%E8%BE%91_hu4756128976929391908.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1198,7 +1202,7 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%86%85%E9%83%A8%E7%B1%BB%E7%9A%84addView%E5%9B%9E%E8%B0%83.png"
 	width="1998"
 	height="1218"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%86%85%E9%83%A8%E7%B1%BB%E7%9A%84addView%E5%9B%9E%E8%B0%83_hu_f9e06ffdcf6226e9.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%86%85%E9%83%A8%E7%B1%BB%E7%9A%84addView%E5%9B%9E%E8%B0%83_hu_264d79549cdee02c.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%86%85%E9%83%A8%E7%B1%BB%E7%9A%84addView%E5%9B%9E%E8%B0%83_hu17379212811394676140.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%86%85%E9%83%A8%E7%B1%BB%E7%9A%84addView%E5%9B%9E%E8%B0%83_hu2944803961004124996.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1212,7 +1216,7 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E7%BB%88%E8%B0%83%E7%94%A8onViewAttachedToWindow%E6%96%B9%E6%B3%95.png"
 	width="1792"
 	height="774"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E7%BB%88%E8%B0%83%E7%94%A8onViewAttachedToWindow%E6%96%B9%E6%B3%95_hu_f13303551994edde.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E7%BB%88%E8%B0%83%E7%94%A8onViewAttachedToWindow%E6%96%B9%E6%B3%95_hu_b85bf399ced7a1e3.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E7%BB%88%E8%B0%83%E7%94%A8onViewAttachedToWindow%E6%96%B9%E6%B3%95_hu9651110142362696518.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E6%9C%80%E7%BB%88%E8%B0%83%E7%94%A8onViewAttachedToWindow%E6%96%B9%E6%B3%95_hu8075067365225143754.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1234,7 +1238,7 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 </h3><p><img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E4%BE%8B%E5%AD%90.png"
 	width="2332"
 	height="876"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E4%BE%8B%E5%AD%90_hu_eb563a63006d546b.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E4%BE%8B%E5%AD%90_hu_cc782320b6aeffd2.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E4%BE%8B%E5%AD%90_hu7949142580440661419.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E4%BE%8B%E5%AD%90_hu10979427111021457477.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1248,7 +1252,7 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E6%97%A5%E5%BF%97.png"
 	width="2642"
 	height="412"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E6%97%A5%E5%BF%97_hu_af9897658962aaef.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E6%97%A5%E5%BF%97_hu_e9af1389ba2590e8.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E6%97%A5%E5%BF%97_hu12858756624761729791.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%8E%B7%E5%8F%96position%E7%9A%84%E6%97%A5%E5%BF%97_hu13409576118497864789.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1260,12 +1264,13 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 	
 ></p>
 <blockquote>
-<p>结论：正常情况下adapterPostion和layoutPosition是相等的，当有add、remove、move的时候两者是不一样的。adapterPostion会算上要改变的表项，比如上面我要删除第一个表项，那么拿到的表项就是第二个。而layoutPostion是页面最终呈现的表项，上面例子中等到post完后，才会真正的删除掉。所以post（绘制后）后layoutposition获取到的是原来的第二个表项。</p></blockquote>
+<p>结论：正常情况下adapterPostion和layoutPosition是相等的，当有add、remove、move的时候两者是不一样的。adapterPostion会算上要改变的表项，比如上面我要删除第一个表项，那么拿到的表项就是第二个。而layoutPostion是页面最终呈现的表项，上面例子中等到post完后，才会真正的删除掉。所以post（绘制后）后layoutposition获取到的是原来的第二个表项。</p>
+</blockquote>
 <h3 id="notifydatasetchange问题">notifydatasetChange问题
 </h3><p><img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%B0%83%E7%94%A8notifydatasetChange%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97.png"
 	width="2574"
 	height="1490"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%B0%83%E7%94%A8notifydatasetChange%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97_hu_96111747d961f54e.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%B0%83%E7%94%A8notifydatasetChange%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97_hu_8948fcf8b10abc9b.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%B0%83%E7%94%A8notifydatasetChange%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97_hu8629380768717259897.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%B0%83%E7%94%A8notifydatasetChange%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97_hu9811034100351826362.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1279,7 +1284,7 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8F%A6%E4%B8%80%E9%83%A8%E5%88%86%E6%97%A5%E5%BF%97.png"
 	width="2546"
 	height="536"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8F%A6%E4%B8%80%E9%83%A8%E5%88%86%E6%97%A5%E5%BF%97_hu_479291f883724dbb.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8F%A6%E4%B8%80%E9%83%A8%E5%88%86%E6%97%A5%E5%BF%97_hu_56a8a612dfe4970d.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8F%A6%E4%B8%80%E9%83%A8%E5%88%86%E6%97%A5%E5%BF%97_hu519445797529211195.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8F%A6%E4%B8%80%E9%83%A8%E5%88%86%E6%97%A5%E5%BF%97_hu281265756307938506.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1294,7 +1299,7 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%9A%84trace.png"
 	width="1726"
 	height="1086"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%9A%84trace_hu_75b2e1c3760df604.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%9A%84trace_hu_f63ae37042ef7e03.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%9A%84trace_hu16326029826275178744.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%9A%84trace_hu417268336205723639.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1309,7 +1314,7 @@ layout过程只走了dispatchLayout2，在里面走到了linearlayoutManager.onL
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E9%83%BD%E8%B5%B0removeViewAt.png"
 	width="1500"
 	height="456"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E9%83%BD%E8%B5%B0removeViewAt_hu_42caad7eba237900.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E9%83%BD%E8%B5%B0removeViewAt_hu_14541e3d56ab7409.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E9%83%BD%E8%B5%B0removeViewAt_hu17858563825938736019.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E9%83%BD%E8%B5%B0removeViewAt_hu11808418269986258548.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1324,7 +1329,7 @@ layout过程只走了dispatchLayout2，在里面走到了linearlayoutManager.onL
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/removeViewAt%E9%80%BB%E8%BE%91.png"
 	width="1750"
 	height="1112"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/removeViewAt%E9%80%BB%E8%BE%91_hu_ef023c6dc010f5c3.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/removeViewAt%E9%80%BB%E8%BE%91_hu_598048d172aee5f5.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/removeViewAt%E9%80%BB%E8%BE%91_hu17874290648693971679.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/removeViewAt%E9%80%BB%E8%BE%91_hu10317882271117318045.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1339,7 +1344,7 @@ layout过程只走了dispatchLayout2，在里面走到了linearlayoutManager.onL
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_1.png"
 	width="1520"
 	height="882"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_1_hu_1a0c176043870094.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_1_hu_8e12e1552edf636a.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_1_hu12943583134031551868.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_1_hu4591628311978383744.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1353,7 +1358,7 @@ layout过程只走了dispatchLayout2，在里面走到了linearlayoutManager.onL
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_2.png"
 	width="1414"
 	height="324"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_2_hu_26610d5e03419f60.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_2_hu_23a8a7c32d1b1f05.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_2_hu4694049468430595453.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_2_hu11369038894928021298.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1367,7 +1372,7 @@ layout过程只走了dispatchLayout2，在里面走到了linearlayoutManager.onL
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_3.png"
 	width="1962"
 	height="670"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_3_hu_4d1c63c832e5329b.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_3_hu_b3abf71d8974bf08.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_3_hu15128694460051254672.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/notifydataSetchange%E5%90%8E%E7%BD%AE%E4%B8%BAinvalid_3_hu3096719542985996145.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1382,7 +1387,7 @@ layout过程只走了dispatchLayout2，在里面走到了linearlayoutManager.onL
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5cache%E6%88%96pool%E7%BC%93%E5%AD%98.png"
 	width="2288"
 	height="1208"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5cache%E6%88%96pool%E7%BC%93%E5%AD%98_hu_63e77077dc18fd31.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5cache%E6%88%96pool%E7%BC%93%E5%AD%98_hu_2176fdf5ae6631fd.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5cache%E6%88%96pool%E7%BC%93%E5%AD%98_hu5523904204173320317.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5cache%E6%88%96pool%E7%BC%93%E5%AD%98_hu10407373697528151754.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1397,7 +1402,7 @@ layout过程只走了dispatchLayout2，在里面走到了linearlayoutManager.onL
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5pool%E7%9A%84trace.png"
 	width="2474"
 	height="912"
-	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5pool%E7%9A%84trace_hu_253dd54436174af1.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5pool%E7%9A%84trace_hu_6558aafa79fe3a7b.png 1024w"
+	srcset="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5pool%E7%9A%84trace_hu5584527474512766708.png 480w, /p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%8A%A0%E5%85%A5pool%E7%9A%84trace_hu16705963592357327366.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
