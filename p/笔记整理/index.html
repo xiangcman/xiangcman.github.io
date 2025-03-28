@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 crossinline算是在内联和非内联之间做智能化选择，如果你将lambda表达式当做变量来使用，此时编译器不会内联该lambda，比如： 1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } ">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 默认内联函数是能添加return来作为局部返回，由于存在平铺代码的特性，所以它能阻止调用lambda的外层函数的执行，那如果lambda作为间接调用的时候，此时添加return语句会编译失败，因为间接调用（比如匿名内部类或回调）不能阻止外层函数的调用，是为了避免多线程或回调中意外终止外层函数，所以kotlin编译器此时需要你添加crossinline，举个例子就清楚了： 此处的run闭包，它的调用是在runnable接口中的，此时编译器提示it may contain non-local returns，意思是此时存在间接调用，在间接调用lambda的时候，不允许在lambda中添加return来阻止外层的外层函数的执行。所以此处通过添加crossinline来阻止lambda中添加return 疑惑：crossinline添加后，内联效果还在吗？还是以上面的例子来说明： 假如上面的hello方法我就作为普通的方法，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ">
 <title>笔记整理</title>
 
 <link rel='canonical' href='https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="笔记整理">
-<meta property='og:description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 crossinline算是在内联和非内联之间做智能化选择，如果你将lambda表达式当做变量来使用，此时编译器不会内联该lambda，比如： 1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } ">
+<meta property='og:description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 默认内联函数是能添加return来作为局部返回，由于存在平铺代码的特性，所以它能阻止调用lambda的外层函数的执行，那如果lambda作为间接调用的时候，此时添加return语句会编译失败，因为间接调用（比如匿名内部类或回调）不能阻止外层函数的调用，是为了避免多线程或回调中意外终止外层函数，所以kotlin编译器此时需要你添加crossinline，举个例子就清楚了： 此处的run闭包，它的调用是在runnable接口中的，此时编译器提示it may contain non-local returns，意思是此时存在间接调用，在间接调用lambda的时候，不允许在lambda中添加return来阻止外层的外层函数的执行。所以此处通过添加crossinline来阻止lambda中添加return 疑惑：crossinline添加后，内联效果还在吗？还是以上面的例子来说明： 假如上面的hello方法我就作为普通的方法，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ">
 <meta property='og:url' content='https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-11-04T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-04T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="笔记整理">
-<meta name="twitter:description" content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 crossinline算是在内联和非内联之间做智能化选择，如果你将lambda表达式当做变量来使用，此时编译器不会内联该lambda，比如： 1 2 3 4 5 6 7 8 9 10 11 inline fun hello4(run1: () -&gt; Unit, crossinline run: () -&gt; Unit) { run1() hello5 { run() } println(&#34;hello4后续代码&#34;) } fun hello5(run: () -&gt; Unit) { run() println(&#34;hello5后续代码&#34;) } ">
+<meta name="twitter:description" content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 默认内联函数是能添加return来作为局部返回，由于存在平铺代码的特性，所以它能阻止调用lambda的外层函数的执行，那如果lambda作为间接调用的时候，此时添加return语句会编译失败，因为间接调用（比如匿名内部类或回调）不能阻止外层函数的调用，是为了避免多线程或回调中意外终止外层函数，所以kotlin编译器此时需要你添加crossinline，举个例子就清楚了： 此处的run闭包，它的调用是在runnable接口中的，此时编译器提示it may contain non-local returns，意思是此时存在间接调用，在间接调用lambda的时候，不允许在lambda中添加return来阻止外层的外层函数的执行。所以此处通过添加crossinline来阻止lambda中添加return 疑惑：crossinline添加后，内联效果还在吗？还是以上面的例子来说明： 假如上面的hello方法我就作为普通的方法，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -303,6 +303,9 @@
         <li><a href="#消息队列中的消息屏障">消息队列中的消息屏障</a></li>
         <li><a href="#android中异常处理">android中异常处理</a></li>
         <li><a href="#关于多张bitmap转成webp的原理">关于多张bitmap转成webp的原理</a></li>
+        <li><a href="#kotlin中和区别">kotlin中==和===区别</a></li>
+        <li><a href="#kotlin中lazy的原理">kotlin中lazy的原理</a></li>
+        <li><a href="#kotlin委托模式">kotlin委托模式</a></li>
       </ol>
     </li>
   </ol>
@@ -369,7 +372,7 @@
 
 
                 <time class="article-time--reading">
-                    8 minute read
+                    10 minute read
                 </time>
             </div>
         
@@ -389,96 +392,165 @@
 <li>默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。</li>
 <li>内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。</li>
 <li>noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。</li>
-<li>crossinline算是在内联和非内联之间做智能化选择，如果你将lambda表达式当做变量来使用，此时编译器不会内联该lambda，比如：</li>
-</ol>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">inline</span> <span class="k">fun</span> <span class="nf">hello4</span><span class="p">(</span><span class="n">run1</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Unit</span><span class="p">,</span> <span class="k">crossinline</span> <span class="n">run</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Unit</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="n">run1</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">hello5</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">run</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="n">println</span><span class="p">(</span><span class="s2">&#34;hello4后续代码&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="k">fun</span> <span class="nf">hello5</span><span class="p">(</span><span class="n">run</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Unit</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="n">run</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">println</span><span class="p">(</span><span class="s2">&#34;hello5后续代码&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>上面我将hello4中的run表达式传给了hello5，而hello5不是一个内联函数，所以此时会把lambda作为一个变量传到hello5中：
-<img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%BD%93%E5%81%9A%E5%8F%98%E9%87%8F%E4%BD%BF%E7%94%A8.png"
-	width="912"
-	height="154"
-	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%BD%93%E5%81%9A%E5%8F%98%E9%87%8F%E4%BD%BF%E7%94%A8_hu16063132311198559754.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%BD%93%E5%81%9A%E5%8F%98%E9%87%8F%E4%BD%BF%E7%94%A8_hu7787248245772434655.png 1024w"
+<li>默认内联函数是能添加return来作为局部返回，由于存在平铺代码的特性，所以它能阻止调用lambda的外层函数的执行，那如果lambda作为间接调用的时候，此时添加return语句会编译失败，因为间接调用（比如匿名内部类或回调）不能阻止外层函数的调用，是为了避免多线程或回调中意外终止外层函数，所以kotlin编译器此时需要你添加crossinline，举个例子就清楚了：
+<img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%87%BD%E6%95%B0%E4%B8%AD%E7%9A%84lambda%E4%BD%9C%E4%B8%BA%E9%97%B4%E6%8E%A5%E8%B0%83%E7%94%A8.png"
+	width="1840"
+	height="922"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%87%BD%E6%95%B0%E4%B8%AD%E7%9A%84lambda%E4%BD%9C%E4%B8%BA%E9%97%B4%E6%8E%A5%E8%B0%83%E7%94%A8_hu6587485076492757471.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%87%BD%E6%95%B0%E4%B8%AD%E7%9A%84lambda%E4%BD%9C%E4%B8%BA%E9%97%B4%E6%8E%A5%E8%B0%83%E7%94%A8_hu15377213413317146020.png 1024w"
 	loading="lazy"
 	
-		alt="crossinline将lambda当做变量使用"
+		alt="alt text"
 	
 	
 		class="gallery-image" 
-		data-flex-grow="592"
-		data-flex-basis="1421px"
-	
-></p>
-<p>如果改成如下方式：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">inline</span> <span class="k">fun</span> <span class="nf">hello4</span><span class="p">(</span><span class="n">run1</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Unit</span><span class="p">,</span> <span class="k">crossinline</span> <span class="n">run</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Unit</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="n">run1</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">hello5</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">run</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="n">println</span><span class="p">(</span><span class="s2">&#34;hello4后续代码&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="k">inline</span> <span class="k">fun</span> <span class="nf">hello5</span><span class="p">(</span><span class="n">run</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Unit</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="n">run</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="n">println</span><span class="p">(</span><span class="s2">&#34;hello5后续代码&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p><img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%86%85%E8%81%94.png"
-	width="786"
-	height="242"
-	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%86%85%E8%81%94_hu6655413015420714954.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/crossinline%E5%B0%86lambda%E5%86%85%E8%81%94_hu767503778842152748.png 1024w"
-	loading="lazy"
-	
-		alt="crossinline将lambda内联"
-	
-	
-		class="gallery-image" 
-		data-flex-grow="324"
-		data-flex-basis="779px"
+		data-flex-grow="199"
+		data-flex-basis="478px"
 	
 >
+此处的run闭包，它的调用是在runnable接口中的，此时编译器提示<code>it may contain non-local returns</code>，意思是此时存在间接调用，在间接调用lambda的时候，不允许在lambda中添加return来阻止外层的外层函数的执行。所以此处通过添加crossinline来阻止lambda中添加return
+<img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%B7%BB%E5%8A%A0%E5%AE%8Ccrossinline%E5%90%8E%E4%B8%8D%E5%85%81%E8%AE%B8%E6%B7%BB%E5%8A%A0return.png"
+	width="1128"
+	height="936"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%B7%BB%E5%8A%A0%E5%AE%8Ccrossinline%E5%90%8E%E4%B8%8D%E5%85%81%E8%AE%B8%E6%B7%BB%E5%8A%A0return_hu15445602374189509796.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%B7%BB%E5%8A%A0%E5%AE%8Ccrossinline%E5%90%8E%E4%B8%8D%E5%85%81%E8%AE%B8%E6%B7%BB%E5%8A%A0return_hu5563822828698087603.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="120"
+		data-flex-basis="289px"
+	
+>
+疑惑：crossinline添加后，内联效果还在吗？还是以上面的例子来说明：</br>
+假如上面的hello方法我就作为普通的方法，如下：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"> <span class="k">object</span> <span class="nc">TestInline1</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">     <span class="nd">@JvmStatic</span>
+</span></span><span class="line"><span class="cl">     <span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Array</span><span class="p">&lt;</span><span class="n">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">         <span class="n">hello</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">println</span><span class="p">(</span><span class="s2">&#34;hello的闭包&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="k">fun</span> <span class="nf">hello</span><span class="p">(</span><span class="n">run</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Unit</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">         <span class="k">val</span> <span class="py">runnable</span> <span class="p">=</span> <span class="n">Runnable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">println</span><span class="p">(</span><span class="s2">&#34;runnable run&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">             <span class="n">run</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">         <span class="n">runnable</span><span class="p">.</span><span class="n">run</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>对应的字节码如下：
+<img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%97%A0%E5%86%85%E8%81%94%E6%95%88%E6%9E%9C.png"
+	width="1232"
+	height="792"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%97%A0%E5%86%85%E8%81%94%E6%95%88%E6%9E%9C_hu13589242433879598134.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%97%A0%E5%86%85%E8%81%94%E6%95%88%E6%9E%9C_hu11782509406054841245.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="155"
+		data-flex-basis="373px"
+	
+>
+如果我把它作为内联函数来处理，如下：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">object</span> <span class="nc">TestInline1</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">     <span class="nd">@JvmStatic</span>
+</span></span><span class="line"><span class="cl">     <span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Array</span><span class="p">&lt;</span><span class="n">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">         <span class="n">hello</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">println</span><span class="p">(</span><span class="s2">&#34;hello的闭包&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="k">inline</span> <span class="k">fun</span> <span class="nf">hello</span><span class="p">(</span><span class="k">crossinline</span> <span class="n">run</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Unit</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">         <span class="k">val</span> <span class="py">runnable</span> <span class="p">=</span> <span class="n">Runnable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="n">println</span><span class="p">(</span><span class="s2">&#34;runnable run&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">             <span class="n">run</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">         <span class="p">}</span>
+</span></span><span class="line"><span class="cl">         <span class="n">runnable</span><span class="p">.</span><span class="n">run</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>对应的字节码如下：
+<img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8E%E7%9A%84%E6%95%88%E6%9E%9C.png"
+	width="1384"
+	height="718"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8E%E7%9A%84%E6%95%88%E6%9E%9C_hu8471907073440358240.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8E%E7%9A%84%E6%95%88%E6%9E%9C_hu8034423836580244129.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="192"
+		data-flex-basis="462px"
+	
+>
+<img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8Erunnable%E6%95%88%E6%9E%9C.png"
+	width="1554"
+	height="288"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8Erunnable%E6%95%88%E6%9E%9C_hu7493244916653163035.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8Erunnable%E6%95%88%E6%9E%9C_hu16760301671460075923.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="539"
+		data-flex-basis="1295px"
+	
+>
+可以看出来crossinline还是有内联效果，闭包直接在runnable中平铺开来了。
 相关文档：<a class="link" href="https://juejin.cn/post/6869954460634841101"  target="_blank" rel="noopener"
-    >https://juejin.cn/post/6869954460634841101</a></p>
+    >https://juejin.cn/post/6869954460634841101</a></li>
+</ol>
 <h3 id="java-lambda和kotlin-lambda区别">java lambda和kotlin lambda区别
 </h3><ol>
 <li>在java中如果使用匿名内部类的形式，在编译时它是会单独生成一个类，其中类名是「外部类名$index.class」这种形式。如果使用lambda的形式，它不会在编译时单独生成一个类，它是执行了invokedynamic指令，在运行时动态生成lambda的类，其中类名是「外部类名$Lambda$index.class」这种形式。
@@ -1339,6 +1411,238 @@ pop：和remove一样的，都是移除头部节点，如果没有头部节点�
 </ul>
 </li>
 <li>读取完后，接着就是写入到输出流中，判断如果是第一个bitmap，则创建header部分，其中header也是按照RIFF、FileSize、WEBP三个区域写会，接着写入VP8X数据块，标明宽高等信息。最后创建VP8的chunk，将刚才读取到的单个bitmap的playload写会到VP8的chunk中。</li>
+</ul>
+<h3 id="kotlin中和区别">kotlin中==和===区别
+</h3><p>kotlin中的==：如果是对象类型，比较的是equals方法；如果是基本类型，比较的是值。
+kotlin中的===：如果是对象类型，比较的是内存地址，指向的是不是同一个对象；如果是基本类型。比较的还是值。</p>
+<h3 id="kotlin中lazy的原理">kotlin中lazy的原理
+</h3><p>Lazy本身是一个接口，会提供一个value属性和isInitialized的方法，注意了在kotlin接口中提供属性，其实对应java中的get**方法，平时写的by lazy{}，去定义一个属性的时候，其实它是一种属性委托的写法，但是lazy它是只读的委托模式，所以在定义属性的时候必须用val来修饰变量。当我们去读取lazy的变量的时候，实际是调用了前面定义的value属性，对应java代码其实是getValue方法，当首次去获取属性的时候，发现_value为空，所以会通过闭包去获取，获取到后会将返回值给到_value，下次再调用getValue的时候，直接返回该_value。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">actual</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">lazy</span><span class="p">(</span><span class="n">lock</span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">initializer</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">T</span><span class="p">):</span><span class="w"> </span><span class="n">Lazy</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SynchronizedLazyImpl</span><span class="p">(</span><span class="n">initializer</span><span class="p">,</span><span class="w"> </span><span class="n">lock</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>
+<p>第一个参数lock是可以传入对象锁</p>
+</li>
+<li>
+<p>第二个参数是传进来的闭包，是非空</p>
+</li>
+<li>
+<p>返回值：实际是一个SynchronizedLazyImpl对象：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">class</span> <span class="nc">SynchronizedLazyImpl</span><span class="o">&lt;</span><span class="n">out</span><span class="w"> </span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">initializer</span><span class="p">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">T</span><span class="p">,</span><span class="w"> </span><span class="n">lock</span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">?</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Lazy</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">Serializable</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="kd">private</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="n">initializer</span><span class="p">:</span><span class="w"> </span><span class="p">(()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">T</span><span class="p">)</span><span class="o">?</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">initializer</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//使用Volatile关键字修饰_value变量，在多线程下能达到可见性的效果</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nd">@Volatile</span><span class="w"> </span><span class="kd">private</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="n">_value</span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">?</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">UNINITIALIZED_VALUE</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">// final field is required to enable safe publication of constructed instance</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="kd">private</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">lock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lock</span><span class="w"> </span><span class="o">?</span><span class="p">:</span><span class="w"> </span><span class="k">this</span><span class="c1">//如果传进来的对象锁为空，则当前对象作为锁</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">override</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="n">T</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nf">get</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="n">val</span><span class="w"> </span><span class="n">_v1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_value</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="nf">if</span><span class="w"> </span><span class="p">(</span><span class="n">_v1</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="n">UNINITIALIZED_VALUE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="nd">@Suppress</span><span class="p">(</span><span class="s">&#34;UNCHECKED_CAST&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="k">return</span><span class="w"> </span><span class="n">_v1</span><span class="w"> </span><span class="n">as</span><span class="w"> </span><span class="n">T</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="c1">//通过synchronized来保证创建对象是原子操作</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="k">return</span><span class="w"> </span><span class="kd">synchronized</span><span class="p">(</span><span class="n">lock</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="n">val</span><span class="w"> </span><span class="n">_v2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_value</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="nf">if</span><span class="w"> </span><span class="p">(</span><span class="n">_v2</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="n">UNINITIALIZED_VALUE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="nd">@Suppress</span><span class="p">(</span><span class="s">&#34;UNCHECKED_CAST&#34;</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">_v2</span><span class="w"> </span><span class="n">as</span><span class="w"> </span><span class="n">T</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="n">val</span><span class="w"> </span><span class="n">typedValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">initializer</span><span class="o">!!</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="n">_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">typedValue</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="n">initializer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                      </span><span class="n">typedValue</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>综上来看，lazy默认是线程安全的，默认使用的对象锁是当前lazy对象，也可以自己传入锁对象。使用Volatile来保证对象的可见性，通过synchronized保证创建对象是原子操作。</p>
+<h3 id="kotlin委托模式">kotlin委托模式
+</h3><ul>
+<li>属性委托：允许你把属性的getter、setter逻辑委托给一个独立的对象来管理
+<ul>
+<li>通过「var 属性 by 委托类」的形式定义一个属性委托的过程，当使用var的时候，说明该属性能可读和可写，在属性写的时候实际编译器会去调委托类的setValue方法，当属性读的时候实际编译器会去调委托类的getValue方法。</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">Delegate</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">operator</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">getValue</span><span class="p">(</span><span class="n">thisRef</span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">property</span><span class="p">:</span><span class="w"> </span><span class="n">KProperty</span><span class="o">&lt;*&gt;</span><span class="p">):</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="s">&#34;属性 ${property.name} 被代理了&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">operator</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">setValue</span><span class="p">(</span><span class="n">thisRef</span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">property</span><span class="p">:</span><span class="w"> </span><span class="n">KProperty</span><span class="o">&lt;*&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="n">String</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">println</span><span class="p">(</span><span class="s">&#34;属性 ${property.name} 赋值为 $value&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">class</span> <span class="nc">Example</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="nf">Delegate</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">fun</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Example</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">println</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="na">message</span><span class="p">)</span><span class="w">  </span><span class="c1">// 访问时调用 getValue()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">e</span><span class="p">.</span><span class="na">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;Hello&#34;</span><span class="w"> </span><span class="c1">// 赋值时调用 setValue()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>实际对应的字节码：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">Example</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">message$delegate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Delegate</span><span class="p">()</span><span class="w"> </span><span class="c1">// 委托对象变为一个私有属性</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="n">String</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nf">get</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">message$delegate</span><span class="p">.</span><span class="na">getValue</span><span class="p">(</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="p">::</span><span class="n">message</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">message$delegate</span><span class="p">.</span><span class="na">setValue</span><span class="p">(</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="p">::</span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>by Delegate() 其实是 Kotlin 编译器生成的 get() 和 set() 方法。</li>
+<li>getValue() 和 setValue() 由 Delegate 这个委托对象实现。</li>
+</ul>
+</li>
+<li>类委托：允许一个类 将实现某个接口的功能委托给另一个对象，减少代码重复。
+<ul>
+<li>by 关键字 可以让 Kotlin 自动生成委托方法，避免手写重复代码</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">interface</span> <span class="nc">Printer</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">fun</span><span class="w"> </span><span class="nf">printMessage</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">class</span> <span class="nc">RealPrinter</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">printMessage</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">println</span><span class="p">(</span><span class="s">&#34;RealPrinter: 打印内容&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">class</span> <span class="nf">ProxyPrinter</span><span class="p">(</span><span class="n">printer</span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">printer</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">fun</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">realPrinter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RealPrinter</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">proxy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProxyPrinter</span><span class="p">(</span><span class="n">realPrinter</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">proxy</span><span class="p">.</span><span class="na">printMessage</span><span class="p">()</span><span class="w"> </span><span class="c1">// 调用的是 realPrinter 的方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>上面的ProxyPrinter被编译器编译为如下：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nf">ProxyPrinter</span><span class="p">(</span><span class="n">printer</span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">printerDelegate</span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">printer</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">printMessage</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">printerDelegate</span><span class="p">.</span><span class="na">printMessage</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>by printer 让 ProxyPrinter 自动实现 Printer 接口的方法，而不需要手动实现。</li>
+<li>编译器在字节码层面会自动插入代理方法，提高代码简洁性。</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
 </section>
