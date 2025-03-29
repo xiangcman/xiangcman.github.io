@@ -306,6 +306,8 @@
         <li><a href="#kotlin中和区别">kotlin中==和===区别</a></li>
         <li><a href="#kotlin中lazy的原理">kotlin中lazy的原理</a></li>
         <li><a href="#kotlin委托模式">kotlin委托模式</a></li>
+        <li><a href="#为什么reified必须和inline一起使用">为什么reified必须和inline一起使用？</a></li>
+        <li><a href="#关于viewmodel的一些思考">关于viewModel的一些思考</a></li>
       </ol>
     </li>
   </ol>
@@ -372,7 +374,7 @@
 
 
                 <time class="article-time--reading">
-                    10 minute read
+                    11 minute read
                 </time>
             </div>
         
@@ -1639,6 +1641,186 @@ kotlin中的===：如果是对象类型，比较的是内存地址，指向的�
 </div><ul>
 <li>by printer 让 ProxyPrinter 自动实现 Printer 接口的方法，而不需要手动实现。</li>
 <li>编译器在字节码层面会自动插入代理方法，提高代码简洁性。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="为什么reified必须和inline一起使用">为什么reified必须和inline一起使用？
+</h3><p>reified关键字是用来修饰泛型，而泛型在编译后会被擦除掉，所以如果要在运行时获取到泛型的类型，就得用reified关键字，而inline的作用是修饰方法内联，之前讲内联函数的特点是将函数体平铺到调用处。那它两有什么联系呢？先来看一个例子：
+<img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E8%8E%B7%E5%8F%96%E6%B3%9B%E5%9E%8B%E7%9A%84class%E7%B1%BB%E5%9E%8B.png"
+	width="1284"
+	height="244"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E8%8E%B7%E5%8F%96%E6%B3%9B%E5%9E%8B%E7%9A%84class%E7%B1%BB%E5%9E%8B_hu16603866729984663634.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E8%8E%B7%E5%8F%96%E6%B3%9B%E5%9E%8B%E7%9A%84class%E7%B1%BB%E5%9E%8B_hu8415276271667395059.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="526"
+		data-flex-basis="1262px"
+	
+>
+此处提示我，使用reified关键字来修饰泛型，因为泛型在编译后，会被擦除掉，所以是获取不到它的类型，只有添加reified才能保证它的类型存在。那添加完reified后提示为什么还要添加inline呢？</br>
+这是因为只有内联函数将函数体进行平铺，然后将泛型通过「真类型」代入到函数体中，看下编译后的代码：
+<img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/reified%E7%BC%96%E8%AF%91%E5%89%8D%E5%92%8C%E7%BC%96%E8%AF%91%E5%90%8E%E5%AF%B9%E6%AF%94.png"
+	width="3306"
+	height="1484"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/reified%E7%BC%96%E8%AF%91%E5%89%8D%E5%92%8C%E7%BC%96%E8%AF%91%E5%90%8E%E5%AF%B9%E6%AF%94_hu17684842508704805206.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/reified%E7%BC%96%E8%AF%91%E5%89%8D%E5%92%8C%E7%BC%96%E8%AF%91%E5%90%8E%E5%AF%B9%E6%AF%94_hu5785158618927532095.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="222"
+		data-flex-basis="534px"
+	
+></p>
+<h3 id="关于viewmodel的一些思考">关于viewModel的一些思考
+</h3><ul>
+<li>创建：默认都是通过ViewModelProvider的get方法获取到viewModel，里面通过factory（工厂方法模式）的create来创建viewModel，创建完之后会把viewModel保存到ViewModelStore中。ViewModelStore实际是用一个hashMap来存储viewModel，key是viewModel的class name拼上前缀，value就是当前viewModel。android中默认的factory是ViewModelProvider.AndroidViewModelFactory，在它的create方法里面通过前面传进来的viewModel的class反射创建viewModel。</li>
+<li>存储：像平时写的activity都是继承自<code>ComponentActivity</code>，它是实现了<code>ViewModelStoreOwner</code>接口，该接口需要持有一个ViewModelStore，ViewModelStore是在ensureViewModelStore方法中创建的：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">ensureViewModelStore</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mViewModelStore</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">NonConfigurationInstances</span><span class="w"> </span><span class="n">nc</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="p">(</span><span class="n">NonConfigurationInstances</span><span class="p">)</span><span class="w"> </span><span class="n">getLastNonConfigurationInstance</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">nc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="c1">// Restore the ViewModelStore from NonConfigurationInstances</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">mViewModelStore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nc</span><span class="p">.</span><span class="na">viewModelStore</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mViewModelStore</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">mViewModelStore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ViewModelStore</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>getLastNonConfigurationInstance()方法是获取Activity中的mLastNonConfigurationInstances属性的activity属性，结构如下：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kd">class</span> <span class="nc">NonConfigurationInstances</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Object</span><span class="w"> </span><span class="n">activity</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">HashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="o">&gt;</span><span class="w"> </span><span class="n">children</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">FragmentManagerNonConfig</span><span class="w"> </span><span class="n">fragments</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">ArrayMap</span><span class="o">&lt;</span><span class="n">String</span><span class="p">,</span><span class="w"> </span><span class="n">LoaderManager</span><span class="o">&gt;</span><span class="w"> </span><span class="n">loaders</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">VoiceInteractor</span><span class="w"> </span><span class="n">voiceInteractor</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>第一次打开activity的时候mLastNonConfigurationInstances属性是空的，因此在ensureViewModelStore中是直接创建了ViewModelStore。那什么时候mLastNonConfigurationInstances不为空呢？我们注意到mLastNonConfigurationInstances是在activity的attach中赋值的，它的上级来源是ActivityClientRecord中的lastNonConfigurationInstances属性，那什么时候给ActivityClientRecord的lastNonConfigurationInstances属性赋值呢？这个可以在aosp中的<code>frameworks/base/core/java/android/app/Activity.java</code>类中的performDestroyActivity方法中找到：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">performDestroyActivity</span><span class="p">(</span><span class="n">ActivityClientRecord</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">finishing</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="kt">boolean</span><span class="w"> </span><span class="n">getNonConfigInstance</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">reason</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Class</span><span class="o">&lt;?</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">Activity</span><span class="o">&gt;</span><span class="w"> </span><span class="n">activityClass</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">getNonConfigInstance</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="c1">//通过调用activity的retainNonConfigurationInstances方法来给ActivityClientRecord的lastNonConfigurationInstances属性赋值</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="n">r</span><span class="p">.</span><span class="na">lastNonConfigurationInstances</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="na">activity</span><span class="p">.</span><span class="na">retainNonConfigurationInstances</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Exception</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">mInstrumentation</span><span class="p">.</span><span class="na">onException</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="na">activity</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">RuntimeException</span><span class="p">(</span><span class="s">&#34;Unable to retain activity &#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                          </span><span class="o">+</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="na">intent</span><span class="p">.</span><span class="na">getComponent</span><span class="p">().</span><span class="na">toShortString</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="na">toString</span><span class="p">(),</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">      
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>而activity的retainNonConfigurationInstances方法中会组装NonConfigurationInstances中的activity属性，是通过onRetainNonConfigurationInstance方法来收集的：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">NonConfigurationInstances</span><span class="w"> </span><span class="nf">retainNonConfigurationInstances</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Object</span><span class="w"> </span><span class="n">activity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">onRetainNonConfigurationInstance</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">NonConfigurationInstances</span><span class="w"> </span><span class="n">nci</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">NonConfigurationInstances</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">nci</span><span class="p">.</span><span class="na">activity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">activity</span><span class="p">;</span><span class="c1">//手机activity属性</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">nci</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>onRetainNonConfigurationInstance方法的调用是在<code>ComponentActivity</code>中实现了：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@Nullable</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@SuppressWarnings</span><span class="p">(</span><span class="s">&#34;deprecation&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="nf">onRetainNonConfigurationInstance</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">ViewModelStore</span><span class="w"> </span><span class="n">viewModelStore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mViewModelStore</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">NonConfigurationInstances</span><span class="w"> </span><span class="n">nci</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">NonConfigurationInstances</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">nci</span><span class="p">.</span><span class="na">viewModelStore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewModelStore</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">nci</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>可以看到最终viewModelStore通过ComponentActivity中的NonConfigurationInstances存储起来了，最终被ActivityClientRecord持有。当横竖屏切换的时候会触发ActivityThread的handleRelaunchActivity，在该方法里面会先将activity的lastNonConfigurationInstances保存到ActivityClientRecord，等到创建activity的时候会把lastNonConfigurationInstances给到activity，所以viewmodelStore此时拿到的还是之前的。
+<ul>
+<li>fragment中的viewModel是怎么存储的？
+<ul>
+<li>fragment也是实现了viewModelOwner接口，所以它也有自己的viewModelStore，它的viewModelStore是通过FragmentManagerViewModel来管理的，FragmentManagerViewModel的创建是看当前fragment有没有parentFragment，如果有，则通过parentFragment的fragmentManager的getChildNonConfig方法来获取。如果parent为空，则通过activity的viewModelStore来创建。所以fragment的viewModelStore存储也是依赖于activity，因为最终该FragmentManagerViewModel是通过activity的viewModelStore来存储的。</li>
 </ul>
 </li>
 </ul>
