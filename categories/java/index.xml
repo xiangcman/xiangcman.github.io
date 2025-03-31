@@ -258,7 +258,7 @@
 &gt;
 &lt;ul&gt;
 &lt;li&gt;双重判断，成员属性instance上，增加了volatile关键字，保障多线程对instance值的可见性以及禁止指令重排。&lt;/li&gt;
-&lt;li&gt;第一层非空判断是为了锁的开销，只有为空的时候才加锁。第二层非空判断是为了防止创建了多个实例。&lt;/li&gt;
+&lt;li&gt;第一层空判断是为了锁的开销，只有为空的时候才加锁。第二层空判断是为了防止创建了多个实例。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;静态内部类中加静态变量
@@ -280,7 +280,7 @@
 &lt;li&gt;静态内部类可以达到双检锁的效果。将instance放在了内部类中，不会在类加载的时候就加载实例，这个和饿汉式在类加载的时候就加载有区别。他只会在getInstance的时候，才会去加载内部类，此时才会去加载单例实例。并且instance是内部类类加载的时候才进行加载，所以线程安全问题也保证了。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;枚举单例
+&lt;li&gt;枚举单例&lt;/br&gt;
 &lt;img src=&#34;https://example.com/p/java%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E4%B8%8E%E6%A8%A1%E5%BC%8F/%E6%9E%9A%E4%B8%BE%E5%8D%95%E4%BE%8B.png&#34;
 	width=&#34;542&#34;
 	height=&#34;234&#34;
@@ -543,7 +543,7 @@
 		data-flex-basis=&#34;102px&#34;
 	
 &gt;&lt;/li&gt;
-&lt;li&gt;上面ConcreteDecorator是具体的的装饰角色，它是持有了具体的构件角色ConcreteComponent，在调用具体的构建角色方法外，还调用了自己的另外一个方法，这个是和桥接模式的一个区别之处。&lt;/li&gt;
+&lt;li&gt;上面ConcreteDecorator是具体的的装饰角色，它是持有了具体的构件角色ConcreteComponent，在调用具体的构建角色方法外，还调用了自己的另外一个方法，这个是和桥接模式的一个区别之处。并且装饰者模式的抽象的装饰角色实现了抽象构件角色，但是桥接模式中，抽象化构件角色中是不实现实现化角色接口的。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;

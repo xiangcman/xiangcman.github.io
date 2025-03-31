@@ -193,13 +193,13 @@
 相关文档：&lt;a class=&#34;link&#34; href=&#34;https://www.xiangcman.fun/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;https://www.xiangcman.fun/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/&lt;/a&gt;&lt;/p&gt;
 &lt;h3 id=&#34;linkedlist特性&#34;&gt;LinkedList特性
-&lt;/h3&gt;&lt;p&gt;LinkedList继承自Deque，它是一个双端队列，允许在队列的两端插入和删除元素。可以作为栈（LIFO）或队列（FIFO）使用。基于链表（双向链表）实现，可以高效地插入和删除元素。
-offer：给链表尾部插入元素，返回值表示是否插入成功
-peek：取出头部节点，如果没有则返回null
-poll：取出头部节点，如果没有则返回null，取完后并把头部节点从队列中移除
-remove：移除头部节点，如果没有头部节点则抛异常，有的话，则返回
-push：给链表头部插入元素，没有返回值
-pop：和remove一样的，都是移除头部节点，如果没有头部节点则抛异常，有的话，则返回&lt;/p&gt;
+&lt;/h3&gt;&lt;p&gt;LinkedList继承自Deque，它是一个双端队列，允许在队列的两端插入和删除元素。可以作为栈（LIFO）或队列（FIFO）使用。基于链表（双向链表）实现，可以高效地插入和删除元素。&lt;/br&gt;
+offer：给链表尾部插入元素，返回值表示是否插入成功&lt;/br&gt;
+peek：取出头部节点，如果没有则返回null&lt;/br&gt;
+poll：取出头部节点，如果没有则返回null，取完后并把头部节点从队列中移除&lt;/br&gt;
+remove：移除头部节点，如果没有头部节点则抛异常，有的话，则返回&lt;/br&gt;
+push：给链表头部插入元素，没有返回值&lt;/br&gt;
+pop：和remove一样的，都是移除头部节点，如果没有头部节点则抛异常，有的话，则返回&lt;/br&gt;&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;如果想实现队列的话，则使用offer和poll这一对方法；如果想实现栈的话，可以通过offerLast和pollLast来实现，或者通过offerFirst和pollFirst来实现。&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -1036,9 +1036,9 @@ pop：和remove一样的，都是移除头部节点，如果没有头部节点�
 &lt;li&gt;由于前面指定了bitmap转webp的时候是有损，因此读取chunk的时候直接去读WP8块，接着读取它的payload信息，playload大小就是chunk大小，4字节。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;读取完后，接着就是写入到输出流中，判断如果是第一个bitmap，则创建header部分，其中header也是按照RIFF、FileSize、WEBP三个区域写会，接着写入VP8X数据块，标明宽高等信息。最后创建VP8的chunk，将刚才读取到的单个bitmap的playload写会到VP8的chunk中。&lt;/li&gt;
+&lt;li&gt;读取完后，接着就是写入到输出流中，判断如果是第一个bitmap，则创建header部分，其中header也是按照RIFF、FileSize、WEBP三个区域写回，接着写入VP8X数据块，标明宽高、动画、通道、元数据等信息。接着创建ANIM动画控制块，标明背景颜色和循环次数。最后创建每一个bitmap对应的ANMF动画帧块，将指定每一帧的的尺寸、时长playload数据。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&#34;kotlin中和区别&#34;&gt;kotlin中==和===区别
+&lt;h3 id=&#34;kotlin中和区别&#34;&gt;kotlin中&lt;code&gt;==&lt;/code&gt;和&lt;code&gt;===&lt;/code&gt;区别
 &lt;/h3&gt;&lt;p&gt;kotlin中的==：如果是对象类型，比较的是equals方法；如果是基本类型，比较的是值。
 kotlin中的===：如果是对象类型，比较的是内存地址，指向的是不是同一个对象；如果是基本类型。比较的还是值。&lt;/p&gt;
 &lt;h3 id=&#34;kotlin中lazy的原理&#34;&gt;kotlin中lazy的原理
@@ -1449,6 +1449,20 @@ kotlin中的===：如果是对象类型，比较的是内存地址，指向的�
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;livedata的一些思考&#34;&gt;LiveData的一些思考
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;liveData是基于监听lifecycle生命周期的数据驱动框架，在lifecycle为STARTED才会触发触发数据驱动，并且在lifecycle为DESTROYED的时候自动解绑observer。&lt;/li&gt;
+&lt;li&gt;比如我在lifecycle的CREATED状态给livedata灌数据，等到lifecycle状态为STARTED的时候就会给livedata的observer给发送数据。&lt;/li&gt;
+&lt;li&gt;当提前给livedata灌输数据的时候，但是此时还没添加observer，等到添加observer的时候，会自动把数据分发到observer中了。这个就是数据倒灌。主要是因为给livedata发送数据的时候，livedata中的版本号会+1，但是新添加的observer此时的版本号还是-1，所以在注册的时候，会把数据分发给observer。通常数据倒灌的解决方案是：
+&lt;ul&gt;
+&lt;li&gt;每次在添加observer的时候，反射将livedata中的版本号给置为0&lt;/li&gt;
+&lt;li&gt;重写livedata，然后添加一个已经注册的标记(AtomicBoolean)，第一次调用observe的时候才会给该标记置为非空。此时在发送数据的时候判断如果该标记不为空，才会置为true，在observe的地方通过包装一个observer，只有该标记置为true了，才会给到目标observer传递数据。（这种方案只适合添加单observer的场景，如果多observer就不适合了）&lt;/li&gt;
+&lt;li&gt;继承livedata，用一个map记录observer是否接收过消息，如果接收过了就不能再接收&lt;/li&gt;
+&lt;li&gt;livedata中的getVersion方法是包内可见的，因此我们可以新建和livedata同样的包名的类，这样就能访问getVersion方法，然后在observe方法中判断如果version&amp;gt;START_VERSION才会能消费事件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;livedata中setValue是同步方法，是线程不安全的。postValue在一个线程的时候，如果发送数据比较频繁的时候，只会把最后一个数据发送给observer，因为postValue是通过给主线程的消息队列发送数据，然后发送给observer。在多线程情况下虽然设置数据是加了同步块，但是因为还是给主线程的消息队列发送消息来切换线程，导致前面的数据会被后面的数据给覆盖。&lt;/li&gt;
 &lt;/ul&gt;
 </description>
         </item>
