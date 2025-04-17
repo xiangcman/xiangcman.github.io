@@ -1464,6 +1464,40 @@ kotlin中的===：如果是对象类型，比较的是内存地址，指向的�
 &lt;/li&gt;
 &lt;li&gt;livedata中setValue是同步方法，是线程不安全的。postValue在一个线程的时候，如果发送数据比较频繁的时候，只会把最后一个数据发送给observer，因为postValue是通过给主线程的消息队列发送数据，然后发送给observer。在多线程情况下虽然设置数据是加了同步块，但是因为还是给主线程的消息队列发送消息来切换线程，导致前面的数据会被后面的数据给覆盖。&lt;/li&gt;
 &lt;/ul&gt;
+&lt;h3 id=&#34;glide缓存&#34;&gt;glide缓存
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;glide缓存分为内存和硬盘两类，其中内存缓存又分为活跃缓存和LRU缓存，硬盘缓存分为解码后按照view尺寸展示的bitmap缓存，另外一部分是原始图片的缓存。&lt;/li&gt;
+&lt;li&gt;活跃缓存：它的结构是一个hashmap，其中key是按照url、尺寸等信息拼成的，value是一个弱引用对象，其中弱引用中放的才是图片缓存对象。&lt;/li&gt;
+&lt;li&gt;LRU缓存：它底层是一个LRU策略的缓存，key也是和上面活跃缓存用的是同一个。value存的是解码后的图片缓存。&lt;/li&gt;
+&lt;li&gt;解码后的硬盘缓存：也是使用的LRU策略的缓存，其中key是按照指定尺寸来构建的，然后从DiskLruCache中获取缓存。&lt;/li&gt;
+&lt;li&gt;原始图片的硬盘缓存：也是使用的LRU策略的缓存，其中key不是通过指定尺寸来构建的，然后也是从DiskLruCache中获取缓存。&lt;/li&gt;
+&lt;li&gt;缓存获取步骤：
+&lt;img src=&#34;https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/glide%E7%BC%93%E5%AD%98%E8%8E%B7%E5%8F%96.png&#34;
+	width=&#34;958&#34;
+	height=&#34;793&#34;
+	srcset=&#34;https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/glide%E7%BC%93%E5%AD%98%E8%8E%B7%E5%8F%96_hu14351163840712398053.png 480w, https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/glide%E7%BC%93%E5%AD%98%E8%8E%B7%E5%8F%96_hu7461658697438760820.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;120&#34;
+		data-flex-basis=&#34;289px&#34;
+	
+&gt;&lt;/li&gt;
+&lt;li&gt;LRU的内存缓存是在什么存储的？
+&lt;ul&gt;
+&lt;li&gt;从上面流程图来看每次从非活跃缓存中获取到图片缓存后，都会放入到活跃缓存中，那什么时候会放到内存的LRU缓存中呢？当view触发onViewDetachedFromWindow的时候，也就是当前view销毁后，会查看当前view绑定的图片被正在使用标记的次数，如果次数为0了，则将当前图片加入到LRU的内存缓存中。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;glide为什么要设计两层的内存缓存？
+&lt;ul&gt;
+&lt;li&gt;内存缓存分为活跃的缓存，它是一个map数据结构，value存储的是弱引用包装了缓存数据，另外一层是LRU级别的缓存。活跃数据指的是当前正在使用的资源，比如正在显示的图片，这部分用弱引用来保存，这样当图片不再被使用时，垃圾回收器可以自动回收，避免内存泄漏。而LRU缓存则是最近最少使用的缓存，使用强引用，当内存不足时，会移除最久未使用的资源。&lt;/li&gt;
+&lt;li&gt;如果只有LRU缓存的时候，正在使用的图片可能是长时间没有被访问的图片，而此时如果只有LRU缓存的时候，可能会把正在使用的图片缓存给移除掉了，这样的话，当再使用该图片的时候，会从磁盘中去获取该图片，这样增大了获取图片的时间。如果只有弱引用缓存的时候，此时图片不被使用了，被GC给回收了，那此时也只能从磁盘中获取，增大了获取图片的时间。如果此时有LRU缓存，能在内存中保留一段时间，降低从磁盘中读取的可能。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 </description>
         </item>
         
