@@ -686,14 +686,18 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
 在supervisorScope闭包中launch1发生异常了，由于supervisorScope不会去处理异常，将异常交给了launch1处理，所以launch2中的代码能继续执行。而在coroutineScope中，当launch1发生异常的时候，会将异常交给了coroutineScope，最终导致launch2的协程无法继续执行。</p>
 <h2 id="job">Job
 </h2><p>Job实现了CoroutineContext.Element，可以用来取消、启动一个协程，并且和父协程绑定了关系：
-<img src="/Job%e7%bb%93%e6%9e%84%e5%9b%be.png"
-	
-	
-	
+<img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E7%BB%93%E6%9E%84%E5%9B%BE.png"
+	width="1746"
+	height="1018"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E7%BB%93%E6%9E%84%E5%9B%BE_hu9519757385094306494.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E7%BB%93%E6%9E%84%E5%9B%BE_hu7976851450813309653.png 1024w"
 	loading="lazy"
 	
 		alt="Job结构图"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="171"
+		data-flex-basis="411px"
 	
 >
 它下面有几个关键的子类：

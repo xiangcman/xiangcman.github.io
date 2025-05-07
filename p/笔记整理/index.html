@@ -310,6 +310,7 @@
         <li><a href="#关于viewmodel的一些思考">关于viewModel的一些思考</a></li>
         <li><a href="#livedata的一些思考">LiveData的一些思考</a></li>
         <li><a href="#glide缓存">glide缓存</a></li>
+        <li><a href="#kotlin中sequence和普通集合的区别">kotlin中Sequence和普通集合的区别</a></li>
       </ol>
     </li>
   </ol>
@@ -376,7 +377,7 @@
 
 
                 <time class="article-time--reading">
-                    11 minute read
+                    12 minute read
                 </time>
             </div>
         
@@ -1876,7 +1877,116 @@ kotlin中的===：如果是对象类型，比较的是内存地址，指向的�
 </ul>
 </li>
 </ul>
-
+<h3 id="kotlin中sequence和普通集合的区别">kotlin中Sequence和普通集合的区别
+</h3><p>Sequence原理是持有了原有集合的iterator，在等到调用toList的时候，才会拿到Sequence的iterator进行遍历，然后添加到新的集合中。中间的操作符都会生成一个新的sequence，然后每遍历一个元素都会去执行一次中间操作符的iterator的next方法，然后将结果给到下一个sequence，最后添加到新的集合中。
+优点：相较于普通的集合，它是惰性执行中间操作符，并且中间的操作符只是通过iterator进行迭代每一个元素，而普通的集合是每一个操作符会新生成一个集合，导致内存会增高。Sequence的使用场景是中间操作符比较多的情况下进行使用，不会增加新的集合，并且是惰性遍历元素。</br>
+比如下面这个操作：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">listOf</span><span class="p">(</span><span class="n">1</span><span class="p">,</span><span class="w"> </span><span class="n">2</span><span class="p">,</span><span class="w"> </span><span class="n">3</span><span class="p">,</span><span class="w"> </span><span class="n">4</span><span class="p">,</span><span class="w"> </span><span class="n">5</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">.</span><span class="na">asSequence</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">.</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">println</span><span class="p">(</span><span class="s">&#34;sequence map:$it&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">it</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">.</span><span class="na">filter</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">println</span><span class="p">(</span><span class="s">&#34;sequence filter:$it&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">it</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">5</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">.</span><span class="na">toList</span><span class="p">()</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在调用toList时候，才会执行上面的map和filter方法，并且map和filter遍历元素的时候，是每个元素依次调用到map和filter，中间是通过sequence的iterator进行遍历，不会产生中间的集合。</br>
+日志如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-txt" data-lang="txt"><span class="line"><span class="cl">sequence map:1
+</span></span><span class="line"><span class="cl">sequence filter:2
+</span></span><span class="line"><span class="cl">sequence map:2
+</span></span><span class="line"><span class="cl">sequence filter:4
+</span></span><span class="line"><span class="cl">sequence map:3
+</span></span><span class="line"><span class="cl">sequence filter:6
+</span></span><span class="line"><span class="cl">sequence map:4
+</span></span><span class="line"><span class="cl">sequence filter:8
+</span></span><span class="line"><span class="cl">sequence map:5
+</span></span><span class="line"><span class="cl">sequence filter:10
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>再来看下普通集合的操作：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">listOf</span><span class="p">(</span><span class="n">1</span><span class="p">,</span><span class="w"> </span><span class="n">2</span><span class="p">,</span><span class="w"> </span><span class="n">3</span><span class="p">,</span><span class="w"> </span><span class="n">4</span><span class="p">,</span><span class="w"> </span><span class="n">5</span><span class="p">).</span><span class="na">map</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">println</span><span class="p">(</span><span class="s">&#34;list map:$it&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">it</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}.</span><span class="na">filter</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">println</span><span class="p">(</span><span class="s">&#34;list filter:$it&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">it</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">5</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面的map和filter是分开执行的，不会等到最后才执行，所以没有惰性，map和filter都会产生新的集合，并且在遍历元素的时候，每一个操作符是先遍历完每一个元素，然后才执行下一个操作符的遍历。</br>
+日志如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-txt" data-lang="txt"><span class="line"><span class="cl">list map:1
+</span></span><span class="line"><span class="cl">list map:2
+</span></span><span class="line"><span class="cl">list map:3
+</span></span><span class="line"><span class="cl">list map:4
+</span></span><span class="line"><span class="cl">list map:5
+</span></span><span class="line"><span class="cl">list filter:2
+</span></span><span class="line"><span class="cl">list filter:4
+</span></span><span class="line"><span class="cl">list filter:6
+</span></span><span class="line"><span class="cl">list filter:8
+</span></span><span class="line"><span class="cl">list filter:10
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
 </section>
 
 

@@ -3316,7 +3316,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 &lt;p&gt;数据结构:父协程的job启动了三个子协程，在job1中抛出异常，job2和job3收到了JobCancellationException。其中父job是一个JobImpl对象，在每个子协程启动过程中都会创建一个ChildHandleNode对象，其中job指向了父Job，也就是JobImpl，childJob指向了当前子job，也就是StandaloneCoroutine，最后在子Job中通过parentHandle指向了父job，state指向了InvokeOnCompletion(是通过invokeOnCompletion添加的)。父job中通过state指向了一个NodeList，每一个next节点指向了三个子job。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;blockquote&gt;
-&lt;p&gt;异常处理:当第一个job发生异常后，会通知自己的state中的InvokeOnComplete接口，所以job1中收到了runtime exception的信息，它是原始的失败信息。接着会调用到job1的cancelParent逻辑，该方法中会调用到parentHandle的childCancelled逻辑，它是一个ChildHandleNode对象，在它的childCancelled方法中，会触发父job的childCancelled方法，最终会来到父job的cancelImpl方法。该方法里面会去取消子job，是通过遍历state节点，调用里面的每一个ChildHandleNode的invoke方法，在invoke里面会调用到childJob的parentCancelled方法，里面会给每一个job的state设置上JobCancellationException，当让第一个job由于已经有exception了，也就是原始exception，所以job2和job3会设置上JobCancellationException异常。接着子协程会递归调用notifyHandlers通知子协程发生异常了，直到没有子协程为止。
+&lt;p&gt;异常处理:当第一个job发生异常后，会通知自己的state中的InvokeOnComplete接口，所以job1中收到了runtime exception的信息，它是原始的失败信息。接着会调用到job1的cancelParent逻辑，该方法中会调用到parentHandle的childCancelled逻辑，它是一个ChildHandleNode对象，在它的childCancelled方法中，会触发父job的childCancelled方法，最终会来到父job的cancelImpl方法。该方法里面会去取消子job，是通过遍历state节点，调用里面的每一个ChildHandleNode的invoke方法，在invoke里面会调用到childJob的parentCancelled方法，里面会给每一个job的state设置上JobCancellationException，由于第一个job已经有exception了，也就是原始exception，所以job2和job3会设置上JobCancellationException异常。接着子协程会递归调用notifyHandlers通知子协程发生异常了，直到没有子协程为止。
 当所有的子协程处理完异常后，会调用到自己的CoroutineExceptionHandler的回调。当回调完后，会给自己的state添加异常，防止在resumeWith中往下执行逻辑。其中给state添加异常是通过Finishing.addExceptionLocked添加异常信息。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;blockquote&gt;
@@ -4452,7 +4452,7 @@ label=0的时候，通过async启动了两个协程，我们这里叫async1和as
 		data-flex-basis=&#34;352px&#34;
 	
 &gt;
-在dispatch方法中调用了default的dispatch方法，default实际是一个LimitedDispatcher方法，看下它的dispatch方法：
+在dispatch方法中调用了default的dispatch方法，default实际是一个LimitedDispatcher对象，看下它的dispatch方法：
 &lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/LimiteDispatcher.png&#34;
 	width=&#34;2144&#34;
 	height=&#34;1536&#34;
@@ -4498,7 +4498,7 @@ label=0的时候，通过async启动了两个协程，我们这里叫async1和as
 		data-flex-basis=&#34;1045px&#34;
 	
 &gt;
-最小2个，最大是cpu的核数
+最小2个，最大是cpu的核数。&lt;/br&gt;
 最大线程数：
 &lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/%E6%9C%80%E5%A4%A7%E7%BA%BF%E7%A8%8B%E6%95%B0.png&#34;
 	width=&#34;1218&#34;
@@ -4517,10 +4517,11 @@ label=0的时候，通过async启动了两个协程，我们这里叫async1和as
 最大线程数取值(1 shl BLOCKING_SHIFT) - 2：最终得到的值是2^21-2 = 2097150。
 非核心线程空闲时间是60s。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;结论：Dispatchers.IO创建的最大的线程个数为:Math.max(64,cpu核数)&lt;/p&gt;
+&lt;p&gt;结论：Dispatchers.IO指定的线程池最少线程数是cpu的核数，最大线程数是64个。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h2 id=&#34;dispatchersdefault&#34;&gt;Dispatchers.Default
-&lt;/h2&gt;&lt;p&gt;它是由DefaultScheduler构建的线程池，它所创建的最大的线程个数为:Math.max(2,cpu核数)&lt;/p&gt;
+&lt;/h2&gt;&lt;p&gt;它是由DefaultScheduler构建的线程池，它所创建的最大的线程个数为:Math.max(2,cpu核数)。
+上面两者在源码中主要体现在通过CoroutineScheduler的corePoolSize来控制最大线程数，而上面的Dispatchers.IO的最大64个线程其实在LimitedDispatcher中通过runningWorkers的原子类来控制着最大的任务数，当超过64个任务的时候，就不允许往里面添加了。它是通过把任务添加到queue中，如果当前正在执行的任务数小于64个的时候，才会从queue取走最前面的task，如果当前大于正在执行大于64个，则不会从queue中取最前面的task。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Dispatchers.IO和Dispatchers.Default都是由DefaultScheduler构建的，而DefaultScheduler其实是一个单例，因此不难看出它两是共用一个线程池的，只不过当Dispatchers.IO时候，最大线程个数控制在Math.min(64,cpu核数)，最多不会超过64个，Dispatchers.Default控制在cpu核数个数上。Dispatchers.Default常用作cpu密集型的任务，比如图片模糊处理、繁杂的计算型可以用这种类型的线程池。Dispatchers.IO由于它的线程数量多，并且它不能消耗cpu资源，因此常用作io处理，文件读写等操作上。
 关于这点，可以看这篇文章：&lt;a class=&#34;link&#34; href=&#34;https://ntutn.top/posts/dispatcher%E6%8B%86%E8%A7%A3/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
@@ -4827,14 +4828,18 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler&lt;/br&gt;&lt;/p&gt;
 在supervisorScope闭包中launch1发生异常了，由于supervisorScope不会去处理异常，将异常交给了launch1处理，所以launch2中的代码能继续执行。而在coroutineScope中，当launch1发生异常的时候，会将异常交给了coroutineScope，最终导致launch2的协程无法继续执行。&lt;/p&gt;
 &lt;h2 id=&#34;job&#34;&gt;Job
 &lt;/h2&gt;&lt;p&gt;Job实现了CoroutineContext.Element，可以用来取消、启动一个协程，并且和父协程绑定了关系：
-&lt;img src=&#34;https://example.com/Job%e7%bb%93%e6%9e%84%e5%9b%be.png&#34;
-	
-	
-	
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E7%BB%93%E6%9E%84%E5%9B%BE.png&#34;
+	width=&#34;1746&#34;
+	height=&#34;1018&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E7%BB%93%E6%9E%84%E5%9B%BE_hu9519757385094306494.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/Job%E7%9A%84%E7%BB%93%E6%9E%84%E5%9B%BE_hu7976851450813309653.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;Job结构图&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;171&#34;
+		data-flex-basis=&#34;411px&#34;
 	
 &gt;
 它下面有几个关键的子类：
