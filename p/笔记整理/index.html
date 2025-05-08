@@ -311,6 +311,7 @@
         <li><a href="#livedata的一些思考">LiveData的一些思考</a></li>
         <li><a href="#glide缓存">glide缓存</a></li>
         <li><a href="#kotlin中sequence和普通集合的区别">kotlin中Sequence和普通集合的区别</a></li>
+        <li><a href="#kotlin中sequence和集合的stream区别">kotlin中Sequence和集合的Stream区别</a></li>
       </ol>
     </li>
   </ol>
@@ -1986,7 +1987,9 @@ kotlin中的===：如果是对象类型，比较的是内存地址，指向的�
 </span></span><span class="line"><span class="cl">list filter:10
 </span></span></code></pre></td></tr></table>
 </div>
-</div>
+</div><h3 id="kotlin中sequence和集合的stream区别">kotlin中Sequence和集合的Stream区别
+</h3><p>Stream是java1.8之后出的语法，和Sequence一样支持流式和惰性的特点，它在遍历元素的时候也是每个元素都会按顺序经过中间的操作符，不像普通的集合那样每个元素必须先执行完一个操作符，然后才进行下一个操作符。但是Stream只能一次性消费，消费完后，就不能再使用该stream。而Sequence可以多次使用。同时Stream的parallelStream方法支持并发处理，遍历元素的时候，不是按照元素会顺序执行每一个操作符，当数据量大的时候可以考虑使用parallelStream。</p>
+
 </section>
 
 

@@ -3317,19 +3317,19 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 &lt;/blockquote&gt;
 &lt;blockquote&gt;
 &lt;p&gt;异常处理:当第一个job发生异常后，会通知自己的state中的InvokeOnComplete接口，所以job1中收到了runtime exception的信息，它是原始的失败信息。接着会调用到job1的cancelParent逻辑，该方法中会调用到parentHandle的childCancelled逻辑，它是一个ChildHandleNode对象，在它的childCancelled方法中，会触发父job的childCancelled方法，最终会来到父job的cancelImpl方法。该方法里面会去取消子job，是通过遍历state节点，调用里面的每一个ChildHandleNode的invoke方法，在invoke里面会调用到childJob的parentCancelled方法，里面会给每一个job的state设置上JobCancellationException，由于第一个job已经有exception了，也就是原始exception，所以job2和job3会设置上JobCancellationException异常。接着子协程会递归调用notifyHandlers通知子协程发生异常了，直到没有子协程为止。
-当所有的子协程处理完异常后，会调用到自己的CoroutineExceptionHandler的回调。当回调完后，会给自己的state添加异常，防止在resumeWith中往下执行逻辑。其中给state添加异常是通过Finishing.addExceptionLocked添加异常信息。&lt;/p&gt;
+当所有的子协程处理完异常后，会调用到父job的CoroutineExceptionHandler的回调。当回调完后，父job会给自己的state添加异常，防止在resumeWith中往下执行逻辑。其中给state添加异常是通过Finishing.addExceptionLocked添加异常信息。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;blockquote&gt;
-&lt;p&gt;子协程invokeOnCompletion接口回调执行时机？
-在异常处理阶段，父协程会调用到ChildHandleNode中的invoke方法，继而会触发childJob的parentCancelled方法，最终会在notifyHandlers中触发invokeOnCompletion的回调？&lt;/p&gt;
+&lt;p&gt;子协程invokeOnCompletion接口回调执行时机？&lt;/p&gt;
+在异常处理阶段，父协程会调用到ChildHandleNode中的invoke方法，继而会触发childJob的parentCancelled方法，最终会在notifyHandlers中触发invokeOnCompletion的回调。
 &lt;/blockquote&gt;
 &lt;blockquote&gt;
-&lt;p&gt;子协程的job为什么在添加完异常后resumeWith不会被执行？
-在协程job中在执行resumeWith的时候，调用到tryMakeCompleting时，会判断state，如果不是Incomplete状态，则直接返回，不会往下执行。&lt;/p&gt;
+&lt;p&gt;子协程的job为什么在添加完异常后resumeWith不会被执行？&lt;/p&gt;
+在协程job中在执行resumeWith的时候，调用到tryMakeCompleting时，会判断state，如果不是Incomplete状态，则直接返回，不会往下执行。
 &lt;/blockquote&gt;
 &lt;blockquote&gt;
-&lt;p&gt;父协程在cancelImpl的时候除了取消子协程还做了什么？
-在取消完子协程的时候，给第一个child添加了ChildCompletion回调，该回调执行的时候会执行到continueCompleting，最终会回到自己处理异常的逻辑。&lt;/p&gt;
+&lt;p&gt;父协程在cancelImpl的时候除了取消子协程还做了什么？&lt;/p&gt;
+在取消完子协程的时候，给第一个child添加了ChildCompletion回调，该回调执行的时候会执行到continueCompleting，最终会回到自己处理异常的逻辑。
 &lt;/blockquote&gt;
 &lt;h3 id=&#34;案例六&#34;&gt;案例六
 &lt;/h3&gt;&lt;p&gt;把案例五中的Job()换成SupervisorJob()&lt;/p&gt;
@@ -5519,23 +5519,74 @@ minusKey：如果传进来的key和自己相同，则返回EmptyCoroutineContext
 &lt;blockquote&gt;
 &lt;p&gt;整个分析来看，协程中的context如果是多个context拼接的时候如果传进来的是EmptyCoroutineContext，则只保存自己。如果传进来的context的key和当前context的key一样，则会覆盖掉原来的context。如果都不满足，则采用链表的形式插入到原来的context头节点上，如果传进来的是ContinuationInterceptor类型的，则会把该类型放到头节点。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h3 id=&#34;类图&#34;&gt;类图
-&lt;/h3&gt;&lt;p&gt;再来一张本次讲解的context类图：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E7%B1%BB%E5%9B%BE.webp&#34;
-	width=&#34;1084&#34;
-	height=&#34;540&#34;
-	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E7%B1%BB%E5%9B%BE_hu15455108941912633740.webp 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E7%B1%BB%E5%9B%BE_hu14965084907605874504.webp 1024w&#34;
-	loading=&#34;lazy&#34;
-	
-		alt=&#34;协程上下文类图.png&#34;
-	
-	
-		class=&#34;gallery-image&#34; 
-		data-flex-grow=&#34;200&#34;
-		data-flex-basis=&#34;481px&#34;
-	
-&gt;&lt;/p&gt;
-</description>
+&lt;h3 id=&#34;总结&#34;&gt;总结
+&lt;/h3&gt;&lt;p&gt;CoroutineContext是协程重要的对象，它通过重载了plus方法，轻松的将每一个CoroutineContext拼接成一个新的CoroutineContext，一般的CoroutineContext会分为EmptyCoroutineContext，它是直接实现了CoroutineContext接口，可以理解它是没有任何信息的CoroutineContext。而Element是带有key的CoroutineContext，所以如果往CoroutineContext添加一个Element会通过它的key来找到对应的Element，Element下面常见的子类有ContinuationInterceptor，它是我们协程切换线程的CoroutineContext，还有常见的CoroutineExceptionHandler，它是我们协程捕捉异常的CoroutineContext，还有常见的Job，它是我们协程构建结构化的CoroutineContext，还有不常用的CoroutineName，它是用来给协程起名字的CoroutineContext。在通过+(plus)拼接CoroutineContext的时候，如果发现传进来的是EmptyCoroutineContext，则还是返回自己，如果不是EmptyCoroutineContext则会拼接成一个CombinedContext，它是一个链表结构的CoroutineContext，如果在+过程中发现要添加的CoroutineContext已经存在于原有的CoroutineContext中，则会用新的覆盖掉原有的CoroutineContext。但是在CombinedContext中会将ContinuationInterceptor类型的CoroutineContext放到链表的最前面。&lt;/p&gt;
+&lt;p&gt;再来一张本次讲解的context类图：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;28
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;29
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-gdscript3&#34; data-lang=&#34;gdscript3&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;err&#34;&gt;@&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;startuml&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;skin&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;rose&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;interface&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CoroutineContext&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;operator&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fun&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;E&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Element&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;get&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Key&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;E&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;E&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;?&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;fun&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fold&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;initial&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;operation&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Element&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;operator&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fun&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;plus&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;context&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CoroutineContext&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CoroutineContext&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;fun&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;minusKey&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Key&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;*&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CoroutineContext&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;interface&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Key&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;E&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Element&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;interface&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Element&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;implements&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CoroutineContext&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;val&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Key&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;*&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;operator&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fun&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;E&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Element&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;get&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Key&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;E&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;E&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;?&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;fun&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fold&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;initial&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;operation&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Element&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;fun&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;minusKey&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Key&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;*&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CoroutineContext&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;AbstractCoroutineContextElement&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;implements&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Element&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;One&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;extends&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;AbstractCoroutineContextElement&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Two&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;extends&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;AbstractCoroutineContextElement&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Three&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;extends&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;AbstractCoroutineContextElement&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CombinedContext&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;implements&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CoroutineContext&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;val&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;left&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CoroutineContext&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;val&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;element&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Element&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;operator&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fun&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;E&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Element&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;get&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Key&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;E&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;E&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;?&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;fun&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;fold&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;initial&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;operation&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Element&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;R&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;fun&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;minusKey&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;key&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Key&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;*&amp;gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;):&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CoroutineContext&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;EmptyCoroutineContext&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;implements&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CoroutineContext&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;Element&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;up&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-*&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Key&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;err&#34;&gt;@&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;enduml&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;</description>
         </item>
         <item>
         <title>Android 协程启动到执行</title>
@@ -5821,8 +5872,11 @@ minusKey：如果传进来的key和自己相同，则返回EmptyCoroutineContext
 &lt;blockquote&gt;
 &lt;p&gt;可以看到执行SafeContinuation的resumeWith的时候是一个while(true)，传入的this.resume是一个COROUTINE_SUSPENDED标志位，所以会把CoroutineActivity$onCreate$1的resumeWith执行完后，才跳出while循环。因此日志最后输出协成外的代码。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h3 id=&#34;类图总结&#34;&gt;类图总结
-&lt;/h3&gt;&lt;p&gt;最后输出此次的类图结构，以作回顾：&lt;/p&gt;
+&lt;h3 id=&#34;总结&#34;&gt;总结
+&lt;/h3&gt;&lt;h4 id=&#34;过程&#34;&gt;过程
+&lt;/h4&gt;&lt;p&gt;协程分为创建和执行，在创建过程中首先会创建一个SuspendLambda的子类，但是该子类它的completion(Continuation)是空的，然后在createCoroutineUnintercepted方法中会调用到该SuspendLambda的子类的create方法，在create方法里面会再次创建一个SuspendLambda的子类，此时SuspendLambda的子类中completion(Continuation)是非空的，指向了createCoroutine方法传入的Continuation内部类。接着来到了执行阶段，执行是调用了SuspendLambda的子类的resume方法，它会执行resumeWith方法。在resumeWith中会调用到invokeSuspend方法，而invokeSuspend中的代码实际是suspend代码块中的代码，所以suspend代码块中的代码最先执行。执行完invokeSuspend后会执行completion的resumeWith方法，所以createCoroutine方法传入的Continuation内部类的resumeWith被执行。而为什么主线程在最后才执行呢？这是因为在创建协程的时候实际包装了一个SafeContinuation对象，在它的resumeWith里面会启动while(true)循环，等到执行完deletate(也就是SuspendLambda的子类)的resumeWith后才会退出while(true)循环，所以最后才会执行主线程后面的代码。&lt;/p&gt;
+&lt;h4 id=&#34;类图&#34;&gt;类图
+&lt;/h4&gt;&lt;p&gt;最后输出此次的类图结构，以作回顾：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E7%B1%BB%E5%9B%BE.png&#34;
 	width=&#34;737&#34;
 	height=&#34;788&#34;
