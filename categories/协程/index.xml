@@ -2463,8 +2463,9 @@ AbstractCoroutine的afterCompletion：
 此处将receiver传到create中没有用到，所以其实跟单参没有什么区别啊。&lt;/p&gt;
 &lt;h2 id=&#34;总结&#34;&gt;总结
 &lt;/h2&gt;&lt;blockquote&gt;
-&lt;p&gt;结论：协程在启动过程中会取CoroutineContext中的ContinuationInterceptor，然后执行interceptContinuation。而此时如果是一个Dispatchers.IO，它又是继承自CoroutineDispatcher，所以会执行到了CoroutineDispatcher的interceptContinuation。此时得到的是一个DispatchedContinuation对象，并把当前的CoroutineDispatcher和协程启动过程中创建的StandaloneCoroutine传给了。接着会执行DispatchedContinuation的resumeCancellableWith方法，在该方法里面会判断CoroutineDispatcher.isDispatchNeeded，如果是的话，会调用CoroutineDispatcher的dispatch方法，最终会通过线程池会执行到DispatchedContinuation的run方法，因为它是一个Runnable对象。在run方法里面，会执行continuation的resume方法，而此处的continuation是编译器给我们创建的SuspendLambda的子类，最终会执行它的invokeSuspend方法。执行完后会执行协程启动过程中的StandaloneCoroutine的resumeWith方法。&lt;/br&gt;
-时序图:
+&lt;p&gt;结论：协程在启动过程中会取CoroutineContext中的ContinuationInterceptor，然后执行interceptContinuation。而此时如果是一个Dispatchers.IO，它又是继承自CoroutineDispatcher，所以会执行到了CoroutineDispatcher的interceptContinuation。此时得到的是一个DispatchedContinuation对象，并把当前的CoroutineDispatcher和协程启动过程中创建的StandaloneCoroutine传给了DispatchedContinuation。接着会执行DispatchedContinuation的resumeCancellableWith方法，在该方法里面会判断CoroutineDispatcher.isDispatchNeeded，如果是的话，会调用CoroutineDispatcher的dispatch方法，最终会通过线程池会执行到DispatchedContinuation的run方法，因为它是一个Runnable对象。在run方法里面，会执行continuation的resume方法，而此处的continuation是编译器给我们创建的SuspendLambda的子类，最终会执行它的invokeSuspend方法。执行完后会执行协程启动过程中的StandaloneCoroutine的resumeWith方法。&lt;/br&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;时序图:
 &lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E5%8D%8F%E7%A8%8B%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%97%B6%E5%BA%8F%E5%9B%BE.png&#34;
 	width=&#34;1862&#34;
 	height=&#34;1347&#34;
@@ -2479,7 +2480,6 @@ AbstractCoroutine的afterCompletion：
 		data-flex-basis=&#34;331px&#34;
 	
 &gt;&lt;/p&gt;
-&lt;/blockquote&gt;
 </description>
         </item>
         <item>
