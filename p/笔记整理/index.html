@@ -566,7 +566,7 @@
 </ol>
 <h3 id="协程是怎么挂起的怎么恢复的">协程是怎么挂起的？怎么恢复的？
 </h3><ol>
-<li>首先每一个协程代码块都会被编译成SuspendLambda对象，它也是一个Continuation对象，每次在执行到SuspendLambda的resume时候，都会去执行invokeSuspend方法，而该方法里面会去执行子协程，如果子协程返回SUSPEND_COROUTINE状态的时候，父协程的resume方法会直接return了。当子协程执行完后，会通知父协程，此时父协程的的invokeSuspend方法再次被执行，而此时的状态机会发生变化，如果此时状态恢复后，会执行父协程中的Continuation，也就是父父协程的执行。</li>
+<li>首先每一个协程代码块都会被编译成SuspendLambda对象，它也是一个Continuation对象，每次在执行到SuspendLambda的resume时候，都会去执行invokeSuspend方法，而该方法里面会去执行子协程，如果子协程返回<strong>COROUTINE_SUSPENDED</strong>状态的时候，父协程的resume方法会直接return了。当子协程执行完后，会通知父协程，此时父协程的的invokeSuspend方法再次被执行，而此时的状态机会发生变化，如果此时状态恢复后，会执行父协程中的Continuation，也就是父父协程的执行。</li>
 </ol>
 <h3 id="协程中的dispather是怎么指定在哪个线程上执行的">协程中的dispather是怎么指定在哪个线程上执行的？
 </h3><p>首先dispather它是CoroutineContext（上下文）的一部分，在协程启动过程中，会取CoroutineContext中的CoroutineDispathcer部分。此时会构造一个DispathedContinuation对象，并把前面取到的Dispather传到DispathedContinuation中，此时会将DispathedContinuation扔到线程池中，最终会执行DispathedContinuation的run方法，在run里面会执行到SuspendLambda，也就是协程的代码块，最终会执行它的invokeSuspend方法。所以协程代码块中代码要执行在哪个线程是协程上下文的dispather部分指定的线程。

@@ -517,12 +517,12 @@ StandaloneCoroutine继承自AbstractCoroutine：
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">private class InvokeOnCompletion(
-</span></span><span class="line"><span class="cl">    private val handler: CompletionHandler
-</span></span><span class="line"><span class="cl">) : JobNode()  {
-</span></span><span class="line"><span class="cl">    override fun invoke(cause: Throwable?) = handler.invoke(cause)
-</span></span><span class="line"><span class="cl">}
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">class</span> <span class="nf">InvokeOnCompletion</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">handler</span><span class="p">:</span><span class="w"> </span><span class="n">CompletionHandler</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">JobNode</span><span class="p">()</span><span class="w">  </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">invoke</span><span class="p">(</span><span class="n">cause</span><span class="p">:</span><span class="w"> </span><span class="n">Throwable</span><span class="o">?</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">handler</span><span class="p">.</span><span class="na">invoke</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>InvokeOnCompletion是一个JobNode节点：</p>
 <div class="highlight"><div class="chroma">
@@ -539,17 +539,17 @@ StandaloneCoroutine继承自AbstractCoroutine：
 </span><span class="lnt">10
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">internal</span> <span class="n">abstract</span> <span class="k">class</span> <span class="n">JobNode</span> <span class="p">:</span> <span class="n">CompletionHandlerBase</span><span class="p">(),</span> <span class="n">DisposableHandle</span><span class="p">,</span> <span class="n">Incomplete</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="o">/**</span>
-</span></span><span class="line"><span class="cl">     <span class="o">*</span> <span class="n">Initialized</span> <span class="n">by</span> <span class="p">[</span><span class="n">JobSupport</span><span class="o">.</span><span class="n">makeNode</span><span class="p">]</span><span class="o">.</span>
-</span></span><span class="line"><span class="cl">     <span class="o">*/</span>
-</span></span><span class="line"><span class="cl">    <span class="n">lateinit</span> <span class="k">var</span> <span class="n">job</span><span class="p">:</span> <span class="n">JobSupport</span>
-</span></span><span class="line"><span class="cl">    <span class="n">override</span> <span class="n">val</span> <span class="n">isActive</span><span class="p">:</span> <span class="n">Boolean</span> <span class="n">get</span><span class="p">()</span> <span class="o">=</span> <span class="bp">true</span>
-</span></span><span class="line"><span class="cl">    <span class="n">override</span> <span class="n">val</span> <span class="n">list</span><span class="p">:</span> <span class="n">NodeList</span><span class="err">?</span> <span class="n">get</span><span class="p">()</span> <span class="o">=</span> <span class="n">null</span>
-</span></span><span class="line"><span class="cl">    <span class="n">override</span> <span class="n">fun</span> <span class="n">dispose</span><span class="p">()</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">removeNode</span><span class="p">(</span><span class="n">this</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="n">override</span> <span class="n">fun</span> <span class="n">toString</span><span class="p">()</span> <span class="o">=</span> <span class="s2">&#34;$classSimpleName@$hexAddress[job@${job.hexAddress}]&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">internal</span><span class="w"> </span><span class="kd">abstract</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JobNode</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">CompletionHandlerBase</span><span class="p">(),</span><span class="w"> </span><span class="n">DisposableHandle</span><span class="p">,</span><span class="w"> </span><span class="n">Incomplete</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Initialized by [JobSupport.makeNode].
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">lateinit</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="n">job</span><span class="p">:</span><span class="w"> </span><span class="n">JobSupport</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">isActive</span><span class="p">:</span><span class="w"> </span><span class="n">Boolean</span><span class="w"> </span><span class="nf">get</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">list</span><span class="p">:</span><span class="w"> </span><span class="n">NodeList</span><span class="o">?</span><span class="w"> </span><span class="n">get</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">dispose</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">job</span><span class="p">.</span><span class="na">removeNode</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">toString</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;$classSimpleName@$hexAddress[job@${job.hexAddress}]&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>JobNode实现了CompletionHandlerBase抽象类：</p>
 <div class="highlight"><div class="chroma">
@@ -559,10 +559,10 @@ StandaloneCoroutine继承自AbstractCoroutine：
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">internal</span> <span class="n">actual</span> <span class="n">abstract</span> <span class="k">class</span> <span class="n">CompletionHandlerBase</span> <span class="n">actual</span> <span class="n">constructor</span><span class="p">()</span> <span class="p">:</span> <span class="n">LockFreeLinkedListNode</span><span class="p">(),</span> <span class="n">CompletionHandler</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="n">actual</span> <span class="n">abstract</span> <span class="n">override</span> <span class="n">fun</span> <span class="n">invoke</span><span class="p">(</span><span class="n">cause</span><span class="p">:</span> <span class="n">Throwable</span><span class="err">?</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">internal</span><span class="w"> </span><span class="n">actual</span><span class="w"> </span><span class="kd">abstract</span><span class="w"> </span><span class="kd">class</span> <span class="nc">CompletionHandlerBase</span><span class="w"> </span><span class="n">actual</span><span class="w"> </span><span class="nf">constructor</span><span class="p">()</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">LockFreeLinkedListNode</span><span class="p">(),</span><span class="w"> </span><span class="n">CompletionHandler</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">actual</span><span class="w"> </span><span class="kd">abstract</span><span class="w"> </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">invoke</span><span class="p">(</span><span class="n">cause</span><span class="p">:</span><span class="w"> </span><span class="n">Throwable</span><span class="o">?</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>它也是实现了CompletionHandler接口，CompletionHandler是一个闭包，从上面继承以及JobNode实现来看，在它的invoke实现里面，会触发传进来的CompletionHandler的invoke实现，从实现来看其实这就是个静态代理的模式。</p>
 <blockquote>
@@ -585,12 +585,12 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 </span><span class="lnt">5
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">public final override fun resumeWith(result: Result&lt;T&gt;) {
-</span></span><span class="line"><span class="cl">    val state = makeCompletingOnce(result.toState())
-</span></span><span class="line"><span class="cl">    if (state === COMPLETING_WAITING_CHILDREN) return
-</span></span><span class="line"><span class="cl">    afterResume(state)
-</span></span><span class="line"><span class="cl">}
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">resumeWith</span><span class="p">(</span><span class="n">result</span><span class="p">:</span><span class="w"> </span><span class="n">Result</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makeCompletingOnce</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="na">toState</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">state</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="n">COMPLETING_WAITING_CHILDREN</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">afterResume</span><span class="p">(</span><span class="n">state</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>将协程体的结果传到了makeCompletingOnce方法中：</p>
 <div class="highlight"><div class="chroma">
@@ -611,21 +611,21 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 </span><span class="lnt">14
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">internal fun makeCompletingOnce(proposedUpdate: Any?): Any? {
-</span></span><span class="line"><span class="cl">    loopOnState { state -&gt;
-</span></span><span class="line"><span class="cl">        val finalState = tryMakeCompleting(state, proposedUpdate)
-</span></span><span class="line"><span class="cl">        when {
-</span></span><span class="line"><span class="cl">            finalState === COMPLETING_ALREADY -&gt;
-</span></span><span class="line"><span class="cl">                throw IllegalStateException(
-</span></span><span class="line"><span class="cl">                    &#34;Job $this is already complete or completing, &#34; +
-</span></span><span class="line"><span class="cl">                        &#34;but is being completed with $proposedUpdate&#34;, proposedUpdate.exceptionOrNull
-</span></span><span class="line"><span class="cl">                )
-</span></span><span class="line"><span class="cl">            finalState === COMPLETING_RETRY -&gt; return@loopOnState
-</span></span><span class="line"><span class="cl">            else -&gt; return finalState // COMPLETING_WAITING_CHILDREN or final state
-</span></span><span class="line"><span class="cl">        }
-</span></span><span class="line"><span class="cl">    }
-</span></span><span class="line"><span class="cl">}
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">internal</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">makeCompletingOnce</span><span class="p">(</span><span class="n">proposedUpdate</span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">?</span><span class="p">):</span><span class="w"> </span><span class="n">Any</span><span class="o">?</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">loopOnState</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">val</span><span class="w"> </span><span class="n">finalState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tryMakeCompleting</span><span class="p">(</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">proposedUpdate</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">when</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">finalState</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="n">COMPLETING_ALREADY</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">throw</span><span class="w"> </span><span class="n">IllegalStateException</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="s">&#34;Job $this is already complete or completing, &#34;</span><span class="w"> </span><span class="o">+</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="s">&#34;but is being completed with $proposedUpdate&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">proposedUpdate</span><span class="p">.</span><span class="na">exceptionOrNull</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">finalState</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="n">COMPLETING_RETRY</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">return</span><span class="nd">@loopOnState</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">finalState</span><span class="w"> </span><span class="c1">// COMPLETING_WAITING_CHILDREN or final state</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>轮训获取state，并调用了tryMakeCompleting方法：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryMakeCompleting%E5%AE%9E%E7%8E%B0.png"
@@ -688,33 +688,33 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 </span><span class="lnt">26
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">private</span> <span class="n">fun</span> <span class="n">completeStateFinalization</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">Incomplete</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">Any</span><span class="err">?</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="o">/*</span>
-</span></span><span class="line"><span class="cl">     <span class="o">*</span> <span class="n">Now</span> <span class="n">the</span> <span class="n">job</span> <span class="ow">in</span> <span class="n">THE</span> <span class="n">FINAL</span> <span class="n">state</span><span class="o">.</span> <span class="n">We</span> <span class="n">need</span> <span class="n">to</span> <span class="n">properly</span> <span class="n">handle</span> <span class="n">the</span> <span class="n">resulting</span> <span class="n">state</span><span class="o">.</span>
-</span></span><span class="line"><span class="cl">     <span class="o">*</span> <span class="n">Order</span> <span class="n">of</span> <span class="n">various</span> <span class="n">invocations</span> <span class="n">here</span> <span class="n">is</span> <span class="n">important</span><span class="o">.</span>
-</span></span><span class="line"><span class="cl">     <span class="o">*</span>
-</span></span><span class="line"><span class="cl">     <span class="o">*</span> <span class="mi">1</span><span class="p">)</span> <span class="n">Unregister</span> <span class="n">from</span> <span class="n">parent</span> <span class="n">job</span><span class="o">.</span>
-</span></span><span class="line"><span class="cl">     <span class="o">*/</span>
-</span></span><span class="line"><span class="cl">    <span class="n">parentHandle</span><span class="err">?</span><span class="o">.</span><span class="n">let</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">it</span><span class="o">.</span><span class="n">dispose</span><span class="p">()</span> <span class="o">//</span> <span class="n">volatile</span> <span class="n">read</span> <span class="n">parentHandle</span> <span class="n">_after_</span> <span class="n">state</span> <span class="n">was</span> <span class="n">updated</span>
-</span></span><span class="line"><span class="cl">        <span class="n">parentHandle</span> <span class="o">=</span> <span class="n">NonDisposableHandle</span> <span class="o">//</span> <span class="n">release</span> <span class="n">it</span> <span class="n">just</span> <span class="ow">in</span> <span class="k">case</span><span class="p">,</span> <span class="n">to</span> <span class="n">aid</span> <span class="n">GC</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="n">val</span> <span class="n">cause</span> <span class="o">=</span> <span class="p">(</span><span class="n">update</span> <span class="n">as</span><span class="err">?</span> <span class="n">CompletedExceptionally</span><span class="p">)</span><span class="err">?</span><span class="o">.</span><span class="n">cause</span>
-</span></span><span class="line"><span class="cl">    <span class="o">/*</span>
-</span></span><span class="line"><span class="cl">     <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="n">Invoke</span> <span class="n">completion</span> <span class="n">handlers</span><span class="p">:</span> <span class="o">.</span><span class="n">join</span><span class="p">(),</span> <span class="n">callbacks</span> <span class="n">etc</span><span class="o">.</span>
-</span></span><span class="line"><span class="cl">     <span class="o">*</span>    <span class="n">It</span><span class="s1">&#39;s important to invoke them only AFTER exception handling and everything else, see #208</span>
-</span></span><span class="line"><span class="cl">     <span class="o">*/</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">state</span> <span class="n">is</span> <span class="n">JobNode</span><span class="p">)</span> <span class="p">{</span> <span class="o">//</span> <span class="n">SINGLE</span><span class="o">/</span><span class="n">SINGLE</span><span class="o">+</span> <span class="n">state</span> <span class="o">--</span> <span class="n">one</span> <span class="n">completion</span> <span class="n">handler</span> <span class="p">(</span><span class="n">common</span> <span class="k">case</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="n">try</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">state</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="n">catch</span> <span class="p">(</span><span class="n">ex</span><span class="p">:</span> <span class="n">Throwable</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="n">handleOnCompletionException</span><span class="p">(</span><span class="n">CompletionHandlerException</span><span class="p">(</span><span class="s2">&#34;Exception in completion handler $state for $this&#34;</span><span class="p">,</span> <span class="n">ex</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="n">state</span><span class="o">.</span><span class="n">list</span><span class="err">?</span><span class="o">.</span><span class="n">notifyCompletion</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">completeStateFinalization</span><span class="p">(</span><span class="n">state</span><span class="p">:</span><span class="w"> </span><span class="n">Incomplete</span><span class="p">,</span><span class="w"> </span><span class="n">update</span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">?</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Now the job in THE FINAL state. We need to properly handle the resulting state.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * Order of various invocations here is important.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * 1) Unregister from parent job.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">parentHandle</span><span class="o">?</span><span class="p">.</span><span class="na">let</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">it</span><span class="p">.</span><span class="na">dispose</span><span class="p">()</span><span class="w"> </span><span class="c1">// volatile read parentHandle _after_ state was updated</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">parentHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NonDisposableHandle</span><span class="w"> </span><span class="c1">// release it just in case, to aid GC</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">cause</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">update</span><span class="w"> </span><span class="n">as</span><span class="o">?</span><span class="w"> </span><span class="n">CompletedExceptionally</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="na">cause</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * 2) Invoke completion handlers: .join(), callbacks etc.
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *    It&#39;s important to invoke them only AFTER exception handling and everything else, see #208
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">state</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">JobNode</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// SINGLE/SINGLE+ state -- one completion handler (common case)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">state</span><span class="p">.</span><span class="na">invoke</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">ex</span><span class="p">:</span><span class="w"> </span><span class="n">Throwable</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">handleOnCompletionException</span><span class="p">(</span><span class="n">CompletionHandlerException</span><span class="p">(</span><span class="s">&#34;Exception in completion handler $state for $this&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">ex</span><span class="p">))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">state</span><span class="p">.</span><span class="na">list</span><span class="o">?</span><span class="p">.</span><span class="na">notifyCompletion</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>该方法中判断state是否是JobNode，如果是的话，会调用invoke方法。在上面分析过state是一个InvokeOnCompletion对象，在它的invoke里面会回调到传进来的CompletionHandler的invoke中，所以在上面例子中打印了job执行完成的日志。</p>
 <h3 id="invokeoncompletion监听job的异常">invokeOnCompletion监听job的异常
@@ -735,19 +735,19 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 </span><span class="lnt">12
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">private fun demo3(){
-</span></span><span class="line"><span class="cl">    val exceptionHandler =CoroutineExceptionHandler{ coroutineContext, throwable -&gt;
-</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;demo3: CoroutineExceptionHandler--异常信息：${throwable?.message}&#34;)
-</span></span><span class="line"><span class="cl">    }
-</span></span><span class="line"><span class="cl">    val job = GlobalScope.launch(exceptionHandler) {
-</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;demo3: launch代码&#34;)
-</span></span><span class="line"><span class="cl">        throw RuntimeException(&#34;协程体里面发生异常了&#34;)
-</span></span><span class="line"><span class="cl">    }
-</span></span><span class="line"><span class="cl">    job.invokeOnCompletion {
-</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;demo3: invokeOnCompletion--异常信息：${it?.message}&#34;)
-</span></span><span class="line"><span class="cl">    }
-</span></span><span class="line"><span class="cl">}
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">demo3</span><span class="p">(){</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">exceptionHandler</span><span class="w"> </span><span class="o">=</span><span class="n">CoroutineExceptionHandler</span><span class="p">{</span><span class="w"> </span><span class="n">coroutineContext</span><span class="p">,</span><span class="w"> </span><span class="n">throwable</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;demo3: CoroutineExceptionHandler--异常信息：${throwable?.message}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">job</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GlobalScope</span><span class="p">.</span><span class="na">launch</span><span class="p">(</span><span class="n">exceptionHandler</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;demo3: launch代码&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">RuntimeException</span><span class="p">(</span><span class="s">&#34;协程体里面发生异常了&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">job</span><span class="p">.</span><span class="na">invokeOnCompletion</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;demo3: invokeOnCompletion--异常信息：${it?.message}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此处用了一个CoroutineExceptionHandler方法，来创建CoroutineExceptionHandler对象来拦截异常的，这块先不用管，我们看下日志：</p>
 <div class="highlight"><div class="chroma">
@@ -757,10 +757,10 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">com.example.coroutinescopedemo       D  demo3: launch代码
-</span></span><span class="line"><span class="cl">com.example.coroutinescopedemo       D  demo3: CoroutineExceptionHandler--异常信息：协程体里面发生异常了
-</span></span><span class="line"><span class="cl">com.example.coroutinescopedemo       D  demo3: invokeOnCompletion--异常信息：协程体里面发生异常了
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">com</span><span class="p">.</span><span class="na">example</span><span class="p">.</span><span class="na">coroutinescopedemo</span><span class="w">       </span><span class="n">D</span><span class="w">  </span><span class="n">demo3</span><span class="p">:</span><span class="w"> </span><span class="n">launch代码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">com</span><span class="p">.</span><span class="na">example</span><span class="p">.</span><span class="na">coroutinescopedemo</span><span class="w">       </span><span class="n">D</span><span class="w">  </span><span class="n">demo3</span><span class="p">:</span><span class="w"> </span><span class="n">CoroutineExceptionHandler</span><span class="o">--</span><span class="n">异常信息</span><span class="err">：</span><span class="n">协程体里面发生异常了</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">com</span><span class="p">.</span><span class="na">example</span><span class="p">.</span><span class="na">coroutinescopedemo</span><span class="w">       </span><span class="n">D</span><span class="w">  </span><span class="n">demo3</span><span class="p">:</span><span class="w"> </span><span class="n">invokeOnCompletion</span><span class="o">--</span><span class="n">异常信息</span><span class="err">：</span><span class="n">协程体里面发生异常了</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>可以看出来，invokeOnCompletion中也能收到异常的消息。
 但是异常和正常收数据可能不太一样，主要区别是在resumeWith之后的处理不太一样：
@@ -848,23 +848,23 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 </span><span class="lnt">16
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">private fun demo4() {
-</span></span><span class="line"><span class="cl">    val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable -&gt;
-</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;demo4: CoroutineExceptionHandler--异常信息：${throwable?.message}&#34;)
-</span></span><span class="line"><span class="cl">    }
-</span></span><span class="line"><span class="cl">    val job = GlobalScope.launch(exceptionHandler) {
-</span></span><span class="line"><span class="cl">        try {
-</span></span><span class="line"><span class="cl">            Log.d(TAG, &#34;demo4: launch代码&#34;)
-</span></span><span class="line"><span class="cl">            throw RuntimeException(&#34;协程体里面发生异常了&#34;)
-</span></span><span class="line"><span class="cl">        } catch (e: Exception) {
-</span></span><span class="line"><span class="cl">            Log.d(TAG, &#34;demo4: catch中代码&#34;)
-</span></span><span class="line"><span class="cl">        }
-</span></span><span class="line"><span class="cl">    }
-</span></span><span class="line"><span class="cl">    job.invokeOnCompletion {
-</span></span><span class="line"><span class="cl">        Log.d(TAG, &#34;demo4: invokeOnCompletion--异常信息：${it?.message}&#34;)
-</span></span><span class="line"><span class="cl">    }
-</span></span><span class="line"><span class="cl">}
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">demo4</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">exceptionHandler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CoroutineExceptionHandler</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">coroutineContext</span><span class="p">,</span><span class="w"> </span><span class="n">throwable</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;demo4: CoroutineExceptionHandler--异常信息：${throwable?.message}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">job</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GlobalScope</span><span class="p">.</span><span class="na">launch</span><span class="p">(</span><span class="n">exceptionHandler</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;demo4: launch代码&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="n">RuntimeException</span><span class="p">(</span><span class="s">&#34;协程体里面发生异常了&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">:</span><span class="w"> </span><span class="n">Exception</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;demo4: catch中代码&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">job</span><span class="p">.</span><span class="na">invokeOnCompletion</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;demo4: invokeOnCompletion--异常信息：${it?.message}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>日志如下：</p>
 <div class="highlight"><div class="chroma">
@@ -874,10 +874,10 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 </span><span class="lnt">3
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">com.example.coroutinescopedemo       D  demo4: launch代码
-</span></span><span class="line"><span class="cl">com.example.coroutinescopedemo       D  demo4: catch中代码
-</span></span><span class="line"><span class="cl">com.example.coroutinescopedemo       D  demo4: invokeOnCompletion--异常信息：null
-</span></span></code></pre></td></tr></table>
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">com</span><span class="p">.</span><span class="na">example</span><span class="p">.</span><span class="na">coroutinescopedemo</span><span class="w">       </span><span class="n">D</span><span class="w">  </span><span class="n">demo4</span><span class="p">:</span><span class="w"> </span><span class="n">launch代码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">com</span><span class="p">.</span><span class="na">example</span><span class="p">.</span><span class="na">coroutinescopedemo</span><span class="w">       </span><span class="n">D</span><span class="w">  </span><span class="n">demo4</span><span class="p">:</span><span class="w"> </span><span class="n">catch中代码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">com</span><span class="p">.</span><span class="na">example</span><span class="p">.</span><span class="na">coroutinescopedemo</span><span class="w">       </span><span class="n">D</span><span class="w">  </span><span class="n">demo4</span><span class="p">:</span><span class="w"> </span><span class="n">invokeOnCompletion</span><span class="o">--</span><span class="n">异常信息</span><span class="err">：</span><span class="kc">null</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>从日志中看，此处的CoroutineExceptionHandler不回调，并且invokeOnCompletion收不到异常信息。
 我们通过字节码可以看到原因：
@@ -896,6 +896,27 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 	
 >
 此处的异常catch住后，给到JobSupport就不是异常了，所以按照成功的处理方式一样。</p>
+<p>总结：</br>
+job初始化阶段：通过引入invokeOnCompletion方法，来熟悉job如何分发异常，在上面事例中，通过launch启动的协程，它对应的job是StandaloneCoroutine，它的父类是AbstractCoroutine，在它的构造方法里面会调用initParentJob方法，该方法就是构建父job和当前job的关系，由于上面launch启动的协程的父job是空的，因此parentHandle指向了NonDisposableHandle对象。接着当调用了invokeOnCompletion方法的时候，会构造InvokeOnCompletion对象，并把业务方构造的CompletionHandler传到了InvokeOnCompletion对象中，当InvokeOnCompletion对象的invoke被调用的时候，会调用到外界传入的CompletionHandler的invoke方法。InvokeOnCompletion是一个JobNode对象，最终会被添加到job的state上。</br>
+job执行阶段：前面我们分析过SuspendLambda执行完invokeSuspend逻辑后，会接着调用上级continuation的resume方法，通过resumeWith-&gt;makeCompletingOnce-&gt;tryMakeCompleting。</br>
+异常处理：接着会判断是不是异常类型，如果是异常类型，则会触发tryMakeCompletingSlowPath-&gt;finalizeFinishingState-&gt;completeStateFinalization，其中在finalizeFinishingState是job处理异常的关键逻辑，如果cancelParent为false，则表示父job不处理异常，则会调用自己的handleJobException方法，在该方法中看context中是否有CoroutineExceptionHandler，如果有则捕获到异常，将异常分发给CoroutineExceptionHandler。如果没有则将异常往上抛，直到程序崩溃。如果不崩溃会在completeStateFinalization中拿到job的state中的InvokeOnCompletion对象，然后触发外界传入的CompletionHandler。</br>
+非异常处理：如果是非异常在tryMakeCompleting中会走tryFinalizeSimpleState-&gt;completeStateFinalization，最终也会触发到InvokeOnCompletion对象。</p>
+<p>类图：</br>
+<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/InvokeOnComplete%E7%B1%BB%E5%9B%BE.png"
+	width="562"
+	height="441"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/InvokeOnComplete%E7%B1%BB%E5%9B%BE_hu9535848413305546145.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/InvokeOnComplete%E7%B1%BB%E5%9B%BE_hu13975405308500655545.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="127"
+		data-flex-basis="305px"
+	
+></p>
+<p>异常处理流程图：</p>
 
 </section>
 
