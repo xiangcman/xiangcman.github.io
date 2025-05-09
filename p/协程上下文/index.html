@@ -367,7 +367,7 @@
 
 
                 <time class="article-time--reading">
-                    3 minute read
+                    2 minute read
                 </time>
             </div>
         
@@ -670,71 +670,21 @@ minusKey：如果传进来的key和自己相同，则返回EmptyCoroutineContext
 <h3 id="总结">总结
 </h3><p>CoroutineContext是协程重要的对象，它通过重载了plus方法，轻松的将每一个CoroutineContext拼接成一个新的CoroutineContext，一般的CoroutineContext会分为EmptyCoroutineContext，它是直接实现了CoroutineContext接口，可以理解它是没有任何信息的CoroutineContext。而Element是带有key的CoroutineContext，所以如果往CoroutineContext添加一个Element会通过它的key来找到对应的Element，Element下面常见的子类有ContinuationInterceptor，它是我们协程切换线程的CoroutineContext，还有常见的CoroutineExceptionHandler，它是我们协程捕捉异常的CoroutineContext，还有常见的Job，它是我们协程构建结构化的CoroutineContext，还有不常用的CoroutineName，它是用来给协程起名字的CoroutineContext。在通过+(plus)拼接CoroutineContext的时候，如果发现传进来的是EmptyCoroutineContext，则还是返回自己，如果不是EmptyCoroutineContext则会拼接成一个CombinedContext，它是一个链表结构的CoroutineContext，如果在+过程中发现要添加的CoroutineContext已经存在于原有的CoroutineContext中，则会用新的覆盖掉原有的CoroutineContext。但是在CombinedContext中会将ContinuationInterceptor类型的CoroutineContext放到链表的最前面。</p>
 <p>再来一张本次讲解的context类图：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
-</span><span class="lnt">15
-</span><span class="lnt">16
-</span><span class="lnt">17
-</span><span class="lnt">18
-</span><span class="lnt">19
-</span><span class="lnt">20
-</span><span class="lnt">21
-</span><span class="lnt">22
-</span><span class="lnt">23
-</span><span class="lnt">24
-</span><span class="lnt">25
-</span><span class="lnt">26
-</span><span class="lnt">27
-</span><span class="lnt">28
-</span><span class="lnt">29
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="err">@</span><span class="n">startuml</span>
-</span></span><span class="line"><span class="cl"><span class="n">skin</span> <span class="n">rose</span>
-</span></span><span class="line"><span class="cl"><span class="n">interface</span> <span class="n">CoroutineContext</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="o">+</span><span class="n">operator</span> <span class="n">fun</span> <span class="o">&lt;</span><span class="n">E</span> <span class="p">:</span> <span class="n">Element</span><span class="o">&gt;</span> <span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span><span class="p">):</span> <span class="n">E</span><span class="err">?</span>
-</span></span><span class="line"><span class="cl">    <span class="o">+</span><span class="n">fun</span> <span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span> <span class="n">fold</span><span class="p">(</span><span class="n">initial</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span> <span class="n">operation</span><span class="p">:</span> <span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">):</span> <span class="n">R</span>
-</span></span><span class="line"><span class="cl">    <span class="o">+</span><span class="n">operator</span> <span class="n">fun</span> <span class="n">plus</span><span class="p">(</span><span class="n">context</span><span class="p">:</span> <span class="n">CoroutineContext</span><span class="p">):</span> <span class="n">CoroutineContext</span>
-</span></span><span class="line"><span class="cl">    <span class="o">+</span><span class="n">fun</span> <span class="n">minusKey</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="o">&lt;*&gt;</span><span class="p">):</span> <span class="n">CoroutineContext</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="n">interface</span> <span class="n">Key</span><span class="o">&lt;</span><span class="n">E</span> <span class="p">:</span> <span class="n">Element</span><span class="o">&gt;</span>
-</span></span><span class="line"><span class="cl"><span class="n">interface</span> <span class="n">Element</span> <span class="n">implements</span> <span class="n">CoroutineContext</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="o">+</span><span class="n">val</span> <span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="o">&lt;*&gt;</span>
-</span></span><span class="line"><span class="cl">    <span class="o">+</span><span class="n">operator</span> <span class="n">fun</span> <span class="o">&lt;</span><span class="n">E</span> <span class="p">:</span> <span class="n">Element</span><span class="o">&gt;</span> <span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span><span class="p">):</span> <span class="n">E</span><span class="err">?</span>
-</span></span><span class="line"><span class="cl">    <span class="o">+</span><span class="n">fun</span> <span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span> <span class="n">fold</span><span class="p">(</span><span class="n">initial</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span> <span class="n">operation</span><span class="p">:</span> <span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">):</span> <span class="n">R</span>
-</span></span><span class="line"><span class="cl">    <span class="o">+</span><span class="n">fun</span> <span class="n">minusKey</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="o">&lt;*&gt;</span><span class="p">):</span> <span class="n">CoroutineContext</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="n">AbstractCoroutineContextElement</span> <span class="n">implements</span> <span class="n">Element</span>
-</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="n">One</span> <span class="k">extends</span> <span class="n">AbstractCoroutineContextElement</span>
-</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="n">Two</span> <span class="k">extends</span> <span class="n">AbstractCoroutineContextElement</span>
-</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="n">Three</span> <span class="k">extends</span> <span class="n">AbstractCoroutineContextElement</span>
-</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="n">CombinedContext</span> <span class="n">implements</span> <span class="n">CoroutineContext</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="o">-</span><span class="n">val</span> <span class="n">left</span><span class="p">:</span> <span class="n">CoroutineContext</span>
-</span></span><span class="line"><span class="cl">    <span class="o">-</span><span class="n">val</span> <span class="n">element</span><span class="p">:</span> <span class="n">Element</span>
-</span></span><span class="line"><span class="cl">    <span class="o">+</span><span class="n">operator</span> <span class="n">fun</span> <span class="o">&lt;</span><span class="n">E</span> <span class="p">:</span> <span class="n">Element</span><span class="o">&gt;</span> <span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span><span class="p">):</span> <span class="n">E</span><span class="err">?</span>
-</span></span><span class="line"><span class="cl">    <span class="o">+</span><span class="n">fun</span> <span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span> <span class="n">fold</span><span class="p">(</span><span class="n">initial</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span> <span class="n">operation</span><span class="p">:</span> <span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">):</span> <span class="n">R</span>
-</span></span><span class="line"><span class="cl">    <span class="o">+</span><span class="n">fun</span> <span class="n">minusKey</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="n">Key</span><span class="o">&lt;*&gt;</span><span class="p">):</span> <span class="n">CoroutineContext</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="n">EmptyCoroutineContext</span> <span class="n">implements</span> <span class="n">CoroutineContext</span>
-</span></span><span class="line"><span class="cl"><span class="n">Element</span><span class="o">-</span><span class="n">up</span><span class="o">-*</span><span class="n">Key</span>
-</span></span><span class="line"><span class="cl"><span class="err">@</span><span class="n">enduml</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div>
+<p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87%E7%B1%BB%E5%9B%BE.png"
+	width="1084"
+	height="540"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87%E7%B1%BB%E5%9B%BE_hu1256400247447582419.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87/%E5%8D%8F%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87%E7%B1%BB%E5%9B%BE_hu13016459544377082087.png 1024w"
+	loading="lazy"
+	
+		alt="协程上下文类图.png"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="200"
+		data-flex-basis="481px"
+	
+></p>
+
 </section>
 
 
