@@ -291,6 +291,8 @@
       <ol>
         <li><a href="#invokeoncompletion监听协程状态">invokeOnCompletion监听协程状态</a></li>
         <li><a href="#invokeoncompletion监听job的异常">invokeOnCompletion监听job的异常</a></li>
+        <li><a href="#invokeoncompletion类图">InvokeOnCompletion类图</a></li>
+        <li><a href="#异常处理流程图">异常处理流程图</a></li>
       </ol>
     </li>
   </ol>
@@ -901,8 +903,8 @@ job初始化阶段：通过引入invokeOnCompletion方法，来熟悉job如何�
 job执行阶段：前面我们分析过SuspendLambda执行完invokeSuspend逻辑后，会接着调用上级continuation的resume方法，通过resumeWith-&gt;makeCompletingOnce-&gt;tryMakeCompleting。</br>
 异常处理：接着会判断是不是异常类型，如果是异常类型，则会触发tryMakeCompletingSlowPath-&gt;finalizeFinishingState-&gt;completeStateFinalization，其中在finalizeFinishingState是job处理异常的关键逻辑，如果cancelParent为false，则表示父job不处理异常，则会调用自己的handleJobException方法，在该方法中看context中是否有CoroutineExceptionHandler，如果有则捕获到异常，将异常分发给CoroutineExceptionHandler。如果没有则将异常往上抛，直到程序崩溃。如果不崩溃会在completeStateFinalization中拿到job的state中的InvokeOnCompletion对象，然后触发外界传入的CompletionHandler。</br>
 非异常处理：如果是非异常在tryMakeCompleting中会走tryFinalizeSimpleState-&gt;completeStateFinalization，最终也会触发到InvokeOnCompletion对象。</p>
-<p>类图：</br>
-<img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/InvokeOnComplete%E7%B1%BB%E5%9B%BE.png"
+<h3 id="invokeoncompletion类图">InvokeOnCompletion类图
+</h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/InvokeOnComplete%E7%B1%BB%E5%9B%BE.png"
 	width="562"
 	height="441"
 	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/InvokeOnComplete%E7%B1%BB%E5%9B%BE_hu9535848413305546145.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/InvokeOnComplete%E7%B1%BB%E5%9B%BE_hu13975405308500655545.png 1024w"
@@ -916,7 +918,21 @@ job执行阶段：前面我们分析过SuspendLambda执行完invokeSuspend逻辑
 		data-flex-basis="305px"
 	
 ></p>
-<p>异常处理流程图：</p>
+<h3 id="异常处理流程图">异常处理流程图
+</h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B%E5%9B%BE.png"
+	width="1053"
+	height="1199"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B%E5%9B%BE_hu5505238035289390703.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B%E5%9B%BE_hu1145456136157972617.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="87"
+		data-flex-basis="210px"
+	
+></p>
 
 </section>
 
