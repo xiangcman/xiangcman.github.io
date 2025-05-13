@@ -300,7 +300,8 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
         <pubDate>Tue, 17 Dec 2024 00:00:00 +0000</pubDate>
         
         <guid>https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/</guid>
-        <description>&lt;img src="https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cover.jpg" alt="Featured image of post 协程中子协程异常处理" /&gt;&lt;h3 id=&#34;案例一&#34;&gt;案例一
+        <description>&lt;img src="https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cover.jpg" alt="Featured image of post 协程中子协程异常处理" /&gt;&lt;p&gt;本文通过案例来熟悉子协程到父协程之间的异常是如何处理的。&lt;/p&gt;
+&lt;h3 id=&#34;案例一子协程异常父协程handler捕捉&#34;&gt;案例一：子协程异常，父协程handler捕捉
 &lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
@@ -319,21 +320,21 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
 &lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
 &lt;td class=&#34;lntd&#34;&gt;
-&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;private fun demo1() {
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    val handler = CoroutineExceptionHandler { coroutineContext, throwable -&amp;gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        Log.d(TAG, &amp;#34;onCreate: CoroutineExceptionHandler:${throwable.message}&amp;#34;)
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    }
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    GlobalScope.launch(handler) {
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        Log.d(TAG, &amp;#34;onCreate: parentJob start&amp;#34;)
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        withContext(Dispatchers.IO) {
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            throw RuntimeException(&amp;#34;runtime exception&amp;#34;)
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            delay(1000)
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            Log.d(TAG, &amp;#34;onCreate: withContext end&amp;#34;)
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        }
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        Log.d(TAG, &amp;#34;onCreate: parentJob end&amp;#34;)
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    }
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;}
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;fun&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;demo1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;val&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;handler&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;CoroutineExceptionHandler&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;coroutineContext&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;throwable&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;d&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TAG&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;onCreate: CoroutineExceptionHandler:${throwable.message}&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;GlobalScope&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;launch&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;handler&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;d&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TAG&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;onCreate: parentJob start&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;withContext&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Dispatchers&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;IO&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;            &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;throw&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;RuntimeException&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;runtime exception&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;            &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;delay&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;1000&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;            &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;d&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TAG&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;onCreate: withContext end&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;d&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TAG&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;onCreate: parentJob end&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;先上日志：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
@@ -346,9 +347,9 @@ launch启动的时候，内部的协程代码块编译结果是SuspendCoroutineA
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;com.example.coroutinescopedemo       D  onCreate: CoroutineExceptionHandler:withContext runtime exception
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;异常能被launch指定的handler所捕捉。
+&lt;/div&gt;&lt;p&gt;结论：异常能被launch指定的handler所捕捉。&lt;br&gt;
 分析：
-launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withContext启动的协程对应的coroutineScope是一个DispatchedCoroutine。
+launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withContext启动的协程对应的coroutineScope是一个DispatchedCoroutine（因为父context和子context的dispatcher不一样，所以创建的是DispatchedCoroutine）。
 在withContext中发生异常的时候，首先会回调到DispatchedCoroutine的resumeWith，最终会走到finalizeFinishingState方法，该方法里面会判断是否存在异常，如果有异常会调用cancelParent方法：&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E5%88%A4%E6%96%AD%E5%BC%82%E5%B8%B8%E7%9A%84%E9%80%BB%E8%BE%91.png&#34;
 	width=&#34;1860&#34;
@@ -379,12 +380,12 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 	
 &gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;可以看到如果isScopedCoroutine为true的时候，cancelParent直接返回true，如果返回true，那么就不触发自己的上面的handleJobException，也就是把异常继续往上抛了。例子中也就是launch对应的StandaloneCoroutine。而在StandaloneCoroutine中不会去cancelParent，所以会把异常交给了handleJobException了，所以上面的launch中传入的CoroutineExceptionHandler能捕获到该异常。&lt;/p&gt;
+&lt;p&gt;可以看到如果isScopedCoroutine为true的时候，cancelParent直接返回true，如果返回true，那么就不触发自己的上面的handleJobException，也就是把异常继续往上抛了。例子中也就是launch对应的StandaloneCoroutine。而在StandaloneCoroutine中不会去cancelParent，因为它的parent是null，所以会把异常交给了handleJobException了，所以上面的launch中传入的CoroutineExceptionHandler能捕获到该异常。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;blockquote&gt;
 &lt;p&gt;总结：如果子job中在处理异常的时候，cancelParent中如果isScopedCoroutine为true的时候，则不触发自己的handleJobException，也就是把异常交给了父job，如果父job不处理该异常，则会程序崩溃。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h3 id=&#34;案例二&#34;&gt;案例二
+&lt;h3 id=&#34;案例二子协程异常子协程try-catch捕捉&#34;&gt;案例二：子协程异常，子协程try-catch捕捉
 &lt;/h3&gt;&lt;p&gt;上面代码如果把withContext中的异常通过try-catch住，父job就收不到该异常了：
 &lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry-catch%E4%BD%8F%E7%9A%84%E4%BE%8B%E5%AD%90.png&#34;
 	width=&#34;1700&#34;
@@ -414,8 +415,8 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 		data-flex-basis=&#34;2160px&#34;
 	
 &gt;
-子携程把异常catch住后，父协程的handler捕捉不到异常，并且父协程的invokeOnCompletion收不到异常，并且父协程之后的代码也能正常执行。&lt;/p&gt;
-&lt;h3 id=&#34;案例三&#34;&gt;案例三
+子协程把异常catch住后，父协程的handler捕捉不到异常，并且父协程的invokeOnCompletion收不到异常，父协程之后的代码也能正常执行。因为在子协程对应的SuspendLambda中的invokeSuspend方法给try-catch住，不会把异常往上抛。&lt;/p&gt;
+&lt;h3 id=&#34;案例三子协程的handler无法捕捉&#34;&gt;案例三：子协程的handler无法捕捉
 &lt;/h3&gt;&lt;p&gt;子协程给context传递coroutineExceptionHandler：
 &lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84context%E4%BC%A0%E9%80%92handler%E7%9A%84%E4%BE%8B%E5%AD%90.png&#34;
 	width=&#34;1888&#34;
@@ -449,7 +450,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 &lt;blockquote&gt;
 &lt;p&gt;分析：前面已经分析过withContext开启的协程对应的coroutineScope是一个DispatchedCoroutine重写了isScopedCoroutine=true，如果它为true，cancelParent方法则返回true，那么它自己的handleJobException就不会触发，所以就不会走到自己的CoroutineExceptionHandler回调了。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h3 id=&#34;案例四&#34;&gt;案例四
+&lt;h3 id=&#34;案例四子协程抛cancellationexception父协程无法捕捉&#34;&gt;案例四：子协程抛CancellationException，父协程无法捕捉
 &lt;/h3&gt;&lt;p&gt;当子协程抛的是CancellationException，父协程捕捉不到该异常：
 &lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%8A%9BCancellationException%E5%BC%82%E5%B8%B8%E7%9A%84%E4%BE%8B%E5%AD%90.png&#34;
 	width=&#34;1654&#34;
@@ -480,7 +481,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;此处handler没有捕捉到异常，并且程序也没崩溃，这是因为在子协程把异常回调给父协程后，父协程对应的scope，也就是StandaloneCoroutine在cancelParent中判断是CancelationException，它直接返回true，所以不会调用handleJobException方法，而向外抛异常的正是该方法。所以当子协程抛出CancellationException时候不会使父协程崩溃。&lt;/p&gt;
-&lt;h3 id=&#34;案例五&#34;&gt;案例五
+&lt;h3 id=&#34;案例五子协程抛异常父协程分发到其它子协程&#34;&gt;案例五：子协程抛异常，父协程分发到其它子协程
 &lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
@@ -559,33 +560,50 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
 &lt;td class=&#34;lntd&#34;&gt;
 &lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;com.example.coroutinescopedemo       D  job1 end
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;com.example.coroutinescopedemo       D  handler:runtime exception
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;com.example.coroutinescopedemo       D  job2 invokeOnCompletion:Parent job is Cancelling
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;com.example.coroutinescopedemo       D  job1 invokeOnCompletion:runtime exception
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;com.example.coroutinescopedemo       D  job3 invokeOnCompletion:JobCancellationException
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;com.example.coroutinescopedemo       D  job3 invokeOnCompletion:Parent job is Cancelling
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;com.example.coroutinescopedemo       D  handler:runtime exception
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;com.example.coroutinescopedemo       D  job1 invokeOnCompletion:runtime exception
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;blockquote&gt;
-&lt;p&gt;数据结构:父协程的job启动了三个子协程，在job1中抛出异常，job2和job3收到了JobCancellationException。其中父job是一个JobImpl对象，在每个子协程启动过程中都会创建一个ChildHandleNode对象，其中job指向了父Job，也就是JobImpl，childJob指向了当前子job，也就是StandaloneCoroutine，最后在子Job中通过parentHandle指向了父job，state指向了InvokeOnCompletion(是通过invokeOnCompletion添加的)。父job中通过state指向了一个NodeList，每一个next节点指向了三个子job。&lt;/p&gt;
+&lt;p&gt;数据结构:父协程的job启动了三个子协程，在job1中抛出异常，job2和job3收到了JobCancellationException。其中父job是一个JobImpl对象，在每个子协程启动过程中都会创建一个ChildHandleNode对象，其中job指向了父Job，也就是JobImpl，childJob指向了当前子job，也就是StandaloneCoroutine，最后在子Job中通过parentHandle指向了父job（通过ChildHandleNode的parent指向了父job），state指向了InvokeOnCompletion对象(是通过invokeOnCompletion添加的)。父job中通过state指向了一个NodeList，每一个next节点指向了三个子job（分别都是ChildHandleNode对象）。在三个子job中通过delay实现挂起，在delay的时候，会创建CancellableContinuationImpl，它是用来监听job取消的task，它会通过ChildContinuation进行持有，最后ChildContinuation添加到当前子job的state上，所以目前每一个子job的state上有两个对象，一个是InvokeOnCompletion对象，一个是ChildContinuation，组合成一个NodeList对象。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;blockquote&gt;
-&lt;p&gt;异常处理:当第一个job发生异常后，会通知自己的state中的InvokeOnComplete接口，所以job1中收到了runtime exception的信息，它是原始的失败信息。接着会调用到job1的cancelParent逻辑，该方法中会调用到parentHandle的childCancelled逻辑，它是一个ChildHandleNode对象，在它的childCancelled方法中，会触发父job的childCancelled方法，最终会来到父job的cancelImpl方法。该方法里面会去取消子job，是通过遍历state节点，调用里面的每一个ChildHandleNode的invoke方法，在invoke里面会调用到childJob的parentCancelled方法，里面会给每一个job的state设置上JobCancellationException，由于第一个job已经有exception了，也就是原始exception，所以job2和job3会设置上JobCancellationException异常。接着子协程会递归调用notifyHandlers通知子协程发生异常了，直到没有子协程为止。
-当所有的子协程处理完异常后，会调用到父job的CoroutineExceptionHandler的回调。当回调完后，父job会给自己的state添加异常，防止在resumeWith中往下执行逻辑。其中给state添加异常是通过Finishing.addExceptionLocked添加异常信息。&lt;/p&gt;
+&lt;p&gt;异常处理:当第一个job发生异常后，先将自己的state设置上Finishing状态，并且给Finish添加异常信息，接着会调用到job1的cancelParent逻辑，该方法中会调用到parentHandle的childCancelled逻辑，它是一个ChildHandleNode对象，在它的childCancelled方法中，会触发父job的childCancelled方法，最终会来到父job的cancelImpl方法。在cancelImpl中会触发cancelMakeCompleting-&amp;gt;tryMakeCompleting-&amp;gt;tryMakeCompletingSlowPath，在tryMakeCompletingSlowPath里面也会给父job设置上Finishing状态，同时会触发每一个ChildHandleNode对象的invoke，在invoke里面又会触发childJob的parentCancelled方法。此时又会来到每个子job的cancelImpl方法，在里面会触发makeCancelling方法。由于第一个job的state是Finishing状态，所以会给state添加一个JobCancellationException异常，但是不会覆盖原始异常。在job2和job3触发到cancelImpl方法时候，在makeCancelling里面，由于job2和job3的state是一个Incomplete对象，所以会创建JobCancellationException异常，接着调用了tryMakeCancelling方法，在该方法里面会给job2和job3的state设置上Finishing状态，并且会触发前面创建的ChildContinuation的invoke方法，在ChildContinuation的invoke中会触发CancellableContinuationImpl的parentCancelled方法，在里面最终会触发到SuspnedLambda的resumeWith，最后会触发job2和job3的resume方法，最终会把JobCancellationException异常分发到当前state的InvokeOnCompletion上。分发完子Job的cancelImpl后，继续回到父Job的tryMakeCompletingSlowPath流程中，给当前出现异常的job的state添加一个ChildCompletion对象并结束了tryMakeCompletingSlowPath流程。当job1的cancelParent逻辑都处理完后，也就是在finalizeFinishingState方法中。此时的cancelParent返回false，是因为调用父job的childCancelled时候handlesException变量为false，所以cancelParent方法返回false，那么此时会回调handleJobException方法，回调到CoroutineExceptionHandler，最后给state设置上CompletedExceptionally。接着会触发自己state的NodeList上的JobNode，一个是InvokeOnCompletion，一个是ChildCompletion，在ChildCompletion中会触发父job的continueCompleting方法，在该方法中会触发finalizeFinishingState逻辑，在该方法里面会将异常给到CoroutineExceptionHandler处理，但是此时的父job（JobImpl）没有重写handleJobException方法，所以不会分发到CoroutineExceptionHandler。最后将state设置为CompletedExceptionally，到此整个流程结束。&lt;br&gt;
+所以上面的日志先是job2和job3的InvokeOnCompletion收到JobCancellationException异常，接着是context中的CoroutineExceptionHandler收到原始异常，最后是job1的InvokeOnCompletion收到原始异常。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;blockquote&gt;
-&lt;p&gt;子协程invokeOnCompletion接口回调执行时机？&lt;/p&gt;
-在异常处理阶段，父协程会调用到ChildHandleNode中的invoke方法，继而会触发childJob的parentCancelled方法，最终会在notifyHandlers中触发invokeOnCompletion的回调。
-&lt;/blockquote&gt;
-&lt;blockquote&gt;
-&lt;p&gt;子协程的job为什么在添加完异常后resumeWith不会被执行？&lt;/p&gt;
-在协程job中在执行resumeWith的时候，调用到tryMakeCompleting时，会判断state，如果不是Incomplete状态，则直接返回，不会往下执行。
-&lt;/blockquote&gt;
-&lt;blockquote&gt;
-&lt;p&gt;父协程在cancelImpl的时候除了取消子协程还做了什么？&lt;/p&gt;
-在取消完子协程的时候，给第一个child添加了ChildCompletion回调，该回调执行的时候会执行到continueCompleting，最终会回到自己处理异常的逻辑。
-&lt;/blockquote&gt;
-&lt;h3 id=&#34;案例六&#34;&gt;案例六
+&lt;p&gt;上面涉及到几个关键的类，把关键类的结构梳理下：
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%85%B3%E9%94%AE%E7%B1%BB.png&#34;
+	width=&#34;2039&#34;
+	height=&#34;474&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%85%B3%E9%94%AE%E7%B1%BB_hu4896298314814446054.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%85%B3%E9%94%AE%E7%B1%BB_hu12535213613817499247.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;430&#34;
+		data-flex-basis=&#34;1032px&#34;
+	
+&gt;
+&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%88%B0%E7%88%B6%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%88%86%E5%8F%91.png&#34;
+	width=&#34;3383&#34;
+	height=&#34;2415&#34;
+	srcset=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%88%B0%E7%88%B6%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%88%86%E5%8F%91_hu48235827132543542.png 480w, https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%88%B0%E7%88%B6%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%88%86%E5%8F%91_hu82781782009653216.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;140&#34;
+		data-flex-basis=&#34;336px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;案例六父job使用supervisorjob异常不分发到其它子协程异常协程自己处理异常&#34;&gt;案例六：父Job使用SupervisorJob，异常不分发到其它子协程，异常协程自己处理异常
 &lt;/h3&gt;&lt;p&gt;把案例五中的Job()换成SupervisorJob()&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
@@ -670,7 +688,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 &lt;p&gt;以下的案例来自于&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/7049537608262615070&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;https://juejin.cn/post/7049537608262615070&lt;/a&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h3 id=&#34;案例七&#34;&gt;案例七
+&lt;h3 id=&#34;案例七try-catch在非异常协程位置无法捕捉&#34;&gt;案例七：try-catch在非异常协程位置，无法捕捉
 &lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%83.png&#34;
 	width=&#34;1088&#34;
 	height=&#34;780&#34;
@@ -703,7 +721,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 		data-flex-basis=&#34;555px&#34;
 	
 &gt;
-从字节码来看，只是启动子协程的时候给try-catch，从原理上分析，当子协程发生异常后，会调用父协程的cancelChild，在父job里面会调用到cancelParent，而父job(shi 也就是JobImpl)，它的parentHandle是空，所以cancelParent的方法返回false，因此会调用到handleJobException，而父job没有传handler，因此程序会崩溃。
+从字节码来看，只是启动子协程的时候给try-catch，从原理上分析，当子job发生异常后，在cancelParent中会调用父job的childCancelled方法，该方法的返回值直接影响到子job的cancelParent返回值，而父job的childCancelled返回值是false，因为handlesException变量为false。所以子job会触发handleJobException，但是此时有没有exceptionHandle，因此程序会崩溃。
 上面的案例，其实可以理解为launch启动的协程中再启动一个lanuch协程，然后try-catch捕捉位置在外层lauch上，此时是捕捉不到异常的&lt;/p&gt;
 &lt;h3 id=&#34;案例八&#34;&gt;案例八
 &lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99%E5%9C%A8%E7%88%B6launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E6%B7%BB%E5%8A%A0handler.png&#34;
@@ -1430,7 +1448,7 @@ job执行阶段：前面我们分析过SuspendLambda执行完invokeSuspend逻辑
 		data-flex-basis=&#34;305px&#34;
 	
 &gt;&lt;/p&gt;
-&lt;h3 id=&#34;异常处理流程图&#34;&gt;异常处理流程图
+&lt;h3 id=&#34;异常处理时序图&#34;&gt;异常处理时序图
 &lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://example.com/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B%E5%9B%BE.png&#34;
 	width=&#34;1053&#34;
 	height=&#34;1199&#34;
