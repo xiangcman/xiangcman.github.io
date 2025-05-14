@@ -297,12 +297,12 @@
         <li><a href="#案例五子协程抛异常父协程分发到其它子协程">案例五：子协程抛异常，父协程分发到其它子协程</a></li>
         <li><a href="#案例六父job使用supervisorjob异常不分发到其它子协程异常协程自己处理异常">案例六：父Job使用SupervisorJob，异常不分发到其它子协程，异常协程自己处理异常</a></li>
         <li><a href="#案例七try-catch在非异常协程位置无法捕捉">案例七：try-catch在非异常协程位置，无法捕捉</a></li>
-        <li><a href="#案例八">案例八</a></li>
-        <li><a href="#案例九">案例九</a></li>
-        <li><a href="#案例十">案例十</a></li>
-        <li><a href="#案例十一">案例十一</a></li>
+        <li><a href="#案例八异常job的父job处增加coroutineexceptionhandler捕捉异常">案例八：异常job的父job处增加CoroutineExceptionHandler捕捉异常</a></li>
+        <li><a href="#案例九handler给到异常协程handler捕获不到异常">案例九：handler给到异常协程，handler捕获不到异常</a></li>
+        <li><a href="#案例十增加coroutinescope异常协程的父协程增加try-catch捕捉异常">案例十：增加coroutineScope，异常协程的父协程增加try-catch捕捉异常</a></li>
+        <li><a href="#案例十一增加supervisorscope作为异常协程的作用域异常能被异常协程的handler所捕获">案例十一：增加supervisorScope作为异常协程的作用域，异常能被异常协程的handler所捕获</a></li>
         <li><a href="#案例十二">案例十二</a></li>
-        <li><a href="#案例十三">案例十三</a></li>
+        <li><a href="#案例十三增加supervisorscope作为异常协程的作用域异常被内部的handler所捕获">案例十三：增加supervisorScope作为异常协程的作用域，异常被内部的handler所捕获</a></li>
       </ol>
     </li>
   </ol>
@@ -389,7 +389,7 @@
 
 
                 <time class="article-time--reading">
-                    2 minute read
+                    3 minute read
                 </time>
             </div>
         
@@ -405,6 +405,12 @@
     
     
     <p>本文通过案例来熟悉子协程到父协程之间的异常是如何处理的。</p>
+<style>
+.title-bold {
+  color: #00ff00;
+  font-weight: bold;
+}
+</style>
 <h3 id="案例一子协程异常父协程handler捕捉">案例一：子协程异常，父协程handler捕捉
 </h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -810,7 +816,52 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 <blockquote>
 <p>结果：try-catch竟然捕获不住，程序直接抛异常了</p>
 </blockquote>
-<p>此处try-catch的位置不在子协程的SuspendInvoke位置，它是在主协程的launch位置，其实它是在invokeSuspend中调用内部launch的时候加了try-catch，对应的class代码如下：</p>
+<p>如果想要调试的话，可以给协程拼接CoroutineName，这样在调试的时候知道job对应的context中CoroutineName。代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">demo7</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">scope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CoroutineScope</span><span class="p">(</span><span class="n">Dispatchers</span><span class="p">.</span><span class="na">Main</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Job</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">scope</span><span class="p">.</span><span class="na">launch</span><span class="p">(</span><span class="n">CoroutineName</span><span class="p">(</span><span class="s">&#34;job1&#34;</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;scope1:$this&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">thirdApi</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">:</span><span class="w"> </span><span class="n">Exception</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;demo7: e:${e.message}&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">thirdApi</span><span class="p">(</span><span class="n">coroutineScope</span><span class="p">:</span><span class="w"> </span><span class="n">CoroutineScope</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">coroutineScope</span><span class="p">.</span><span class="na">launch</span><span class="p">(</span><span class="n">CoroutineName</span><span class="p">(</span><span class="s">&#34;job2&#34;</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;thirdApi: start&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">delay</span><span class="p">(</span><span class="n">100</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;thirdApi: end&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">NullPointerException</span><span class="p">(</span><span class="s">&#34;null pointer exception&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>此处try-catch的位置不在子协程的SuspendInvoke位置，它是在主协程的launch位置，其实它是在invokeSuspend中调用内部launch的时候加了try-catch，对应的class代码如下：</p>
 <p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99try-catch%E5%9C%A8%E7%88%B6launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E7%9A%84class%E5%AD%97%E8%8A%82%E7%A0%81.png"
 	width="1814"
 	height="784"
@@ -825,9 +876,22 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 		data-flex-basis="555px"
 	
 >
-从字节码来看，只是启动子协程的时候给try-catch，从原理上分析，当子job发生异常后，在cancelParent中会调用父job的childCancelled方法，该方法的返回值直接影响到子job的cancelParent返回值，而父job的childCancelled返回值是false，因为handlesException变量为false。所以子job会触发handleJobException，但是此时有没有exceptionHandle，因此程序会崩溃。
-上面的案例，其实可以理解为launch启动的协程中再启动一个lanuch协程，然后try-catch捕捉位置在外层lauch上，此时是捕捉不到异常的</p>
-<h3 id="案例八">案例八
+从字节码来看，只是启动子协程的时候给try-catch。<br>
+<span class = "title-bold">第一阶段：job1给job2的state添加ChildCompletion监听</span><br>
+job1的SuspendLambda在正常执行invokeSuspend，执行到job1的时候，来到了tryMakeCompletingSlowPath方法，在该方法中会给job2的state添加ChildCompletion回调<br>
+<span class = "title-bold">第二阶段：job2触发job1的childCancelled</span><br>
+从原理上分析，当子job2发生异常后，在cancelParent中会调用job1的childCancelled方法，接着调用到cancelImpl，由于job1是一个StandaloneCoroutine，所以接着调用makeCancelling，此时job1的state是一个Finishing，isCancelling还是false。所以会把异常加入到state中。接着触发了notifyCancelling方法，在里面调用了notifyHandlers。<br>
+<span class = "title-bold">第三阶段：job1触发job2的parentCancelled</span><br>
+在里面调用到ChildHandleNode的invoke，继而触发了job2的parentCancelled方法，来到了job2的cancelImpl，由于job2也是一个StandaloneCoroutine。所以会触发job2的makeCancelling，此时job2中的state是一个Finishing，并且isCancelling为true，所以job2的makeCancelling结束。<br>
+<span class = "title-bold">第四阶段：job1触发父job的childCancelled</span><br>
+继续回到job1的notifyCancelling方法，接着调用了cancelParent方法，又来到了父job（JobImpl），也就是父job的cancelImpl，由于父job是一个jobImpl，所以会调用cancelMakeCompleting，一路来到了tryMakeCompletingSlowPath方法。<br>
+<span class = "title-bold">第五阶段：父job触发job1的parentCancelled</span> <br>
+在该方法中接着触发了父job的ChildHandleNode的invoke，也就来到了job1的parentCancelled。又来到了job1的cancelImpl，此时job1的state是Finished，并且isCancelling = true，所以结束了makeCancelling。<br>
+<span class = "title-bold">第六阶段：父job继续执行tryMakeCompletingSlowPath</span> <br>
+父job1触发完parentCancelled后，在tryMakeCompletingSlowPath里面通过自己的ChildHandleNode的childJob（也就是job1）的state添加一个ChildCompletion对象。<br>
+<span class = "title-bold">第七阶段：job2继续执行cancelParent之后的逻辑</span><br>
+job2在finalizeFinishingState方法中执行完cancelParent之后，会执行completeStateFinalization逻辑，在里面会回调到第一阶段添加的ChildCompletion逻辑中，在里面会调用job1的continueCompleting方法，在该逻辑中会调用cancelParent，而cancelParent会回调false，所以会触发handleJobException，而job1对应的是StandaloneCoroutine，它里面会拿context中的CoroutineExceptionHandler，如果没拿到直接抛异常。</p>
+<h3 id="案例八异常job的父job处增加coroutineexceptionhandler捕捉异常">案例八：异常job的父job处增加CoroutineExceptionHandler捕捉异常
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99%E5%9C%A8%E7%88%B6launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E6%B7%BB%E5%8A%A0handler.png"
 	width="1442"
 	height="706"
@@ -843,10 +907,10 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 	
 ></p>
 <blockquote>
-<p>结果：此处不会发生异常，异常被exceptionHandler捕捉
-因此当父job接收到异常后，会将异常传递到handleJobException方法中，而父job是有handler的，所以将异常回调到了handler中，程序不会崩溃。</p>
+<p>结果：此处不会发生异常，异常被exceptionHandler捕捉。<br>
+分析：结合案例七的分析，在第七阶段，job1处理异常的时候，会交给handleJobException方法，并让CoroutineExceptionHandler捕捉异常，因此不会崩溃。</p>
 </blockquote>
-<h3 id="案例九">案例九
+<h3 id="案例九handler给到异常协程handler捕获不到异常">案例九：handler给到异常协程，handler捕获不到异常
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99%E5%9C%A8%E5%AD%90launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E6%B7%BB%E5%8A%A0handler.png"
 	width="1442"
 	height="558"
@@ -862,10 +926,9 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 	
 ></p>
 <blockquote>
-<p>结果：程序崩溃了，不会被子协程的handler捕捉到异常</p>
+<p>分析：结合案例七的分析，最终是在job1中处理异常，而此处设置的handler是设置到job2处了，所以程序崩溃了。</p>
 </blockquote>
-<p>因为当子协程异常的时候，会把异常抛给了父job，而父job又没有处理该异常，所以程序崩溃了</p>
-<h3 id="案例十">案例十
+<h3 id="案例十增加coroutinescope异常协程的父协程增加try-catch捕捉异常">案例十：增加coroutineScope，异常协程的父协程增加try-catch捕捉异常
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81.png"
 	width="1442"
 	height="780"
@@ -912,7 +975,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 		data-flex-basis="581px"
 	
 >
-此处的parent实际是coroutineScope启动的协程对应的job，它是ScopeCoroutine，看下它的continueCompleting实现：
+此处的parent实际是coroutineScope作用域的job，它是ScopeCoroutine，看下它的continueCompleting实现：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ScopeCoroutine%E7%9A%84continueCompleting.png"
 	width="2138"
 	height="536"
@@ -957,7 +1020,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 	
 >
 所以最终被try-catch捕捉到异常。</p>
-<h3 id="案例十一">案例十一
+<h3 id="案例十一增加supervisorscope作为异常协程的作用域异常能被异常协程的handler所捕获">案例十一：增加supervisorScope作为异常协程的作用域，异常能被异常协程的handler所捕获
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%80.png"
 	width="1442"
 	height="780"
@@ -991,8 +1054,8 @@ supervisorScope用到的job是SupervisorCoroutine，它重写了childCancel方�
 		data-flex-basis="469px"
 	
 >
-此时被外层launch的handler所捕捉，原因是异常抛给了父job。</p>
-<h3 id="案例十三">案例十三
+集合案例七分析，在第七阶段，job1在处理异常时，会找到自己的handler，最终异常被外层的handler所捕获。</p>
+<h3 id="案例十三增加supervisorscope作为异常协程的作用域异常被内部的handler所捕获">案例十三：增加supervisorScope作为异常协程的作用域，异常被内部的handler所捕获
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%89.png"
 	width="1512"
 	height="773"
