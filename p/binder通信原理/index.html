@@ -361,7 +361,7 @@
 
 
                 <time class="article-time--reading">
-                    6 minute read
+                    7 minute read
                 </time>
             </div>
         
@@ -1113,9 +1113,221 @@
 		data-flex-basis="595px"
 	
 ></p>
-<p>上面就是整个客户端到驱动层的调用流程，客户端到驱动层的流程图如下：</p>
+<p>上面就是整个客户端到驱动层的调用流程，客户端到驱动层的流程图如下：
+<img src="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%88%B0%E9%A9%B1%E5%8A%A8%E5%B1%82%E6%B5%81%E7%A8%8B%E5%9B%BE.png"
+	width="1599"
+	height="786"
+	srcset="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%88%B0%E9%A9%B1%E5%8A%A8%E5%B1%82%E6%B5%81%E7%A8%8B%E5%9B%BE_hu16215088190510476584.png 480w, /p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%88%B0%E9%A9%B1%E5%8A%A8%E5%B1%82%E6%B5%81%E7%A8%8B%E5%9B%BE_hu8363446928590889331.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="203"
+		data-flex-basis="488px"
+	
+></p>
 <h3 id="服务端到驱动层">服务端到驱动层
-</h3>
+</h3><p>服务端如何跟驱动层通信，得从zygote初始化的时候说起，在该阶段会启动binder机制，启动过程的最后会开启loop循环，通过调用PoolThread::threadLoop方法，源码地址：/frameworks/native/libs/binder/ProcessState.cpp</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">protected</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">virtual</span><span class="w"> </span><span class="n">bool</span><span class="w"> </span><span class="nf">threadLoop</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">IPCThreadState</span><span class="p">::</span><span class="n">self</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">joinThreadPool</span><span class="p">(</span><span class="n">mIsMain</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="n">bool</span><span class="w"> </span><span class="n">mIsMain</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">};</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>server端主要通过binder线程，这个binder线程其实就是new了一个普通的线程，然后再调用了IPCThreadState::self()-&gt;joinThreadPool(mIsMain)折行代码，把这个线程注册到binder驱动，这样他就成为一个binder线程了，接着来看下IPCThreadState的joinThreadPool方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="n">IPCThreadState</span><span class="p">::</span><span class="n">joinThreadPool</span><span class="p">(</span><span class="n">bool</span><span class="w"> </span><span class="n">isMain</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mOut</span><span class="p">.</span><span class="na">writeInt32</span><span class="p">(</span><span class="n">isMain</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">BC_ENTER_LOOPER</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">BC_REGISTER_LOOPER</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">do</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getAndExecuteCommand</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="o">-</span><span class="n">ECONNREFUSED</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="o">-</span><span class="n">EBADF</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mOut</span><span class="p">.</span><span class="na">writeInt32</span><span class="p">(</span><span class="n">BC_EXIT_LOOPER</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">talkWithDriver</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里省略了其它无关的代码，先是往mOut里面写了一个BC_ENTER_LOOPER或者BC_REGISTER_LOOPER，BC_ENTER_LOOPER表示这个线程是自己主动注册到binder驱动的，BC_REGISTER_LOOPER表示是被动的，由binder先申请，然后由应用来注册。注册成功之后，他在一个while循环里面不停地执行getAndExecuteCommand方法，不停地去取指令、处理指令，这个while循环一般是不会退出的，除非是遇到了什么错误。<br>
+我们接着看getAndExecuteCommand的实现，方法位于/frameworks/native/libs/binder/IPCThreadState.cpp中:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">status_t</span><span class="w"> </span><span class="n">IPCThreadState</span><span class="p">::</span><span class="n">getAndExecuteCommand</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">int32_t</span><span class="w"> </span><span class="n">cmd</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">talkWithDriver</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mIn</span><span class="p">.</span><span class="na">readInt32</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">executeCommand</span><span class="p">(</span><span class="n">cmd</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>通过talkWithDriver从驱动读取请求，这个在前面讲过，主要是通过binder_write_read的数据结构和驱动读和写数据。再就是executeCommand处理这个请求，在处理请求之前要先从mIn里面把指令读出来，然后根据这个指令来执行不同的操作。<br>
+接着看下IPCThreadState::executeCommand方法，位于/frameworks/native/libs/binder/IPCThreadState.cpp中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">status_t</span><span class="w"> </span><span class="n">IPCThreadState</span><span class="p">::</span><span class="n">executeCommand</span><span class="p">(</span><span class="n">int32_t</span><span class="w"> </span><span class="n">cmd</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">BBinder</span><span class="o">*</span><span class="w"> </span><span class="n">obj</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">RefBase</span><span class="p">::</span><span class="n">weakref_type</span><span class="o">*</span><span class="w"> </span><span class="n">refs</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NO_ERROR</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">((</span><span class="n">uint32_t</span><span class="p">)</span><span class="n">cmd</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">BR_TRANSACTION</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">binder_transaction_data</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tr</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mIn</span><span class="p">.</span><span class="na">read</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tr</span><span class="p">,</span><span class="w"> </span><span class="n">sizeof</span><span class="p">(</span><span class="n">tr</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Parcel</span><span class="w"> </span><span class="n">buffer</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">buffer</span><span class="p">.</span><span class="na">ipcSetDataReference</span><span class="p">(...);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Parcel</span><span class="w"> </span><span class="n">reply</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">reinterpret_cast</span><span class="o">&lt;</span><span class="n">BBinder</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">tr</span><span class="p">.</span><span class="na">cookie</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">transact</span><span class="p">(</span><span class="n">tr</span><span class="p">.</span><span class="na">code</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="o">&amp;</span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="n">tr</span><span class="p">.</span><span class="na">flags</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">sendReply</span><span class="p">(</span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">tr</span><span class="p">.</span><span class="na">flags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">kForwardReplyFlags</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里根据不同的cmd走到不同的case里面，我们主要关注BR_TRANSACTION这个case，它的意思是说Client把请求发给驱动，驱动再把请求转发给Server端，转发给Server端的时候呢Server端的Binder线程就会收到这个指令BR_TRANSACTION。<br>
+收到指令后，首先把数据从mIn里面读出来，放到binder_transaction_data里面，接着准备两个Parcel，一个buffer一个reply，buffer是要传递给Server端上层的，reply就是上层要回复给Client端的。<br>
+binder_transaction_data里面有个cookie字段，保存的是Binder实体对象，因为这里是native层，所以cookie就是Binder实体对象在native层的对象，也就是BBinder，获取这个Binder对象。<br>
+接着调用BBinder的transact方法， 把这个请求往上传，往Server端的上层去传。我们看下transact方法的参数，第一个是code，第二是buffer，也就是参数，第三个是reply回复的参数，第四个是flags。<br>
+上层处理完之后就调用sendReply，把这个回复的reply发出去。来看下sendReply实现：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">status_t</span><span class="w"> </span><span class="n">IPCThreadState</span><span class="p">::</span><span class="n">sendReply</span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="n">Parcel</span><span class="o">&amp;</span><span class="w"> </span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="n">uint32_t</span><span class="w"> </span><span class="n">flags</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">err</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">statusBuffer</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">writeTransactionData</span><span class="p">(</span><span class="n">BC_REPLY</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">1</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">statusBuffer</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">waitForResponse</span><span class="p">(</span><span class="n">nullptr</span><span class="p">,</span><span class="w"> </span><span class="n">nullptr</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>sendReply的实现中，先调用writeTransactionData方法，把数据写到驱动里面，驱动再转发给Client端，我们需要注意下这里的协议是BC_REPLY；接着调用waitForResponse方法，方法的两个入参都是NULL，跟oneway有点像，表示不用等待对方回复了。</p>
+<p>上面executeCommand中通过BBinder的transact调用服务端的上层，它位于/frameworks/native/libs/binder/Binder.cpp：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">status_t</span><span class="w"> </span><span class="n">BBinder</span><span class="p">::</span><span class="n">transact</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">uint32_t</span><span class="w"> </span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="n">Parcel</span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">Parcel</span><span class="o">*</span><span class="w"> </span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="n">uint32_t</span><span class="w"> </span><span class="n">flags</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NO_ERROR</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">code</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">default</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">onTransact</span><span class="p">(</span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">err</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在transact中根据不同的code执行不同的指令，这里走的是default分支，调用的是onTransact方法，BBinder的实际对象是JavaBBinder对象，继续看JavaBBinder::onTransact，源码位于/frameworks/base/core/jni/android_util_Binder.cpp：</p>
+
 </section>
 
 
