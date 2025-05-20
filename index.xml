@@ -9248,7 +9248,7 @@ position：预加载表项的位置
         
         <guid>https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/</guid>
         <description>&lt;h3 id=&#34;初始化过程&#34;&gt;初始化过程
-&lt;/h3&gt;&lt;p&gt;当我们app收到choregrapher的vsync信号的时候，choregrapher中会给主线程的messageQueue发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的messageQueue设置一个callback（runnable），所以会触发handler的dispatchmessage-&amp;gt;handleCallback，接着就是触发FrameDisplayEventReceiver（runnable）的doframe方法，该方法会计算丢帧数，以及执行callbackqueue数组中的callbackqueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeause，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。&lt;/p&gt;
+&lt;/h3&gt;&lt;p&gt;当我们app收到choregrapher的vsync信号的时候，choregrapher中会给主线程的messageQueue发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的messageQueue设置一个callback（runnable），所以会触发handler的dispatchMessage-&amp;gt;handleCallback，接着就是触发FrameDisplayEventReceiver（runnable）的doFrame方法，该方法会计算丢帧数，以及执行callbackQueue数组中的callbackQueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeasure，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。&lt;/p&gt;
 &lt;p&gt;trace图如下：&lt;/br&gt;
 &lt;img src =&#34;调用recyclerview的onMeasure调用链.png&#34; width =700/&gt;&lt;/p&gt;
 &lt;p&gt;接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren&lt;/p&gt;
@@ -9271,7 +9271,7 @@ position：预加载表项的位置
 	
 &gt;&lt;/br&gt;
 调用链如下：&lt;/br&gt;
-linearlayoutmanager.fill-&amp;gt;layoutmanager.layoutChunk-&amp;gt;layoutstate.next-&amp;gt;recycler.getviewforposition-&amp;gt;recycler.tryGeyViewHolderForPostionByDeadline-&amp;gt;adapter.createViewHolder-&amp;gt;adapter.bindViewHolder到这里一个holder的创建于bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。
+linearlayoutmanager.fill-&amp;gt;layoutmanager.layoutChunk-&amp;gt;layoutstate.next-&amp;gt;recycler.getviewforposition-&amp;gt;recycler.tryGetViewHolderForPostionByDeadline-&amp;gt;adapter.createViewHolder-&amp;gt;adapter.bindViewHolder到这里一个holder的创建和bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。
 &lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/layoutChunk%E8%B0%83%E7%94%A8.png&#34;
 	width=&#34;960&#34;
 	height=&#34;112&#34;
@@ -9467,7 +9467,7 @@ recyclerview.processAdapterUpdatesAndSetAnimationFlags-&amp;gt;AdapterHelper.pre
 &lt;/ol&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;所以结论就是，需要bound的条件：没有bound过（createholder的holder还没有bound过）；needupdate的，holder发生更新了。invalid，从attachscrap、cache获取后， 如果type不一致也需要重新bound，或者是调用了notifydataSetChange后，所有的viewholder都会添加nvalid标志位，此时也需要bind。&lt;/p&gt;
+&lt;p&gt;所以结论就是，需要bound的条件：没有bound过（createholder的holder还没有bound过或者是从recyclerpool中获取的holder）；needupdate的，holder发生更新了。invalid，从attachscrap、cache获取后， 如果type不一致也需要重新bound，或者是调用了notifydataSetChange后，所有的viewholder都会添加nvalid标志位，此时也需要bind。&lt;/p&gt;
 &lt;h3 id=&#34;更新表项&#34;&gt;更新表项
 &lt;/h3&gt;&lt;p&gt;notifyItemChange(0)：更新表项第0的位置&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://example.com/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E5%88%9A%E8%BF%9B%E5%85%A5recyclerview%E7%9A%84%E6%97%A5%E5%BF%97.png&#34;
@@ -9788,7 +9788,7 @@ dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了at
 更新表项的时候，会经历dispatchLayout1，dispatchLayout2，其中在dispatchLayout1（pre-layout阶段）会先把可见的表项给回收到scrap缓存中，回收后，会把可见的表项从recyclerview中分离，其中需要变化的表项会加入到
 changeScrap中（第1个表项），不变化的加入到attachScrap中（第2个到第10个表项）。接着在fill阶段会从scrap缓存中取表项，由于有表项更新，所以此时会去创建不可见的表项（第11个表项），最后会添加到recyclerview上。
 在dispatchLayout2（post-layout阶段）同样会把dispatchLayout1添加进来的表项给添加到changeScrap（第1个表项）和attachScrap（第2个到第11个表项）缓存中，注意此时的表项会是11个表项。在fill阶段会去创建表项0，
-因为post-layout阶段不会去取changeScrap中的viewholder，所以表项0会经历创建。&lt;/p&gt;
+因为post-layout阶段不会去取changeScrap中的viewholder，所以表项0会经历创建。并且此时不会添加第11个表项，因为在fill完第10个表项的时候，其实rv的可用空间已经不够了。上面提到表项添加到rv后，会将viewholder从scrap缓存中移除掉，而由于原来的表项0和表项10没有被添加到rv上。所以还在scrap缓存中，这两个scrap缓存是在dispatchLayout3中被移除的。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h3 id=&#34;删除表项&#34;&gt;删除表项
 &lt;/h3&gt;&lt;p&gt;notifyItemRemove(0)&lt;/p&gt;
