@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Android中卡顿治理主要集中在recyclerView滑动列表时候有卡顿，我们结合android studio中profiler的systemTrace工具来查看卡顿情况，我目前的Android Studio已更新到Meerkat Feature Drop | 2024.3.2 Patch 1版本，下来来看看如何通过该工具来定位到具体的卡顿。\n首先Android Studio中System Trace工具是基于perfetto来进行定位，所以需要有一定的perfetto经验才能使用该功能，perfetto能通过内核、系统组件、本地内存、cpu等多方面进行收集数据，而我们的卡顿一般是监控应用的主线程绘制阶段的数据，而android代码中已经为主线程绘制阶段添加了各种tag，通过该tag能知道是什么组件的绘制阶段发生了卡顿。\n首先我的手机是Android13的版本，在卡顿检测官网中介绍了Android12以上、Android11、Android10以下的区别，这里我就以Android13来讲解如何识别卡顿。\n在官网中介绍有两种模式，一种是可分析应用，一种是可调试应用，新版android studio中的profiler中system trace要求是可分析的(profileable)应用，在启动应用时候，点击menu toolbar的更多操作，然后点击，便可进入到profileable模式，也可以将变体切换为release模式，在release变体下，在清单文件加上如下配置：\n1 &lt;profileable android:shell=&#34;true&#34; /&gt; ">
+<title>Android卡顿治理</title>
+
+<link rel='canonical' href='https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Android卡顿治理">
+<meta property='og:description' content="Android中卡顿治理主要集中在recyclerView滑动列表时候有卡顿，我们结合android studio中profiler的systemTrace工具来查看卡顿情况，我目前的Android Studio已更新到Meerkat Feature Drop | 2024.3.2 Patch 1版本，下来来看看如何通过该工具来定位到具体的卡顿。\n首先Android Studio中System Trace工具是基于perfetto来进行定位，所以需要有一定的perfetto经验才能使用该功能，perfetto能通过内核、系统组件、本地内存、cpu等多方面进行收集数据，而我们的卡顿一般是监控应用的主线程绘制阶段的数据，而android代码中已经为主线程绘制阶段添加了各种tag，通过该tag能知道是什么组件的绘制阶段发生了卡顿。\n首先我的手机是Android13的版本，在卡顿检测官网中介绍了Android12以上、Android11、Android10以下的区别，这里我就以Android13来讲解如何识别卡顿。\n在官网中介绍有两种模式，一种是可分析应用，一种是可调试应用，新版android studio中的profiler中system trace要求是可分析的(profileable)应用，在启动应用时候，点击menu toolbar的更多操作，然后点击，便可进入到profileable模式，也可以将变体切换为release模式，在release变体下，在清单文件加上如下配置：\n1 &lt;profileable android:shell=&#34;true&#34; /&gt; ">
+<meta property='og:url' content='https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-06-05T17:39:52&#43;08:00'/><meta property='article:modified_time' content='2025-06-05T17:39:52&#43;08:00'/>
+<meta name="twitter:title" content="Android卡顿治理">
+<meta name="twitter:description" content="Android中卡顿治理主要集中在recyclerView滑动列表时候有卡顿，我们结合android studio中profiler的systemTrace工具来查看卡顿情况，我目前的Android Studio已更新到Meerkat Feature Drop | 2024.3.2 Patch 1版本，下来来看看如何通过该工具来定位到具体的卡顿。\n首先Android Studio中System Trace工具是基于perfetto来进行定位，所以需要有一定的perfetto经验才能使用该功能，perfetto能通过内核、系统组件、本地内存、cpu等多方面进行收集数据，而我们的卡顿一般是监控应用的主线程绘制阶段的数据，而android代码中已经为主线程绘制阶段添加了各种tag，通过该tag能知道是什么组件的绘制阶段发生了卡顿。\n首先我的手机是Android13的版本，在卡顿检测官网中介绍了Android12以上、Android11、Android10以下的区别，这里我就以Android13来讲解如何识别卡顿。\n在官网中介绍有两种模式，一种是可分析应用，一种是可调试应用，新版android studio中的profiler中system trace要求是可分析的(profileable)应用，在启动应用时候，点击menu toolbar的更多操作，然后点击，便可进入到profileable模式，也可以将变体切换为release模式，在release变体下，在清单文件加上如下配置：\n1 &lt;profileable android:shell=&#34;true&#34; /&gt; ">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/_index.zh-cn/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/" >
+                卡顿治理
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/">Android卡顿治理</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2025-06-05</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    1 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>Android中卡顿治理主要集中在recyclerView滑动列表时候有卡顿，我们结合android studio中profiler的systemTrace工具来查看卡顿情况，我目前的Android Studio已更新到Meerkat Feature Drop | 2024.3.2 Patch 1版本，下来来看看如何通过该工具来定位到具体的卡顿。<br>
+首先Android Studio中System Trace工具是基于perfetto来进行定位，所以需要有一定的perfetto经验才能使用该功能，perfetto能通过内核、系统组件、本地内存、cpu等多方面进行收集数据，而我们的卡顿一般是监控应用的主线程绘制阶段的数据，而android代码中已经为主线程绘制阶段添加了各种tag，通过该tag能知道是什么组件的绘制阶段发生了卡顿。<br>
+首先我的手机是Android13的版本，在<a class="link" href="https://developer.android.com/studio/profile/jank-detection"  target="_blank" rel="noopener"
+    >卡顿检测官网</a>中介绍了Android12以上、Android11、Android10以下的区别，这里我就以Android13来讲解如何识别卡顿。<br>
+<span >在官网中介绍有两种模式，一种是可分析应用，一种是可调试应用，新版android studio中的profiler中system trace要求是可分析的(profileable)应用，在启动应用时候，点击menu toolbar的更多操作<img style="vertical-align: middle" src ="profiler-more-actions.png" width ="20">，然后点击<img style="vertical-align: middle" src ="image.png" width ="300"></span>，便可进入到profileable模式，也可以将变体切换为release模式，在release变体下，在清单文件加上如下配置：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="o">&lt;</span><span class="n">profileable</span><span class="w"> </span><span class="n">android</span><span class="p">:</span><span class="n">shell</span><span class="o">=</span><span class="s">&#34;true&#34;</span><span class="w"> </span><span class="o">/&gt;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>配置完后，接着就是选择相应的应用，然后点击System Trace选项进行监控应用。比如我在RecyclerView的列表adapter中onBindViewHolder进行Thread.sleep(50)，然后观察生成的trace文件：
+<img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/trace%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84.png"
+	width="3648"
+	height="1510"
+	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/trace%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84_hu16667502905443498615.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/trace%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84_hu3526640423949613719.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="241"
+		data-flex-basis="579px"
+	
+>
+整体上分为Janky frames、Threads、Analysis几个区域，Janky frames默认展示的是卡顿帧，我们也可以勾选All Frames，Threads部分展示的时候所有线程，比如app的主线程，RenderThread渲染线程等。Analysis区域展示的是某块的跟踪信息。<br>
+卡顿帧：它是我们分析卡顿最直接的图形，我们首先选中某一个卡顿帧，然后该帧会出现两个颜色，左边的深红色表示一针的期望时间，而右边的暗红色表示该帧延迟了多久。我们可以看到右边Analysis区域标明了Jank type是Deadline missed（延迟帧），Layer name表明是哪个activity，Expected duration表示期望时间，Actual duration表示实际执行时间。<code>events associated with frame</code>展示的是该帧从主线程到RenderThread到gpu到SurfaceFlinger的关键事件。可以通过该区域分析该帧是应用层绘制耗时多，还是渲染线程或者是gpu等阶段耗时久。下面还会展示Main thread states和RenderThread states，分别记录了现成的状态、每个状态的耗时、以及每个状态的占比，Occurrences表示的是当前线程在该帧的生命周期内，在该状态下的次数。
+<img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E7%82%B9%E5%87%BB%E6%9F%90%E4%B8%80%E5%B8%A7%E5%90%8E%E7%9A%84analysis%E9%9D%A2%E6%9D%BF%E4%BF%A1%E6%81%AF.png"
+	width="2124"
+	height="1808"
+	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E7%82%B9%E5%87%BB%E6%9F%90%E4%B8%80%E5%B8%A7%E5%90%8E%E7%9A%84analysis%E9%9D%A2%E6%9D%BF%E4%BF%A1%E6%81%AF_hu5840938220169730243.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E7%82%B9%E5%87%BB%E6%9F%90%E4%B8%80%E5%B8%A7%E5%90%8E%E7%9A%84analysis%E9%9D%A2%E6%9D%BF%E4%BF%A1%E6%81%AF_hu6008882954537841270.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="117"
+		data-flex-basis="281px"
+	
+><br>
+从上面截图中可以看到在该帧中，主线程的sleeping状态占比是最高的。<br>
+回到左边的Janky frames面板，再回到刚才那一帧，然后按<code>m</code>键会自动放大该帧的视图，在主线程视图中查看跟踪事件的tag。这里介绍系统system trace中常见的一帧的tag：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">tag名字</th>
+          <th style="text-align: left">描述</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">Choreographer#doFrame ***</td>
+          <td style="text-align: left">每一帧的父事件，其中后面的数字是vsync</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">input</td>
+          <td style="text-align: left">每一帧中执行input事件</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">animation</td>
+          <td style="text-align: left">每一帧执行animation事件</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">RV Scroll</td>
+          <td style="text-align: left">recyclerview滑动事件</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>选中某一帧的Choreographer#doFrame后，在右侧的Analysis面板会看到该帧的相关信息。分为Summary、Top Down、Flame Chart、Bottom Up、Events几个tab。</p>
+<ul>
+<li>
+<p>Summary</p>
+<p><img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/summary%E9%9D%A2%E6%9D%BF.png"
+	width="2780"
+	height="1454"
+	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/summary%E9%9D%A2%E6%9D%BF_hu12489365243334364559.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/summary%E9%9D%A2%E6%9D%BF_hu1274625962053387718.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="191"
+		data-flex-basis="458px"
+	
+></p>
+<ul>
+<li>Time Range：该帧的时间</li>
+<li>Data Type：该帧的事件类型</li>
+<li>start time：事件在trace中的开始时间</li>
+<li>Name：事件的名称</li>
+<li>Wall Duration：事件从开始到结束所经过的实际时间，这包括线程处于Running、Runnable、Waiting、Sleeping等所有状态的时间</li>
+<li>Wall Self time：该时间表示不算子事件的时间，只算自己等待其他操作的时间</li>
+<li>cpu duration：事件在cpu上执行的实际时间，包括子事件的执行时间。但是这只包括线程处于running状态下的时间，也就是它正在主动使用cpu进行计算的时间</li>
+<li>cpu self time：和上面cpu duration唯一区别是刨除了子事件的执行时间，也就是自己占用cpu处于running状态下的时间</li>
+<li>All Occurrences：这里是统计了所有相同名字的事件次数、平均事件、最大事件、最小事件、所有事件的标准差，标准差衡量了数据相对于平均值的离散程度，值越大表示波动越大。其中这几项里面的时间都是表示Wall duration，也就是真实所经过的时间</li>
+<li>Longest running occurrences：按运行时间进行排序的事件，通过该表可以找到事件消耗最久的事件，从而优先处理耗时最久的事件</li>
+</ul>
+</li>
+<li>
+<p>Top Down
+<img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/top_down%E5%9B%BE.png"
+	width="2536"
+	height="1462"
+	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/top_down%E5%9B%BE_hu8415439255777515402.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/top_down%E5%9B%BE_hu2716274531812448889.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="173"
+		data-flex-basis="416px"
+	
+></p>
+<ul>
+<li>Top Down关注的是父事件到子事件的层级信息</li>
+<li>Total：该事件所消耗的实际时间，也就是前面提到的Wall Duration</li>
+<li>第一个百分比：当前事件的Total时间占比根事件的Total时间比例</li>
+<li>Self：不算子事件的Total时间，可以看出来每个时间的total时间=self+所有子事件的total时间</li>
+<li>第二个百分比：当前事件的self时间占比根事件的total时间的比例</li>
+<li>children：当前事件的所有子事件的实际消耗时间</li>
+<li>第三个百分比：所有子事件消耗的时间占根事件的total时间的比例</li>
+</ul>
+</li>
+<li>
+<p>Flame Chart
+<img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/flame_chart%E5%9B%BE.png"
+	width="2066"
+	height="1406"
+	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/flame_chart%E5%9B%BE_hu7645523747576029697.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/flame_chart%E5%9B%BE_hu15656606892943909130.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="146"
+		data-flex-basis="352px"
+	
+></p>
+<ul>
+<li>Flame Chart视图也叫火焰图，从底下到上面依次是父事件到子事件，该图能直观的看到子事件在父事件上的占比,在父事件上展示子事件的时候，会把占比最长的放在左边，所以排查子事件的时候优先看左边的事件</li>
+</ul>
+</li>
+<li>
+<p>Bottom Up
+<img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/bottom_up%E5%9B%BE.png"
+	width="2052"
+	height="1378"
+	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/bottom_up%E5%9B%BE_hu15734523610979815183.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/bottom_up%E5%9B%BE_hu8101433914803450038.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="148"
+		data-flex-basis="357px"
+	
+></p>
+<ul>
+<li>bottom up视图将父事件和子事件平铺展开，通过它可以直观的看出当前事件占比根事件的占比，也可以直接按照比例排序查看占比高的事件</li>
+</ul>
+</li>
+<li>
+<p>Events
+<img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/Events%E5%9B%BE.png"
+	width="2248"
+	height="1462"
+	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/Events%E5%9B%BE_hu11892006739445049400.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/Events%E5%9B%BE_hu16737892572054533565.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="153"
+		data-flex-basis="369px"
+	
+></p>
+<ul>
+<li>其实它是对前面Summary视图中的All Occurrences（所有相同事件）的汇总，并把各项信息列出来，方便我们知道每个事件的耗时</li>
+</ul>
+</li>
+</ul>
+<p>回到前面例子中，我们在Adapter的onBindViewHolder中加入了Thread.sleep(50)的时间，然后回到刚才那一帧，查看线程的状态：<br>
+<img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81.png"
+	width="1278"
+	height="1464"
+	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81_hu3630628184989890666.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81_hu11172594456514611989.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="87"
+		data-flex-basis="209px"
+	
+>
+我们选择了刚刚的那一帧，发现在其中主线程一直处于sleep状态，那最终是怎么发现是在onBindViewHolder中线程处于休眠状态的呢，我们看下该帧的RV Scroll事件：<br>
+<img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%9A%84RV_Scroll%E4%BA%8B%E4%BB%B6.png"
+	width="2460"
+	height="948"
+	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%9A%84RV_Scroll%E4%BA%8B%E4%BB%B6_hu11585445045507053060.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%9A%84RV_Scroll%E4%BA%8B%E4%BB%B6_hu4588600957324732302.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="259"
+		data-flex-basis="622px"
+	
+>
+在该事件的Top Down面板中，大部分占用时间是在RV Scroll中，其中子事件的时间占用很少，在RV OnBindView中的self时间很少，是因为它不占用cpu的资源，而systemtrace记录的是RV OnBindView真正占用cpu的运行时间。所以在RV OnBindView上的时间占比很少。所以最终时间消耗体现在RV Scroll上面，而结合线程的状态，所以能确定是在recyclerview的scroll阶段线程出现了大量的sleep状态。</br></p>
+<ul>
+<li>
+<p>案例分析
+<img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%AD%E6%95%B4%E4%BD%93%E5%8D%A1%E9%A1%BF%E5%B8%A7%E8%A7%86%E5%9B%BE.png"
+	width="3672"
+	height="1498"
+	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%AD%E6%95%B4%E4%BD%93%E5%8D%A1%E9%A1%BF%E5%B8%A7%E8%A7%86%E5%9B%BE_hu3134920912543019231.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%AD%E6%95%B4%E4%BD%93%E5%8D%A1%E9%A1%BF%E5%B8%A7%E8%A7%86%E5%9B%BE_hu16098689211854603045.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="245"
+		data-flex-basis="588px"
+	
+></p>
+<ul>
+<li>这是一个来回滑动recyclerview的页面，在Janky frames有卡顿的帧，我们点开第一个卡顿帧，然后使用<code>M</code>键放大该帧：<br>
+<img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E4%B8%BB%E8%A6%81%E8%80%97%E6%97%B6%E5%9C%A8inflte%E9%98%B6%E6%AE%B5.png"
+	width="2008"
+	height="690"
+	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E4%B8%BB%E8%A6%81%E8%80%97%E6%97%B6%E5%9C%A8inflte%E9%98%B6%E6%AE%B5_hu3730612488566794472.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E4%B8%BB%E8%A6%81%E8%80%97%E6%97%B6%E5%9C%A8inflte%E9%98%B6%E6%AE%B5_hu15271119570580169620.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="291"
+		data-flex-basis="698px"
+	
+></li>
+<li>观察卡顿原因是在滑动过程中一直有inflate，通过代码查看是因为该视图存在recyclerview嵌套recyclerview导致的，在onbindViewHolder中重新去inflate了子布局导致会重新inflate，此处的改法是将外层的recyclerview的layoutmanager重写calculateExtraLayoutSpace方法，然后将extraLayoutSpace的上下方向的偏移量设置为外层recyclerview高度的2倍。</li>
+</ul>
+</li>
+<li>
+<p>参考：</p>
+<ul>
+<li><a class="link" href="https://developer.android.com/studio/profile?hl=zh-cn#start-profiling"  target="_blank" rel="noopener"
+    >https://developer.android.com/studio/profile?hl=zh-cn#start-profiling</a></li>
+<li><a class="link" href="https://developer.android.com/studio/profile/inspect-traces"  target="_blank" rel="noopener"
+    >https://developer.android.com/studio/profile/inspect-traces</a></li>
+<li><a class="link" href="https://developer.android.com/studio/profile/jank-detection"  target="_blank" rel="noopener"
+    >https://developer.android.com/studio/profile/jank-detection</a></li>
+</ul>
+</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Example Person
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

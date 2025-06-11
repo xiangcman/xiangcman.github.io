@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>卡顿治理 on xiangcman</title>
+        <link>https://example.com/categories/%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/</link>
+        <description>Recent content in 卡顿治理 on xiangcman</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en-us</language>
+        <copyright>Example Person</copyright>
+        <lastBuildDate>Thu, 05 Jun 2025 17:39:52 +0800</lastBuildDate><atom:link href="https://example.com/categories/%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Android卡顿治理</title>
+        <link>https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/</link>
+        <pubDate>Thu, 05 Jun 2025 17:39:52 +0800</pubDate>
+        
+        <guid>https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/</guid>
+        <description>&lt;p&gt;Android中卡顿治理主要集中在recyclerView滑动列表时候有卡顿，我们结合android studio中profiler的systemTrace工具来查看卡顿情况，我目前的Android Studio已更新到Meerkat Feature Drop | 2024.3.2 Patch 1版本，下来来看看如何通过该工具来定位到具体的卡顿。&lt;br&gt;
+首先Android Studio中System Trace工具是基于perfetto来进行定位，所以需要有一定的perfetto经验才能使用该功能，perfetto能通过内核、系统组件、本地内存、cpu等多方面进行收集数据，而我们的卡顿一般是监控应用的主线程绘制阶段的数据，而android代码中已经为主线程绘制阶段添加了各种tag，通过该tag能知道是什么组件的绘制阶段发生了卡顿。&lt;br&gt;
+首先我的手机是Android13的版本，在&lt;a class=&#34;link&#34; href=&#34;https://developer.android.com/studio/profile/jank-detection&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;卡顿检测官网&lt;/a&gt;中介绍了Android12以上、Android11、Android10以下的区别，这里我就以Android13来讲解如何识别卡顿。&lt;br&gt;
+&lt;span &gt;在官网中介绍有两种模式，一种是可分析应用，一种是可调试应用，新版android studio中的profiler中system trace要求是可分析的(profileable)应用，在启动应用时候，点击menu toolbar的更多操作&lt;img style=&#34;vertical-align: middle&#34; src =&#34;profiler-more-actions.png&#34; width =&#34;20&#34;&gt;，然后点击&lt;img style=&#34;vertical-align: middle&#34; src =&#34;image.png&#34; width =&#34;300&#34;&gt;&lt;/span&gt;，便可进入到profileable模式，也可以将变体切换为release模式，在release变体下，在清单文件加上如下配置：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;profileable&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;android&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;shell&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;true&amp;#34;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;/&amp;gt;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;配置完后，接着就是选择相应的应用，然后点击System Trace选项进行监控应用。比如我在RecyclerView的列表adapter中onBindViewHolder进行Thread.sleep(50)，然后观察生成的trace文件：
+&lt;img src=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/trace%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84.png&#34;
+	width=&#34;3648&#34;
+	height=&#34;1510&#34;
+	srcset=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/trace%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84_hu16667502905443498615.png 480w, https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/trace%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84_hu3526640423949613719.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;241&#34;
+		data-flex-basis=&#34;579px&#34;
+	
+&gt;
+整体上分为Janky frames、Threads、Analysis几个区域，Janky frames默认展示的是卡顿帧，我们也可以勾选All Frames，Threads部分展示的时候所有线程，比如app的主线程，RenderThread渲染线程等。Analysis区域展示的是某块的跟踪信息。&lt;br&gt;
+卡顿帧：它是我们分析卡顿最直接的图形，我们首先选中某一个卡顿帧，然后该帧会出现两个颜色，左边的深红色表示一针的期望时间，而右边的暗红色表示该帧延迟了多久。我们可以看到右边Analysis区域标明了Jank type是Deadline missed（延迟帧），Layer name表明是哪个activity，Expected duration表示期望时间，Actual duration表示实际执行时间。&lt;code&gt;events associated with frame&lt;/code&gt;展示的是该帧从主线程到RenderThread到gpu到SurfaceFlinger的关键事件。可以通过该区域分析该帧是应用层绘制耗时多，还是渲染线程或者是gpu等阶段耗时久。下面还会展示Main thread states和RenderThread states，分别记录了现成的状态、每个状态的耗时、以及每个状态的占比，Occurrences表示的是当前线程在该帧的生命周期内，在该状态下的次数。
+&lt;img src=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E7%82%B9%E5%87%BB%E6%9F%90%E4%B8%80%E5%B8%A7%E5%90%8E%E7%9A%84analysis%E9%9D%A2%E6%9D%BF%E4%BF%A1%E6%81%AF.png&#34;
+	width=&#34;2124&#34;
+	height=&#34;1808&#34;
+	srcset=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E7%82%B9%E5%87%BB%E6%9F%90%E4%B8%80%E5%B8%A7%E5%90%8E%E7%9A%84analysis%E9%9D%A2%E6%9D%BF%E4%BF%A1%E6%81%AF_hu5840938220169730243.png 480w, https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E7%82%B9%E5%87%BB%E6%9F%90%E4%B8%80%E5%B8%A7%E5%90%8E%E7%9A%84analysis%E9%9D%A2%E6%9D%BF%E4%BF%A1%E6%81%AF_hu6008882954537841270.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;117&#34;
+		data-flex-basis=&#34;281px&#34;
+	
+&gt;&lt;br&gt;
+从上面截图中可以看到在该帧中，主线程的sleeping状态占比是最高的。&lt;br&gt;
+回到左边的Janky frames面板，再回到刚才那一帧，然后按&lt;code&gt;m&lt;/code&gt;键会自动放大该帧的视图，在主线程视图中查看跟踪事件的tag。这里介绍系统system trace中常见的一帧的tag：&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;tag名字&lt;/th&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;描述&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;Choreographer#doFrame ***&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;每一帧的父事件，其中后面的数字是vsync&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;input&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;每一帧中执行input事件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;animation&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;每一帧执行animation事件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;RV Scroll&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;recyclerview滑动事件&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;选中某一帧的Choreographer#doFrame后，在右侧的Analysis面板会看到该帧的相关信息。分为Summary、Top Down、Flame Chart、Bottom Up、Events几个tab。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Summary&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/summary%E9%9D%A2%E6%9D%BF.png&#34;
+	width=&#34;2780&#34;
+	height=&#34;1454&#34;
+	srcset=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/summary%E9%9D%A2%E6%9D%BF_hu12489365243334364559.png 480w, https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/summary%E9%9D%A2%E6%9D%BF_hu1274625962053387718.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;191&#34;
+		data-flex-basis=&#34;458px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Time Range：该帧的时间&lt;/li&gt;
+&lt;li&gt;Data Type：该帧的事件类型&lt;/li&gt;
+&lt;li&gt;start time：事件在trace中的开始时间&lt;/li&gt;
+&lt;li&gt;Name：事件的名称&lt;/li&gt;
+&lt;li&gt;Wall Duration：事件从开始到结束所经过的实际时间，这包括线程处于Running、Runnable、Waiting、Sleeping等所有状态的时间&lt;/li&gt;
+&lt;li&gt;Wall Self time：该时间表示不算子事件的时间，只算自己等待其他操作的时间&lt;/li&gt;
+&lt;li&gt;cpu duration：事件在cpu上执行的实际时间，包括子事件的执行时间。但是这只包括线程处于running状态下的时间，也就是它正在主动使用cpu进行计算的时间&lt;/li&gt;
+&lt;li&gt;cpu self time：和上面cpu duration唯一区别是刨除了子事件的执行时间，也就是自己占用cpu处于running状态下的时间&lt;/li&gt;
+&lt;li&gt;All Occurrences：这里是统计了所有相同名字的事件次数、平均事件、最大事件、最小事件、所有事件的标准差，标准差衡量了数据相对于平均值的离散程度，值越大表示波动越大。其中这几项里面的时间都是表示Wall duration，也就是真实所经过的时间&lt;/li&gt;
+&lt;li&gt;Longest running occurrences：按运行时间进行排序的事件，通过该表可以找到事件消耗最久的事件，从而优先处理耗时最久的事件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Top Down
+&lt;img src=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/top_down%E5%9B%BE.png&#34;
+	width=&#34;2536&#34;
+	height=&#34;1462&#34;
+	srcset=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/top_down%E5%9B%BE_hu8415439255777515402.png 480w, https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/top_down%E5%9B%BE_hu2716274531812448889.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;173&#34;
+		data-flex-basis=&#34;416px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Top Down关注的是父事件到子事件的层级信息&lt;/li&gt;
+&lt;li&gt;Total：该事件所消耗的实际时间，也就是前面提到的Wall Duration&lt;/li&gt;
+&lt;li&gt;第一个百分比：当前事件的Total时间占比根事件的Total时间比例&lt;/li&gt;
+&lt;li&gt;Self：不算子事件的Total时间，可以看出来每个时间的total时间=self+所有子事件的total时间&lt;/li&gt;
+&lt;li&gt;第二个百分比：当前事件的self时间占比根事件的total时间的比例&lt;/li&gt;
+&lt;li&gt;children：当前事件的所有子事件的实际消耗时间&lt;/li&gt;
+&lt;li&gt;第三个百分比：所有子事件消耗的时间占根事件的total时间的比例&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Flame Chart
+&lt;img src=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/flame_chart%E5%9B%BE.png&#34;
+	width=&#34;2066&#34;
+	height=&#34;1406&#34;
+	srcset=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/flame_chart%E5%9B%BE_hu7645523747576029697.png 480w, https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/flame_chart%E5%9B%BE_hu15656606892943909130.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;146&#34;
+		data-flex-basis=&#34;352px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Flame Chart视图也叫火焰图，从底下到上面依次是父事件到子事件，该图能直观的看到子事件在父事件上的占比,在父事件上展示子事件的时候，会把占比最长的放在左边，所以排查子事件的时候优先看左边的事件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Bottom Up
+&lt;img src=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/bottom_up%E5%9B%BE.png&#34;
+	width=&#34;2052&#34;
+	height=&#34;1378&#34;
+	srcset=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/bottom_up%E5%9B%BE_hu15734523610979815183.png 480w, https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/bottom_up%E5%9B%BE_hu8101433914803450038.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;148&#34;
+		data-flex-basis=&#34;357px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;bottom up视图将父事件和子事件平铺展开，通过它可以直观的看出当前事件占比根事件的占比，也可以直接按照比例排序查看占比高的事件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Events
+&lt;img src=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/Events%E5%9B%BE.png&#34;
+	width=&#34;2248&#34;
+	height=&#34;1462&#34;
+	srcset=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/Events%E5%9B%BE_hu11892006739445049400.png 480w, https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/Events%E5%9B%BE_hu16737892572054533565.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;153&#34;
+		data-flex-basis=&#34;369px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;其实它是对前面Summary视图中的All Occurrences（所有相同事件）的汇总，并把各项信息列出来，方便我们知道每个事件的耗时&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;回到前面例子中，我们在Adapter的onBindViewHolder中加入了Thread.sleep(50)的时间，然后回到刚才那一帧，查看线程的状态：&lt;br&gt;
+&lt;img src=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81.png&#34;
+	width=&#34;1278&#34;
+	height=&#34;1464&#34;
+	srcset=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81_hu3630628184989890666.png 480w, https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81_hu11172594456514611989.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;87&#34;
+		data-flex-basis=&#34;209px&#34;
+	
+&gt;
+我们选择了刚刚的那一帧，发现在其中主线程一直处于sleep状态，那最终是怎么发现是在onBindViewHolder中线程处于休眠状态的呢，我们看下该帧的RV Scroll事件：&lt;br&gt;
+&lt;img src=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%9A%84RV_Scroll%E4%BA%8B%E4%BB%B6.png&#34;
+	width=&#34;2460&#34;
+	height=&#34;948&#34;
+	srcset=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%9A%84RV_Scroll%E4%BA%8B%E4%BB%B6_hu11585445045507053060.png 480w, https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%9A%84RV_Scroll%E4%BA%8B%E4%BB%B6_hu4588600957324732302.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;259&#34;
+		data-flex-basis=&#34;622px&#34;
+	
+&gt;
+在该事件的Top Down面板中，大部分占用时间是在RV Scroll中，其中子事件的时间占用很少，在RV OnBindView中的self时间很少，是因为它不占用cpu的资源，而systemtrace记录的是RV OnBindView真正占用cpu的运行时间。所以在RV OnBindView上的时间占比很少。所以最终时间消耗体现在RV Scroll上面，而结合线程的状态，所以能确定是在recyclerview的scroll阶段线程出现了大量的sleep状态。&lt;/br&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;案例分析
+&lt;img src=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%AD%E6%95%B4%E4%BD%93%E5%8D%A1%E9%A1%BF%E5%B8%A7%E8%A7%86%E5%9B%BE.png&#34;
+	width=&#34;3672&#34;
+	height=&#34;1498&#34;
+	srcset=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%AD%E6%95%B4%E4%BD%93%E5%8D%A1%E9%A1%BF%E5%B8%A7%E8%A7%86%E5%9B%BE_hu3134920912543019231.png 480w, https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%AD%E6%95%B4%E4%BD%93%E5%8D%A1%E9%A1%BF%E5%B8%A7%E8%A7%86%E5%9B%BE_hu16098689211854603045.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;245&#34;
+		data-flex-basis=&#34;588px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;这是一个来回滑动recyclerview的页面，在Janky frames有卡顿的帧，我们点开第一个卡顿帧，然后使用&lt;code&gt;M&lt;/code&gt;键放大该帧：&lt;br&gt;
+&lt;img src=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E4%B8%BB%E8%A6%81%E8%80%97%E6%97%B6%E5%9C%A8inflte%E9%98%B6%E6%AE%B5.png&#34;
+	width=&#34;2008&#34;
+	height=&#34;690&#34;
+	srcset=&#34;https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E4%B8%BB%E8%A6%81%E8%80%97%E6%97%B6%E5%9C%A8inflte%E9%98%B6%E6%AE%B5_hu3730612488566794472.png 480w, https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E4%B8%BB%E8%A6%81%E8%80%97%E6%97%B6%E5%9C%A8inflte%E9%98%B6%E6%AE%B5_hu15271119570580169620.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;291&#34;
+		data-flex-basis=&#34;698px&#34;
+	
+&gt;&lt;/li&gt;
+&lt;li&gt;观察卡顿原因是在滑动过程中一直有inflate，通过代码查看是因为该视图存在recyclerview嵌套recyclerview导致的，在onbindViewHolder中重新去inflate了子布局导致会重新inflate，此处的改法是将外层的recyclerview的layoutmanager重写calculateExtraLayoutSpace方法，然后将extraLayoutSpace的上下方向的偏移量设置为外层recyclerview高度的2倍。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;参考：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://developer.android.com/studio/profile?hl=zh-cn#start-profiling&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://developer.android.com/studio/profile?hl=zh-cn#start-profiling&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://developer.android.com/studio/profile/inspect-traces&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://developer.android.com/studio/profile/inspect-traces&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://developer.android.com/studio/profile/jank-detection&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://developer.android.com/studio/profile/jank-detection&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>
