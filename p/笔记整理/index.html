@@ -313,6 +313,7 @@
         <li><a href="#kotlin中sequence和普通集合的区别">kotlin中Sequence和普通集合的区别</a></li>
         <li><a href="#kotlin中sequence和集合的stream区别">kotlin中Sequence和集合的Stream区别</a></li>
         <li><a href="#companion-object和object中定义变量">companion object和object中定义变量</a></li>
+        <li><a href="#记录一次gradle编译问题">记录一次gradle编译问题</a></li>
       </ol>
     </li>
   </ol>
@@ -2210,6 +2211,59 @@ kotlin中的===：如果是对象类型，比较的是内存地址，指向的�
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>从上面伴生对象和object类发现伴生对象会生成内部类，并通过饿汉式生成单例。object是在内加载的时候生成单例。</p>
+<h3 id="记录一次gradle编译问题">记录一次gradle编译问题
+</h3><ul>
+<li>问题：在添加某个广告sdk后，发现工程中编译会报错，报错信息如下：
+<ul>
+<li>Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Compilation error. See log for more details</li>
+<li>&lsquo;onNewIntent&rsquo; overrides nothing</li>
+</ul>
+</li>
+<li>该问题说activity的子类（kotlin类）中出现了onNewIntent方法中的intent参数定义可为空了，就增加了一个广告的sdk后，怎么就提示intent要定义成不为空的呢。既然是广告sdk导致的，那么下面就按照依赖关系把问题找到，执行gradle的命令如下：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="p">.</span><span class="o">/</span><span class="n">gradlew</span><span class="w"> </span><span class="n">app</span><span class="p">:</span><span class="n">dependencies</span><span class="w"> </span><span class="o">--</span><span class="n">configuration</span><span class="w"> </span><span class="n">debugRuntimeClasspath</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">dependencies</span><span class="p">.</span><span class="na">txt</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>上面命令会找到app依赖的所有module的间接依赖，并输出到文件中，直接看新增的广告sdk的module信息：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="o">+---</span><span class="w"> </span><span class="n">androidx</span><span class="p">.</span><span class="na">activity</span><span class="p">:</span><span class="n">activity</span><span class="o">-</span><span class="n">ktx</span><span class="p">:</span><span class="n">1</span><span class="p">.</span><span class="na">7</span><span class="p">.</span><span class="na">1</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">1</span><span class="p">.</span><span class="na">9</span><span class="p">.</span><span class="na">2</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>可以看到，在广告sdk中会把activity-ktx的版本从1.7.1升级到1.9.2，继续顺藤摸瓜，发现在1.9.2的版本中<code>ComponentActivity</code>，会给onNewIntent方法的intent参数加上了<code>@Suppress(&quot;InvalidNullabilityOverride&quot;)</code>注解，而在1.7.1版本中是加上<code>@SuppressLint({&quot;UnknownNullness&quot;, &quot;MissingNullability&quot;})</code>注解。通过Gemini对比两者的区别，最终得出结论：
+<ul>
+<li>@Suppress(&ldquo;InvalidNullabilityOverride&rdquo;)
+<ul>
+<li>如果一个 Java 方法的参数是 String param，Kotlin 编译器可能无法确定它是可空 (String?) 还是非空 (String)。如果你将其重写为 param: String?（可空），但 Kotlin 编译器内部推断它应该是 String（非空），或者反之，就会触发 InvalidNullabilityOverride 警告。</li>
+</ul>
+</li>
+<li><code>@SuppressLint({&quot;UnknownNullness&quot;, &quot;MissingNullability&quot;})</code>
+<ul>
+<li>它是lint中的注解，用于抑制 Lint 工具发出的特定警告或错误。UnknownNullness：当 Lint 工具无法确定某个变量、参数或返回类型的空安全性时（通常是因为它来自没有空安全注解的 Java 代码或第三方库），它会发出此警告，提醒你其空安全性是未知的。MissingNullability：当 Lint 认为某个地方应该有空安全注解（@NonNull 或 @Nullable），但却缺失了时，它会发出此警告。这通常发生在你在编写 Java 代码，但没有为参数或返回类型明确添加空安全注解时。</li>
+<li>目的： 告诉 Lint 工具：“我已经意识到这里存在空安全注解缺失或未知空安全性的问题，但我有理由不添加注解或接受当前状态，请不要再警告我。”</li>
+</ul>
+</li>
+<li>从上面分析可知，而activity中的onNewIntent方法中确实没有任何非空和可空的注解，在1.7.1版本中通过lint注解来告诉lint，这里的intent参数是不可确定的空参数，不需要发出警告。而在1.9.2版本中强制要求子类中必须为非空的，因此当之前的子类是可空的时候，就会出现前面所说的编译问题</li>
+</ul>
+</li>
+<li>方案：直接在添加广告sdk的地方，排除掉activity-ktx的依赖：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">exclude</span><span class="w"> </span><span class="n">group</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;androidx.activity&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">module</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;activity-ktx&#34;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
 
 </section>
 
