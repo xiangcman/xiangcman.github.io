@@ -364,7 +364,7 @@
 
 
                 <time class="article-time--reading">
-                    3 minute read
+                    4 minute read
                 </time>
             </div>
         
@@ -801,7 +801,27 @@
 </ul>
 <p>关于更多的配置可以参考repo上的<a class="link" href="https://cs.android.com/android/platform/superproject/main/&#43;/main:external/perfetto/test/configs/"  target="_blank" rel="noopener"
     >test/configs</a></p>
-<h4 id="通过-perfetto-界面记录跟踪">通过 Perfetto 界面记录跟踪
+<p>上面是通过record_android_trace脚本，然后配置config.pbtx来跟踪的，我们也可以不借助record_android_trace脚本，直接使用设备上的命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">cat</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="na">pbtx</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">adb</span><span class="w"> </span><span class="n">shell</span><span class="w"> </span><span class="n">perfetto</span><span class="w"> </span><span class="o">-</span><span class="n">c</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">--</span><span class="n">txt</span><span class="w"> </span><span class="o">-</span><span class="n">o</span><span class="w"> </span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">misc</span><span class="o">/</span><span class="n">perfetto</span><span class="o">-</span><span class="n">traces</span><span class="o">/</span><span class="n">trace</span><span class="p">.</span><span class="na">perfetto</span><span class="o">-</span><span class="n">trace</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>或者先把config.pbtx给推送到设备上，然后再跟踪：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">adb</span><span class="w"> </span><span class="n">push</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="na">pbtx</span><span class="w"> </span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">config</span><span class="p">.</span><span class="na">pbtx</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">adb</span><span class="w"> </span><span class="n">shell</span><span class="w"> </span><span class="err">&#39;</span><span class="n">cat</span><span class="w"> </span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">config</span><span class="p">.</span><span class="na">pbtx</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">perfetto</span><span class="w"> </span><span class="o">--</span><span class="n">txt</span><span class="w"> </span><span class="o">-</span><span class="n">c</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="o">-</span><span class="n">o</span><span class="w"> </span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">misc</span><span class="o">/</span><span class="n">perfetto</span><span class="o">-</span><span class="n">traces</span><span class="o">/</span><span class="n">trace</span><span class="p">.</span><span class="na">perfetto</span><span class="o">-</span><span class="n">trace</span><span class="err">&#39;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="通过-perfetto-界面记录跟踪">通过 Perfetto 界面记录跟踪
 </h4><p>点开<a class="link" href="https://ui.perfetto.dev/#!/record"  target="_blank" rel="noopener"
     >ui.perfetto,dev</a>，然后点击左侧菜单的Record new trace，然后连接上设备：</p>
 <img src="连接设备.png" width ="500"/>  
@@ -809,9 +829,44 @@
 <img src="buffers和duration面板.png" width ="500"/>
 <p>接着配置前面说的ftrace和atrace信息，它是在Android apps &amp; svcs的tab中，但是此处我只看到atrace的配置：</p>
 <img src="atrace的分类设置.png" width ="500"/>
-<p>可以看到上面我把所有的atrace的分类都给勾上了。</p>
+<p>可以看到上面我把所有的atrace的分类都给勾上了。在最后一栏中我填上了进程的名字，这个跟上面config.pbtx的atrace_apps配置是一样的，用来跟踪自定义的trace信息。</p>
 <p>接着来看下android log的数据源配置，它也是在Android apps &amp; svcs的tab中：</p>
 <img src="android_log配置.png" width ="500"/>
+<p>可以看到我这里把所有的log级别都给勾上了。</p>
+<p>在Event log下面还有个Frame timeline的跟踪，它是我们卡顿分析中很重要的一项，它会把每一帧的期望时间和实际时间给列出来，方便分析是否是卡顿帧：</p>
+<img src="frame_timeline设置.png" width ="500"/>
+<p>它会在config.pbtx中生成如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nl">data_sources</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">config</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;android.surfaceflinger.frametimeline&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>这个在前面的config中有介绍。所有的配置完事后，可以在Cmdline instructions的tab中浏览生成的配置信息。最终生成的也是前面介绍的config.pbtx:
+<img src="/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/%E9%80%9A%E8%BF%87%E7%BD%91%E9%A1%B5%E6%9C%80%E7%BB%88%E7%94%9F%E6%88%90%E7%9A%84config%E4%BF%A1%E6%81%AF.png"
+	width="1810"
+	height="5739"
+	srcset="/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/%E9%80%9A%E8%BF%87%E7%BD%91%E9%A1%B5%E6%9C%80%E7%BB%88%E7%94%9F%E6%88%90%E7%9A%84config%E4%BF%A1%E6%81%AF_hu18189692106848121612.png 480w, /p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/%E9%80%9A%E8%BF%87%E7%BD%91%E9%A1%B5%E6%9C%80%E7%BB%88%E7%94%9F%E6%88%90%E7%9A%84config%E4%BF%A1%E6%81%AF_hu1450378046521330355.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="31"
+		data-flex-basis="75px"
+	
+></p>
 <h3 id="参考">参考
 </h3><ul>
 <li><a class="link" href="https://perfetto.dev/docs/quickstart/android-tracing"  target="_blank" rel="noopener"
