@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 ">
+<title>Android上启动perfetto跟踪</title>
+
+<link rel='canonical' href='https://example.com/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Android上启动perfetto跟踪">
+<meta property='og:description' content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 ">
+<meta property='og:url' content='https://example.com/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-06-18T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-06-18T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="Android上启动perfetto跟踪">
+<meta name="twitter:description" content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 ">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/_index.zh-cn/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#目的">目的</a></li>
+        <li><a href="#启动跟踪服务">启动跟踪服务</a></li>
+        <li><a href="#记录跟踪">记录跟踪</a>
+          <ol>
+            <li><a href="#命令行跟踪">命令行跟踪</a></li>
+            <li><a href="#通过-perfetto-界面记录跟踪">通过 Perfetto 界面记录跟踪</a></li>
+          </ol>
+        </li>
+        <li><a href="#参考">参考</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/perfetto/" >
+                Perfetto
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/">Android上启动perfetto跟踪</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2025-06-18</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    3 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h3 id="目的">目的
+</h3><p>该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。</p>
+<h3 id="启动跟踪服务">启动跟踪服务
+</h3><p>启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="err">#</span><span class="w"> </span><span class="n">Needed</span><span class="w"> </span><span class="n">only</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">Android</span><span class="w"> </span><span class="nf">9</span><span class="w"> </span><span class="p">(</span><span class="n">P</span><span class="p">)</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="nf">10</span><span class="w"> </span><span class="p">(</span><span class="n">Q</span><span class="p">)</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="n">Pixel</span><span class="w"> </span><span class="n">phones</span><span class="p">.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">adb</span><span class="w"> </span><span class="n">shell</span><span class="w"> </span><span class="n">setprop</span><span class="w"> </span><span class="n">persist</span><span class="p">.</span><span class="na">traced</span><span class="p">.</span><span class="na">enable</span><span class="w"> </span><span class="n">1</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果是在Android9之前的版本，能通过Perfetto 脚本捕获跟踪记录record_android_trace。</p>
+<h3 id="记录跟踪">记录跟踪
+</h3><h4 id="命令行跟踪">命令行跟踪
+</h4><h5 id="record_android_trace脚本跟踪">record_android_trace脚本跟踪
+</h5><ul>
+<li>首先将record_android_trace脚本下载下来：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">//下载脚本
+</span></span><span class="line"><span class="cl">curl -O https://raw.githubusercontent.com/google/perfetto/main/tools/record_android_trace
+</span></span><span class="line"><span class="cl">//给脚本分配执行权限
+</span></span><span class="line"><span class="cl">chmod u+x record_android_trace
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>开始跟踪
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="p">.</span><span class="o">/</span><span class="n">record_android_trace</span><span class="w"> </span><span class="o">-</span><span class="n">o</span><span class="w"> </span><span class="n">trace_file</span><span class="p">.</span><span class="na">perfetto</span><span class="o">-</span><span class="n">trace</span><span class="w"> </span><span class="o">-</span><span class="n">t</span><span class="w"> </span><span class="n">30s</span><span class="w"> </span><span class="o">-</span><span class="n">b</span><span class="w"> </span><span class="n">64mb</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">sched</span><span class="w"> </span><span class="n">freq</span><span class="w"> </span><span class="n">idle</span><span class="w"> </span><span class="n">am</span><span class="w"> </span><span class="n">wm</span><span class="w"> </span><span class="n">gfx</span><span class="w"> </span><span class="n">view</span><span class="w"> </span><span class="n">binder_driver</span><span class="w"> </span><span class="n">hal</span><span class="w"> </span><span class="n">dalvik</span><span class="w"> </span><span class="n">camera</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="n">memory</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>命令解释：
+<ul>
+<li>上面的脚本中是通过record_android_trace这个脚本收集，接着-o后面跟的是输出的perfetto能识别的文件，-t是跟踪多久的时间，-b后面是最大的文件大小，最后是一堆的category分类。收集完后，它会自动在ui.perfetto.dev上打开该trace文件。上面拼接的分类有如下解释：
+<ul>
+<li>sched：进程调度(Scheduler)</li>
+<li>freq：CPU 频率变化(CPU Frequency)</li>
+<li>idle：CPU 空闲状态(CPU Idle)</li>
+<li>am：应用生命周期、进程调度等(Activity Manager)</li>
+<li>wm：窗口管理、Activity 启动等(Window Manager)</li>
+<li>gfx:图形渲染、SurfaceFlinger、GPU 活动等(Graphics)</li>
+<li>view:视图绘制、布局、测量等(View System)</li>
+<li>binder_driver：进程间通信（Binder IPC）</li>
+<li>hal：硬件抽象层（Hardware Abstraction Layer）</li>
+<li>dalvik：ART 运行时、GC、JNI 调用等（ART Runtime）</li>
+<li>camera：摄像头操作（Camera）</li>
+<li>input：输入事件处理（Input）</li>
+<li>res：资源加载（Resource）</li>
+<li>memory：内存分配和使用（Memory）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>想获取更多的类别，可以通过如下的指令获取：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">adb</span><span class="w"> </span><span class="n">shell</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">atrace</span><span class="w"> </span><span class="o">--</span><span class="n">list_categories</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>atrace &ndash;list_categories 列出的主要是 Atrace 类别。这些类别是 Perfetto 中最常用的类别之一。<br>
+一些厂商可能会添加自己的自定义类别，这些也会在这里列出。</p>
+</blockquote>
+<h5 id="使用设备上的-systembinperfetto-命令">使用设备上的 /system/bin/perfetto 命令
+</h5><p>首先我得设备是Android13的，所以具备通过adb的命令来抓取跟踪文件，需要在<strong>开发者选项中选择调试应用为你要调试的应用</strong>。</p>
+<img src="选择调试的应用.png" width ="300"/>  
+<p>接着通过如下命令来跟踪：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">adb</span><span class="w"> </span><span class="n">shell</span><span class="w"> </span><span class="n">perfetto</span><span class="w"> </span><span class="o">-</span><span class="n">o</span><span class="w"> </span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">misc</span><span class="o">/</span><span class="n">perfetto</span><span class="o">-</span><span class="n">traces</span><span class="o">/</span><span class="n">trace_file</span><span class="p">.</span><span class="na">perfetto</span><span class="o">-</span><span class="n">trace</span><span class="w"> </span><span class="o">-</span><span class="n">t</span><span class="w"> </span><span class="n">20s</span><span class="w"> </span><span class="err">\</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">sched</span><span class="w"> </span><span class="n">freq</span><span class="w"> </span><span class="n">idle</span><span class="w"> </span><span class="n">am</span><span class="w"> </span><span class="n">wm</span><span class="w"> </span><span class="n">gfx</span><span class="w"> </span><span class="n">view</span><span class="w"> </span><span class="n">binder_driver</span><span class="w"> </span><span class="n">hal</span><span class="w"> </span><span class="n">dalvik</span><span class="w"> </span><span class="n">camera</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="n">memory</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>此处的命令和上面record_android_trace脚本跟踪基本一致的，跟踪完后，导出该文件到电脑上：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">adb pull /data/misc/perfetto-traces/trace_file.perfetto-trace ~/trace.perfetto-trace
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最后将导出的trace文件拖拽到ui.perfetto.dev中。</p>
+<h5 id="通过配置文件来启动跟踪">通过配置文件来启动跟踪
+</h5><p>首先来看下官网给的事例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">cat</span><span class="o">&lt;&lt;</span><span class="n">EOF</span><span class="o">&gt;</span><span class="n">config</span><span class="p">.</span><span class="na">pbtx</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nl">duration_ms</span><span class="p">:</span><span class="w"> </span><span class="n">10000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nl">buffers</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">size_kb</span><span class="p">:</span><span class="w"> </span><span class="n">8960</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">fill_policy</span><span class="p">:</span><span class="w"> </span><span class="n">DISCARD</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nl">buffers</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">size_kb</span><span class="p">:</span><span class="w"> </span><span class="n">1280</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">fill_policy</span><span class="p">:</span><span class="w"> </span><span class="n">DISCARD</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nl">data_sources</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">config</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;linux.ftrace&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">ftrace_config</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">ftrace_events</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;sched/sched_switch&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">ftrace_events</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;power/suspend_resume&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">ftrace_events</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;sched/sched_process_exit&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">ftrace_events</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;sched/sched_process_free&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">ftrace_events</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;task/task_newtask&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">ftrace_events</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;task/task_rename&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">ftrace_events</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;ftrace/print&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;gfx&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;view&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;webview&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;camera&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;dalvik&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;power&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nl">data_sources</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">config</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;linux.process_stats&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">target_buffer</span><span class="p">:</span><span class="w"> </span><span class="n">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">process_stats_config</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">scan_all_processes_on_start</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">EOF</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">.</span><span class="o">/</span><span class="n">record_android_trace</span><span class="w"> </span><span class="o">-</span><span class="n">c</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="na">pbtx</span><span class="w"> </span><span class="o">-</span><span class="n">o</span><span class="w"> </span><span class="n">trace_file</span><span class="p">.</span><span class="na">perfetto</span><span class="o">-</span><span class="n">trace</span><span class="w"> 
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在EOF之前的命令会把配置写到config.pbtx文件中，在EOF之后，和上面的一样，只不过区别是增加了-c后面跟配置文件的路径，该方式也会自动在ui.perfetto.dev上打开该trace。<br>
+下面再来解释下上面的配置文件都配置了些什么：</p>
+<ul>
+<li>duration_ms: 10000: 跟踪将持续 10 秒</li>
+<li>buffers: 定义了两个缓冲区。
+<ul>
+<li>size_kb: 8960, fill_policy: DISCARD(主缓冲区，其中填充策略是丢弃模式)</li>
+<li>size_kb: 1280, fill_policy: DISCARD(次缓冲区，用来存储其它少量的数据源)</li>
+</ul>
+</li>
+<li>data_sources
+<ul>
+<li>linux.ftrace：ftrace和atrace事件的跟踪
+<ul>
+<li>ftrace相关的跟踪
+<ul>
+<li>sched/sched_switch：这是显示 CPU 调度和构建线程 CPU 轨道的最关键事件。 有了这个事件，Perfetto UI 就能知道哪些线程在何时运行在哪个 CPU 上。</li>
+<li>power/suspend_resume：与电源管理相关。</li>
+<li>sched/sched_process_exit, sched/sched_process_free, task/task_newtask, task/task_rename：这些事件有助于 Perfetto 跟踪进程和线程的创建、销毁和重命名，从而在 UI 中正确地显示它们的生命周期和名称。</li>
+<li>ftrace/print: 收集 printk 等内核打印信息，在某些调试场景有用。</li>
+</ul>
+</li>
+<li>atrace相关的跟踪
+<ul>
+<li>gfx，view，webview：图形和ui渲染相关的atrace。</li>
+<li>camera：摄像头相关的atrace</li>
+<li>dalvik：ART运行时相关的atrace。</li>
+<li>power：电源相关的atrace。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>linux.process_stats：所有进程的状态跟踪
+<ul>
+<li>target_buffer: 1: 指示此数据源将数据写入第二个（较小的）缓冲区。</li>
+<li>process_stats_config：
+<ul>
+<li>scan_all_processes_on_start: true：这将会在跟踪开始时扫描所有进程信息，确保 Perfetto 了解所有活动的进程和线程的初始状态。
+再来看一个之前通过perfetto可视化页面获取的一个配置：</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nl">buffers</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">size_kb</span><span class="p">:</span><span class="w"> </span><span class="n">63488</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">fill_policy</span><span class="p">:</span><span class="w"> </span><span class="n">DISCARD</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nl">buffers</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">size_kb</span><span class="p">:</span><span class="w"> </span><span class="n">2048</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">fill_policy</span><span class="p">:</span><span class="w"> </span><span class="n">DISCARD</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nl">data_sources</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">config</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;android.packages_list&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">target_buffer</span><span class="p">:</span><span class="w"> </span><span class="n">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nl">data_sources</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">config</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;android.log&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">android_log_config</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">log_ids</span><span class="p">:</span><span class="w"> </span><span class="n">LID_EVENTS</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">log_ids</span><span class="p">:</span><span class="w"> </span><span class="n">LID_CRASH</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">log_ids</span><span class="p">:</span><span class="w"> </span><span class="n">LID_KERNEL</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">log_ids</span><span class="p">:</span><span class="w"> </span><span class="n">LID_DEFAULT</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">log_ids</span><span class="p">:</span><span class="w"> </span><span class="n">LID_RADIO</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">log_ids</span><span class="p">:</span><span class="w"> </span><span class="n">LID_SECURITY</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">log_ids</span><span class="p">:</span><span class="w"> </span><span class="n">LID_STATS</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">log_ids</span><span class="p">:</span><span class="w"> </span><span class="n">LID_SYSTEM</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nl">data_sources</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">config</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;android.surfaceflinger.frametimeline&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nl">data_sources</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">config</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;linux.ftrace&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">ftrace_config</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">ftrace_events</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;ftrace/print&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;am&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;adb&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;aidl&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;dalvik&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;audio&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;binder_lock&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;binder_driver&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;bionic&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;camera&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;database&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;gfx&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;hal&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;input&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;network&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;nnapi&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;pm&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;power&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;rs&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;res&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;rro&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;sm&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;ss&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;vibrator&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;video&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;view&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;webview&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_categories</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;wm&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">atrace_apps</span><span class="p">:</span><span class="w"> </span><span class="s">&#34;com.example.coroutinescopedemo&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nl">duration_ms</span><span class="p">:</span><span class="w"> </span><span class="n">10000</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>主要来说下和上面官网的配置区别。主要在data_sources部分：</p>
+<ul>
+<li>android.packages_list:收集设备上安装的应用程序包的列表。这对于在 Perfetto UI 中将跟踪事件与特定的应用程序关联起来非常有用。</li>
+<li>android.log:收集android logcat日志。这对于调试应用程序行为、查看系统事件、崩溃信息等非常重要。
+<ul>
+<li>android_log_config: 详细配置了要收集的日志缓冲区：
+<ul>
+<li>LID_EVENTS: 事件日志（二进制格式的系统事件）。</li>
+<li>LID_CRASH: 崩溃日志。</li>
+<li>LID_KERNEL: 内核日志。</li>
+<li>LID_DEFAULT: 主日志缓冲区（应用程序和大部分系统日志）。</li>
+<li>LID_RADIO: 无线电/电话相关的日志。</li>
+<li>LID_SECURITY: 安全相关的日志。</li>
+<li>LID_STATS: 统计信息日志。</li>
+<li>LID_SYSTEM: 系统日志。</li>
+</ul>
+</li>
+<li>这几乎涵盖了所有主要的 Logcat 日志缓冲区，会收集大量的日志信息。</li>
+</ul>
+</li>
+<li>android.surfaceflinger.frametimeline：收集 SurfaceFlinger 的帧时间线数据。这对于分析 UI 渲染性能、卡顿、Jank 等问题非常关键。它能显示帧的生命周期，从应用提交到最终显示在屏幕上的各个阶段。</li>
+<li>linux.ftrace：和上面对比，增加了atrace_apps信息，这是非常重要的。它会启用针对特定应用程序 com.example.coroutinescopedemo 的应用层自定义 app 类别跟踪。如果该应用使用了 android.os.Trace 或类似的 Tracing SDK 来添加自定义事件，那么这些事件将被捕获。</li>
+</ul>
+<p>关于更多的配置可以参考repo上的<a class="link" href="https://cs.android.com/android/platform/superproject/main/&#43;/main:external/perfetto/test/configs/"  target="_blank" rel="noopener"
+    >test/configs</a></p>
+<h4 id="通过-perfetto-界面记录跟踪">通过 Perfetto 界面记录跟踪
+</h4><p>点开<a class="link" href="https://ui.perfetto.dev/#!/record"  target="_blank" rel="noopener"
+    >ui.perfetto,dev</a>，然后点击左侧菜单的Record new trace，然后连接上设备：</p>
+<img src="连接设备.png" width ="500"/>  
+<p>来到Buffers and duration，这里默认的缓冲区是64M，duration是10s，我们可以选择不动：</p>
+<img src="buffers和duration面板.png" width ="500"/>
+<p>接着配置前面说的ftrace和atrace信息，它是在Android apps &amp; svcs的tab中，但是此处我只看到atrace的配置：</p>
+<img src="atrace的分类设置.png" width ="500"/>
+<p>可以看到上面我把所有的atrace的分类都给勾上了。</p>
+<p>接着来看下android log的数据源配置，它也是在Android apps &amp; svcs的tab中：</p>
+<img src="android_log配置.png" width ="500"/>
+<h3 id="参考">参考
+</h3><ul>
+<li><a class="link" href="https://perfetto.dev/docs/quickstart/android-tracing"  target="_blank" rel="noopener"
+    >https://perfetto.dev/docs/quickstart/android-tracing</a></li>
+<li><a class="link" href="https://perfetto.dev/docs/concepts/config"  target="_blank" rel="noopener"
+    >https://perfetto.dev/docs/concepts/config</a></li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Example Person
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
