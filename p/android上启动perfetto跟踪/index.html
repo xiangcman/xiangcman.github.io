@@ -1,18 +1,30 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
+<<<<<<< HEAD
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 ">
+=======
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 如果是在Android9之前的版本，能通过Perfetto 脚本捕获跟踪记录record_android_trace。\n记录跟踪 命令行跟踪 record_android_trace脚本跟踪 首先将record_android_trace脚本下载下来： 1 2 3 4 //下载脚本 curl -O https://raw.githubusercontent.com/google/perfetto/main/tools/record_android_trace //给脚本分配执行权限 chmod u+x record_android_trace 开始跟踪 1 2 ./record_android_trace -o trace_file.perfetto-trace -t 30s -b 64mb \\ sched freq idle am wm gfx view binder_driver hal dalvik camera input res memory 命令解释： 上面的脚本中是通过record_android_trace这个脚本收集，接着-o后面跟的是输出的perfetto能识别的文件，-t是跟踪多久的时间，-b后面是最大的文件大小，最后是一堆的category分类。收集完后，它会自动在ui.perfetto.dev上打开该trace文件。上面拼接的分类有如下解释： sched：进程调度(Scheduler) freq：CPU 频率变化(CPU Frequency) idle：CPU 空闲状态(CPU Idle) am：应用生命周期、进程调度等(Activity Manager) wm：窗口管理、Activity 启动等(Window Manager) gfx:图形渲染、SurfaceFlinger、GPU 活动等(Graphics) view:视图绘制、布局、测量等(View System) binder_driver：进程间通信（Binder IPC） hal：硬件抽象层（Hardware Abstraction Layer） dalvik：ART 运行时、GC、JNI 调用等（ART Runtime） camera：摄像头操作（Camera） input：输入事件处理（Input） res：资源加载（Resource） memory：内存分配和使用（Memory） 想获取更多的类别，可以通过如下的指令获取：\n">
+>>>>>>> f144d23 (更新plthook文章)
 <title>Android上启动perfetto跟踪</title>
 
 <link rel='canonical' href='https://example.com/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Android上启动perfetto跟踪">
+<<<<<<< HEAD
 <meta property='og:description' content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 ">
+=======
+<meta property='og:description' content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 如果是在Android9之前的版本，能通过Perfetto 脚本捕获跟踪记录record_android_trace。\n记录跟踪 命令行跟踪 record_android_trace脚本跟踪 首先将record_android_trace脚本下载下来： 1 2 3 4 //下载脚本 curl -O https://raw.githubusercontent.com/google/perfetto/main/tools/record_android_trace //给脚本分配执行权限 chmod u+x record_android_trace 开始跟踪 1 2 ./record_android_trace -o trace_file.perfetto-trace -t 30s -b 64mb \\ sched freq idle am wm gfx view binder_driver hal dalvik camera input res memory 命令解释： 上面的脚本中是通过record_android_trace这个脚本收集，接着-o后面跟的是输出的perfetto能识别的文件，-t是跟踪多久的时间，-b后面是最大的文件大小，最后是一堆的category分类。收集完后，它会自动在ui.perfetto.dev上打开该trace文件。上面拼接的分类有如下解释： sched：进程调度(Scheduler) freq：CPU 频率变化(CPU Frequency) idle：CPU 空闲状态(CPU Idle) am：应用生命周期、进程调度等(Activity Manager) wm：窗口管理、Activity 启动等(Window Manager) gfx:图形渲染、SurfaceFlinger、GPU 活动等(Graphics) view:视图绘制、布局、测量等(View System) binder_driver：进程间通信（Binder IPC） hal：硬件抽象层（Hardware Abstraction Layer） dalvik：ART 运行时、GC、JNI 调用等（ART Runtime） camera：摄像头操作（Camera） input：输入事件处理（Input） res：资源加载（Resource） memory：内存分配和使用（Memory） 想获取更多的类别，可以通过如下的指令获取：\n">
+>>>>>>> f144d23 (更新plthook文章)
 <meta property='og:url' content='https://example.com/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-06-18T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-06-18T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="Android上启动perfetto跟踪">
+<<<<<<< HEAD
 <meta name="twitter:description" content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 ">
+=======
+<meta name="twitter:description" content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 如果是在Android9之前的版本，能通过Perfetto 脚本捕获跟踪记录record_android_trace。\n记录跟踪 命令行跟踪 record_android_trace脚本跟踪 首先将record_android_trace脚本下载下来： 1 2 3 4 //下载脚本 curl -O https://raw.githubusercontent.com/google/perfetto/main/tools/record_android_trace //给脚本分配执行权限 chmod u+x record_android_trace 开始跟踪 1 2 ./record_android_trace -o trace_file.perfetto-trace -t 30s -b 64mb \\ sched freq idle am wm gfx view binder_driver hal dalvik camera input res memory 命令解释： 上面的脚本中是通过record_android_trace这个脚本收集，接着-o后面跟的是输出的perfetto能识别的文件，-t是跟踪多久的时间，-b后面是最大的文件大小，最后是一堆的category分类。收集完后，它会自动在ui.perfetto.dev上打开该trace文件。上面拼接的分类有如下解释： sched：进程调度(Scheduler) freq：CPU 频率变化(CPU Frequency) idle：CPU 空闲状态(CPU Idle) am：应用生命周期、进程调度等(Activity Manager) wm：窗口管理、Activity 启动等(Window Manager) gfx:图形渲染、SurfaceFlinger、GPU 活动等(Graphics) view:视图绘制、布局、测量等(View System) binder_driver：进程间通信（Binder IPC） hal：硬件抽象层（Hardware Abstraction Layer） dalvik：ART 运行时、GC、JNI 调用等（ART Runtime） camera：摄像头操作（Camera） input：输入事件处理（Input） res：资源加载（Resource） memory：内存分配和使用（Memory） 想获取更多的类别，可以通过如下的指令获取：\n">
+>>>>>>> f144d23 (更新plthook文章)
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -58,7 +70,11 @@
                     
                     
                         
+<<<<<<< HEAD
                         <img src="/img/logo_hu16514757392605978522.png" width="300"
+=======
+                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
+>>>>>>> f144d23 (更新plthook文章)
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -462,8 +478,12 @@
 </div>
 </div><blockquote>
 <p>atrace &ndash;list_categories 列出的主要是 Atrace 类别。这些类别是 Perfetto 中最常用的类别之一。<br>
+<<<<<<< HEAD
 一些厂商可能会添加自己的自定义类别，这些也会在这里列出。</p>
 </blockquote>
+=======
+一些厂商可能会添加自己的自定义类别，这些也会在这里列出。</p></blockquote>
+>>>>>>> f144d23 (更新plthook文章)
 <h5 id="使用设备上的-systembinperfetto-命令">使用设备上的 /system/bin/perfetto 命令
 </h5><p>首先我得设备是Android13的，所以具备通过adb的命令来抓取跟踪文件，需要在<strong>开发者选项中选择调试应用为你要调试的应用</strong>。</p>
 <img src="选择调试的应用.png" width ="300"/>  
@@ -614,7 +634,11 @@
 </li>
 </ul>
 </li>
+<<<<<<< HEAD
 <li>linux.process_stats：所有进程的状态跟踪
+=======
+<li>linux.process_stats：所有进程的状态跟踪，如果没有该配置，生成的perfetto跟踪信息中，都不会显示具体的进程名字，如果想知道
+>>>>>>> f144d23 (更新plthook文章)
 <ul>
 <li>target_buffer: 1: 指示此数据源将数据写入第二个（较小的）缓冲区。</li>
 <li>process_stats_config：
@@ -856,7 +880,11 @@
 <img src="/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/%E9%80%9A%E8%BF%87%E7%BD%91%E9%A1%B5%E6%9C%80%E7%BB%88%E7%94%9F%E6%88%90%E7%9A%84config%E4%BF%A1%E6%81%AF.png"
 	width="1810"
 	height="5739"
+<<<<<<< HEAD
 	srcset="/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/%E9%80%9A%E8%BF%87%E7%BD%91%E9%A1%B5%E6%9C%80%E7%BB%88%E7%94%9F%E6%88%90%E7%9A%84config%E4%BF%A1%E6%81%AF_hu18189692106848121612.png 480w, /p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/%E9%80%9A%E8%BF%87%E7%BD%91%E9%A1%B5%E6%9C%80%E7%BB%88%E7%94%9F%E6%88%90%E7%9A%84config%E4%BF%A1%E6%81%AF_hu1450378046521330355.png 1024w"
+=======
+	srcset="/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/%E9%80%9A%E8%BF%87%E7%BD%91%E9%A1%B5%E6%9C%80%E7%BB%88%E7%94%9F%E6%88%90%E7%9A%84config%E4%BF%A1%E6%81%AF_hu_177e058c53d96e9f.png 480w, /p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/%E9%80%9A%E8%BF%87%E7%BD%91%E9%A1%B5%E6%9C%80%E7%BB%88%E7%94%9F%E6%88%90%E7%9A%84config%E4%BF%A1%E6%81%AF_hu_800d35ce7ca4e99.png 1024w"
+>>>>>>> f144d23 (更新plthook文章)
 	loading="lazy"
 	
 		alt="alt text"

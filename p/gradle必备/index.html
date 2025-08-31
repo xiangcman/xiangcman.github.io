@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Gradle基础 gradle是一个脚本框架，用来构建android程序的一个脚本，在认识前，我们先以最基础的方式来认识它。\ngradle配置 首先在官网下载对应的版本，这里我选择6.6.1-all的版本，下载完后，放到指定的目录，然后配置gradle的环境变量:\nopen -e .bash_profile 打开配置文件 添加 GRADLE_HOME、PATH 1 2 3 4 5 6 7 export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=${PATH}:/Users/xiangcheng/gradle/gradle-6.6.1/bin ----------------官方写法如下-------------------------------- export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=$PATH:$GRADLE_HOME/bin ">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Gradle基础 gradle是一个脚本框架，用来构建android程序的一个脚本，在认识前，我们先以最基础的方式来认识它。\ngradle配置 首先在官网下载对应的版本，这里我选择6.6.1-all的版本，下载完后，放到指定的目录，然后配置gradle的环境变量:\nopen -e .bash_profile 打开配置文件 添加 GRADLE_HOME、PATH 1 2 3 4 5 6 7 export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=${PATH}:/Users/xiangcheng/gradle/gradle-6.6.1/bin ----------------官方写法如下-------------------------------- export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=$PATH:$GRADLE_HOME/bin source .bash_profile 重置配置文件，以便新 path 生效 open -e ~/.zshrc 打开另一个配置 在最后一行添加 source ~/.bash_profile source ~/.zshrc 重置配置文件 配置 zshrc 是因为有的机器 bash_profile 配置不管用，添加这个就行了\n运行 gradle &ndash;version，出现版本号则 Gradle 配置成功 注意：gradle版本和jdk版本需要有对应关系： 这里我安装的是gradle-6.6.1的版本，因此我需要设置JDK8，如果本地安装的jdk版本多个的话，mac会使用最高的版本，先查看本地安装了哪些jdk版本 1 /usr/libexec/java_home -V 输出如下：\n">
 <title>Gradle必备</title>
 
 <link rel='canonical' href='https://example.com/p/gradle%E5%BF%85%E5%A4%87/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Gradle必备">
-<meta property='og:description' content="Gradle基础 gradle是一个脚本框架，用来构建android程序的一个脚本，在认识前，我们先以最基础的方式来认识它。\ngradle配置 首先在官网下载对应的版本，这里我选择6.6.1-all的版本，下载完后，放到指定的目录，然后配置gradle的环境变量:\nopen -e .bash_profile 打开配置文件 添加 GRADLE_HOME、PATH 1 2 3 4 5 6 7 export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=${PATH}:/Users/xiangcheng/gradle/gradle-6.6.1/bin ----------------官方写法如下-------------------------------- export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=$PATH:$GRADLE_HOME/bin ">
+<meta property='og:description' content="Gradle基础 gradle是一个脚本框架，用来构建android程序的一个脚本，在认识前，我们先以最基础的方式来认识它。\ngradle配置 首先在官网下载对应的版本，这里我选择6.6.1-all的版本，下载完后，放到指定的目录，然后配置gradle的环境变量:\nopen -e .bash_profile 打开配置文件 添加 GRADLE_HOME、PATH 1 2 3 4 5 6 7 export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=${PATH}:/Users/xiangcheng/gradle/gradle-6.6.1/bin ----------------官方写法如下-------------------------------- export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=$PATH:$GRADLE_HOME/bin source .bash_profile 重置配置文件，以便新 path 生效 open -e ~/.zshrc 打开另一个配置 在最后一行添加 source ~/.bash_profile source ~/.zshrc 重置配置文件 配置 zshrc 是因为有的机器 bash_profile 配置不管用，添加这个就行了\n运行 gradle &ndash;version，出现版本号则 Gradle 配置成功 注意：gradle版本和jdk版本需要有对应关系： 这里我安装的是gradle-6.6.1的版本，因此我需要设置JDK8，如果本地安装的jdk版本多个的话，mac会使用最高的版本，先查看本地安装了哪些jdk版本 1 /usr/libexec/java_home -V 输出如下：\n">
 <meta property='og:url' content='https://example.com/p/gradle%E5%BF%85%E5%A4%87/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-02-07T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-02-07T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="Gradle必备">
-<meta name="twitter:description" content="Gradle基础 gradle是一个脚本框架，用来构建android程序的一个脚本，在认识前，我们先以最基础的方式来认识它。\ngradle配置 首先在官网下载对应的版本，这里我选择6.6.1-all的版本，下载完后，放到指定的目录，然后配置gradle的环境变量:\nopen -e .bash_profile 打开配置文件 添加 GRADLE_HOME、PATH 1 2 3 4 5 6 7 export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=${PATH}:/Users/xiangcheng/gradle/gradle-6.6.1/bin ----------------官方写法如下-------------------------------- export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=$PATH:$GRADLE_HOME/bin ">
+<meta name="twitter:description" content="Gradle基础 gradle是一个脚本框架，用来构建android程序的一个脚本，在认识前，我们先以最基础的方式来认识它。\ngradle配置 首先在官网下载对应的版本，这里我选择6.6.1-all的版本，下载完后，放到指定的目录，然后配置gradle的环境变量:\nopen -e .bash_profile 打开配置文件 添加 GRADLE_HOME、PATH 1 2 3 4 5 6 7 export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=${PATH}:/Users/xiangcheng/gradle/gradle-6.6.1/bin ----------------官方写法如下-------------------------------- export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=$PATH:$GRADLE_HOME/bin source .bash_profile 重置配置文件，以便新 path 生效 open -e ~/.zshrc 打开另一个配置 在最后一行添加 source ~/.bash_profile source ~/.zshrc 重置配置文件 配置 zshrc 是因为有的机器 bash_profile 配置不管用，添加这个就行了\n运行 gradle &ndash;version，出现版本号则 Gradle 配置成功 注意：gradle版本和jdk版本需要有对应关系： 这里我安装的是gradle-6.6.1的版本，因此我需要设置JDK8，如果本地安装的jdk版本多个的话，mac会使用最高的版本，先查看本地安装了哪些jdk版本 1 /usr/libexec/java_home -V 输出如下：\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -392,8 +392,7 @@
     
     <h3 id="gradle基础">Gradle基础
 </h3><blockquote>
-<p>gradle是一个脚本框架，用来构建android程序的一个脚本，在认识前，我们先以最基础的方式来认识它。</p>
-</blockquote>
+<p>gradle是一个脚本框架，用来构建android程序的一个脚本，在认识前，我们先以最基础的方式来认识它。</p></blockquote>
 <h4 id="gradle配置">gradle配置
 </h4><p>首先在<a class="link" href="https://services.gradle.org/distributions/"  target="_blank" rel="noopener"
     >官网</a>下载对应的版本，这里我选择6.6.1-all的版本，下载完后，放到指定的目录，然后配置gradle的环境变量:</p>
@@ -433,7 +432,7 @@
 <img src="/p/gradle%E5%BF%85%E5%A4%87/gradle%E5%AE%89%E8%A3%85.png"
 	width="1010"
 	height="852"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/gradle%E5%AE%89%E8%A3%85_hu5863211065771247100.png 480w, /p/gradle%E5%BF%85%E5%A4%87/gradle%E5%AE%89%E8%A3%85_hu4946069927093474458.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/gradle%E5%AE%89%E8%A3%85_hu_99b324aab736aba4.png 480w, /p/gradle%E5%BF%85%E5%A4%87/gradle%E5%AE%89%E8%A3%85_hu_60c8b3d6e6e699a0.png 1024w"
 	loading="lazy"
 	
 		alt="gradle安装"
@@ -448,7 +447,7 @@
 <img src="/p/gradle%E5%BF%85%E5%A4%87/gradle%E5%92%8Cjdk%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB.png"
 	width="704"
 	height="820"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/gradle%E5%92%8Cjdk%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB_hu5263414090172033456.png 480w, /p/gradle%E5%BF%85%E5%A4%87/gradle%E5%92%8Cjdk%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB_hu3837926943285409317.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/gradle%E5%92%8Cjdk%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB_hu_c37c69edf21668d0.png 480w, /p/gradle%E5%BF%85%E5%A4%87/gradle%E5%92%8Cjdk%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB_hu_7dc1b8d7486ccf10.png 1024w"
 	loading="lazy"
 	
 		alt="gradle和jdk对应关系"
@@ -517,7 +516,7 @@
 <img src="/p/gradle%E5%BF%85%E5%A4%87/%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C.png"
 	width="1024"
 	height="634"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C_hu10524154354321671397.png 480w, /p/gradle%E5%BF%85%E5%A4%87/%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C_hu9451364339251619278.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C_hu_11f292bfd254bed4.png 480w, /p/gradle%E5%BF%85%E5%A4%87/%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C_hu_488eb71fe0bce063.png 1024w"
 	loading="lazy"
 	
 		alt="运行结果"
@@ -537,7 +536,7 @@
 <img src="/p/gradle%E5%BF%85%E5%A4%87/gradle%E5%88%9D%E5%A7%8B%E5%8C%96%E5%B7%A5%E7%A8%8B.png"
 	width="1452"
 	height="1232"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/gradle%E5%88%9D%E5%A7%8B%E5%8C%96%E5%B7%A5%E7%A8%8B_hu1914105950326750209.png 480w, /p/gradle%E5%BF%85%E5%A4%87/gradle%E5%88%9D%E5%A7%8B%E5%8C%96%E5%B7%A5%E7%A8%8B_hu10064796354870022038.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/gradle%E5%88%9D%E5%A7%8B%E5%8C%96%E5%B7%A5%E7%A8%8B_hu_c023aa374a16ba3c.png 480w, /p/gradle%E5%BF%85%E5%A4%87/gradle%E5%88%9D%E5%A7%8B%E5%8C%96%E5%B7%A5%E7%A8%8B_hu_57f4e035afe55bc5.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -557,7 +556,7 @@
 <img src="/p/gradle%E5%BF%85%E5%A4%87/%E9%80%9A%E8%BF%87gradle%E5%88%9D%E5%A7%8B%E5%8C%96%E5%88%9B%E5%BB%BA%E7%9A%84%E5%B7%A5%E7%A8%8B.png"
 	width="996"
 	height="532"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/%E9%80%9A%E8%BF%87gradle%E5%88%9D%E5%A7%8B%E5%8C%96%E5%88%9B%E5%BB%BA%E7%9A%84%E5%B7%A5%E7%A8%8B_hu282898321540726544.png 480w, /p/gradle%E5%BF%85%E5%A4%87/%E9%80%9A%E8%BF%87gradle%E5%88%9D%E5%A7%8B%E5%8C%96%E5%88%9B%E5%BB%BA%E7%9A%84%E5%B7%A5%E7%A8%8B_hu6697011927368806937.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/%E9%80%9A%E8%BF%87gradle%E5%88%9D%E5%A7%8B%E5%8C%96%E5%88%9B%E5%BB%BA%E7%9A%84%E5%B7%A5%E7%A8%8B_hu_23894de592a7fe88.png 480w, /p/gradle%E5%BF%85%E5%A4%87/%E9%80%9A%E8%BF%87gradle%E5%88%9D%E5%A7%8B%E5%8C%96%E5%88%9B%E5%BB%BA%E7%9A%84%E5%B7%A5%E7%A8%8B_hu_bdde82ef7be75a0d.png 1024w"
 	loading="lazy"
 	
 		alt="通过gradle初始化创建的工程"
@@ -576,7 +575,7 @@ Gradle Wrapper 文件的作用就是可以让你的电脑在不安装配置 Grad
 <img src="/p/gradle%E5%BF%85%E5%A4%87/%E4%B8%8B%E8%BD%BD%E5%AF%B9%E5%BA%94%E7%9A%84%E7%89%88%E6%9C%AC.png"
 	width="1610"
 	height="652"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/%E4%B8%8B%E8%BD%BD%E5%AF%B9%E5%BA%94%E7%9A%84%E7%89%88%E6%9C%AC_hu8251621567634018783.png 480w, /p/gradle%E5%BF%85%E5%A4%87/%E4%B8%8B%E8%BD%BD%E5%AF%B9%E5%BA%94%E7%9A%84%E7%89%88%E6%9C%AC_hu374480019399890966.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/%E4%B8%8B%E8%BD%BD%E5%AF%B9%E5%BA%94%E7%9A%84%E7%89%88%E6%9C%AC_hu_fdc0e3e0ee74c94c.png 480w, /p/gradle%E5%BF%85%E5%A4%87/%E4%B8%8B%E8%BD%BD%E5%AF%B9%E5%BA%94%E7%9A%84%E7%89%88%E6%9C%AC_hu_d488b8fa60a4fd3f.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -627,7 +626,7 @@ Gradle Wrapper 文件的作用就是可以让你的电脑在不安装配置 Grad
 <img src="/p/gradle%E5%BF%85%E5%A4%87/as%E9%85%8D%E7%BD%AE%E6%9C%AC%E5%9C%B0%E7%9A%84gradle.png"
 	width="1129"
 	height="676"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/as%E9%85%8D%E7%BD%AE%E6%9C%AC%E5%9C%B0%E7%9A%84gradle_hu5001815422686720469.png 480w, /p/gradle%E5%BF%85%E5%A4%87/as%E9%85%8D%E7%BD%AE%E6%9C%AC%E5%9C%B0%E7%9A%84gradle_hu852437314902197402.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/as%E9%85%8D%E7%BD%AE%E6%9C%AC%E5%9C%B0%E7%9A%84gradle_hu_22f9652dba33a34.png 480w, /p/gradle%E5%BF%85%E5%A4%87/as%E9%85%8D%E7%BD%AE%E6%9C%AC%E5%9C%B0%E7%9A%84gradle_hu_d3383180c679ca7.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -649,7 +648,7 @@ Gradle Wrapper 文件的作用就是可以让你的电脑在不安装配置 Grad
 <img src="/p/gradle%E5%BF%85%E5%A4%87/gralde%E6%9C%89%E5%BA%8F%E6%97%A0%E7%8E%AF%E5%9B%BE.png"
 	width="737"
 	height="439"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/gralde%E6%9C%89%E5%BA%8F%E6%97%A0%E7%8E%AF%E5%9B%BE_hu9922002822204364645.png 480w, /p/gradle%E5%BF%85%E5%A4%87/gralde%E6%9C%89%E5%BA%8F%E6%97%A0%E7%8E%AF%E5%9B%BE_hu7544017168505499016.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/gralde%E6%9C%89%E5%BA%8F%E6%97%A0%E7%8E%AF%E5%9B%BE_hu_a4d35586121e6e4c.png 480w, /p/gradle%E5%BF%85%E5%A4%87/gralde%E6%9C%89%E5%BA%8F%E6%97%A0%E7%8E%AF%E5%9B%BE_hu_78f756d968051278.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -666,7 +665,7 @@ Gradle Wrapper 文件的作用就是可以让你的电脑在不安装配置 Grad
 <img src="/p/gradle%E5%BF%85%E5%A4%87/android%E5%B7%A5%E7%A8%8B%E4%B8%AD%E7%9A%84task.png"
 	width="874"
 	height="1150"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/android%E5%B7%A5%E7%A8%8B%E4%B8%AD%E7%9A%84task_hu15283849545163969887.png 480w, /p/gradle%E5%BF%85%E5%A4%87/android%E5%B7%A5%E7%A8%8B%E4%B8%AD%E7%9A%84task_hu11917322091488908906.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/android%E5%B7%A5%E7%A8%8B%E4%B8%AD%E7%9A%84task_hu_d825a0a580008b2f.png 480w, /p/gradle%E5%BF%85%E5%A4%87/android%E5%B7%A5%E7%A8%8B%E4%B8%AD%E7%9A%84task_hu_e2acc2cec083707f.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -682,7 +681,7 @@ Gradle Wrapper 文件的作用就是可以让你的电脑在不安装配置 Grad
 <img src="/p/gradle%E5%BF%85%E5%A4%87/gradle%E7%9A%84build%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C.png"
 	width="1410"
 	height="4100"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/gradle%E7%9A%84build%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C_hu18274278725683370236.png 480w, /p/gradle%E5%BF%85%E5%A4%87/gradle%E7%9A%84build%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C_hu17209050168426877408.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/gradle%E7%9A%84build%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C_hu_1ef098cd1695601b.png 480w, /p/gradle%E5%BF%85%E5%A4%87/gradle%E7%9A%84build%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C_hu_58f14244cb95f79b.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -728,7 +727,7 @@ Gradle Wrapper 文件的作用就是可以让你的电脑在不安装配置 Grad
 <img src="/p/gradle%E5%BF%85%E5%A4%87/%E6%89%A7%E8%A1%8Ctask%E7%9A%84%E7%BB%93%E6%9E%9C.png"
 	width="1106"
 	height="408"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/%E6%89%A7%E8%A1%8Ctask%E7%9A%84%E7%BB%93%E6%9E%9C_hu6465873526696003454.png 480w, /p/gradle%E5%BF%85%E5%A4%87/%E6%89%A7%E8%A1%8Ctask%E7%9A%84%E7%BB%93%E6%9E%9C_hu5013253641342030249.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/%E6%89%A7%E8%A1%8Ctask%E7%9A%84%E7%BB%93%E6%9E%9C_hu_6c33b60f12b4458e.png 480w, /p/gradle%E5%BF%85%E5%A4%87/%E6%89%A7%E8%A1%8Ctask%E7%9A%84%E7%BB%93%E6%9E%9C_hu_3bbc73e87fc3a05f.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -743,7 +742,7 @@ Gradle Wrapper 文件的作用就是可以让你的电脑在不安装配置 Grad
 <img src="/p/gradle%E5%BF%85%E5%A4%87/%E5%AD%90%E6%A8%A1%E5%9D%97%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C.png"
 	width="1126"
 	height="484"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/%E5%AD%90%E6%A8%A1%E5%9D%97%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C_hu7505320477507187786.png 480w, /p/gradle%E5%BF%85%E5%A4%87/%E5%AD%90%E6%A8%A1%E5%9D%97%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C_hu13497345131992957227.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/%E5%AD%90%E6%A8%A1%E5%9D%97%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C_hu_28ac180d351de5d.png 480w, /p/gradle%E5%BF%85%E5%A4%87/%E5%AD%90%E6%A8%A1%E5%9D%97%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C_hu_5f21533cfc99a6e8.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -758,7 +757,7 @@ Gradle Wrapper 文件的作用就是可以让你的电脑在不安装配置 Grad
 <img src="/p/gradle%E5%BF%85%E5%A4%87/mac%E4%B8%8B%E6%89%A7%E8%A1%8C%E8%84%9A%E6%9C%AC%E6%B3%A8%E6%84%8F%E7%82%B9.png"
 	width="1956"
 	height="3272"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/mac%E4%B8%8B%E6%89%A7%E8%A1%8C%E8%84%9A%E6%9C%AC%E6%B3%A8%E6%84%8F%E7%82%B9_hu6263323441127263823.png 480w, /p/gradle%E5%BF%85%E5%A4%87/mac%E4%B8%8B%E6%89%A7%E8%A1%8C%E8%84%9A%E6%9C%AC%E6%B3%A8%E6%84%8F%E7%82%B9_hu15200656204934672478.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/mac%E4%B8%8B%E6%89%A7%E8%A1%8C%E8%84%9A%E6%9C%AC%E6%B3%A8%E6%84%8F%E7%82%B9_hu_1715a0d42f8e2ed9.png 480w, /p/gradle%E5%BF%85%E5%A4%87/mac%E4%B8%8B%E6%89%A7%E8%A1%8C%E8%84%9A%E6%9C%AC%E6%B3%A8%E6%84%8F%E7%82%B9_hu_3383f98e12224e32.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -774,7 +773,7 @@ Gradle Wrapper 文件的作用就是可以让你的电脑在不安装配置 Grad
 <img src="/p/gradle%E5%BF%85%E5%A4%87/project%E7%9A%84task%E6%96%B9%E6%B3%95.png"
 	width="836"
 	height="1148"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/project%E7%9A%84task%E6%96%B9%E6%B3%95_hu2678432700052849033.png 480w, /p/gradle%E5%BF%85%E5%A4%87/project%E7%9A%84task%E6%96%B9%E6%B3%95_hu10125460014216185420.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/project%E7%9A%84task%E6%96%B9%E6%B3%95_hu_4ea4bc6d8431d747.png 480w, /p/gradle%E5%BF%85%E5%A4%87/project%E7%9A%84task%E6%96%B9%E6%B3%95_hu_38f5a686ab79c03b.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -802,7 +801,7 @@ Gradle Wrapper 文件的作用就是可以让你的电脑在不安装配置 Grad
 <img src="/p/gradle%E5%BF%85%E5%A4%87/%E5%88%9B%E5%BB%BAtask%E6%8C%87%E5%AE%9A%E5%85%B6%E4%BB%96%E5%8F%82%E6%95%B0.png"
 	width="1200"
 	height="590"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/%E5%88%9B%E5%BB%BAtask%E6%8C%87%E5%AE%9A%E5%85%B6%E4%BB%96%E5%8F%82%E6%95%B0_hu4506126806607883715.png 480w, /p/gradle%E5%BF%85%E5%A4%87/%E5%88%9B%E5%BB%BAtask%E6%8C%87%E5%AE%9A%E5%85%B6%E4%BB%96%E5%8F%82%E6%95%B0_hu4005355009320581955.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/%E5%88%9B%E5%BB%BAtask%E6%8C%87%E5%AE%9A%E5%85%B6%E4%BB%96%E5%8F%82%E6%95%B0_hu_ae8d69deafe43e8d.png 480w, /p/gradle%E5%BF%85%E5%A4%87/%E5%88%9B%E5%BB%BAtask%E6%8C%87%E5%AE%9A%E5%85%B6%E4%BB%96%E5%8F%82%E6%95%B0_hu_6ce89ecc45a1d533.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1003,7 +1002,7 @@ allprojects主要是指所有的模块需要的三方依赖库时候的仓库
 <img src="/p/gradle%E5%BF%85%E5%A4%87/gradle%E6%9E%84%E5%BB%BA%E8%BF%87%E7%A8%8B%E6%B5%81%E7%A8%8B%E5%9B%BE.png"
 	width="1026"
 	height="2779"
-	srcset="/p/gradle%E5%BF%85%E5%A4%87/gradle%E6%9E%84%E5%BB%BA%E8%BF%87%E7%A8%8B%E6%B5%81%E7%A8%8B%E5%9B%BE_hu10703256472571266770.png 480w, /p/gradle%E5%BF%85%E5%A4%87/gradle%E6%9E%84%E5%BB%BA%E8%BF%87%E7%A8%8B%E6%B5%81%E7%A8%8B%E5%9B%BE_hu2733148439860295872.png 1024w"
+	srcset="/p/gradle%E5%BF%85%E5%A4%87/gradle%E6%9E%84%E5%BB%BA%E8%BF%87%E7%A8%8B%E6%B5%81%E7%A8%8B%E5%9B%BE_hu_1af803e162369389.png 480w, /p/gradle%E5%BF%85%E5%A4%87/gradle%E6%9E%84%E5%BB%BA%E8%BF%87%E7%A8%8B%E6%B5%81%E7%A8%8B%E5%9B%BE_hu_5716db0a27bc0961.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"

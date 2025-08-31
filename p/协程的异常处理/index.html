@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="invokeOnCompletion监听协程状态 在了解协程的异常处理之前，先来熟悉下协程之间job是如何绑定关系，还是通过一个例子来熟悉他们之间的关系：\n1 2 3 4 5 6 7 8 private fun demo(){ val job = GlobalScope.launch { Log.d(TAG, &#34;demo: launch代码&#34;) } job.invokeOnCompletion { Log.d(TAG, &#34;demo: invokeOnCompletion&#34;) } } ">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="invokeOnCompletion监听协程状态 在了解协程的异常处理之前，先来熟悉下协程之间job是如何绑定关系，还是通过一个例子来熟悉他们之间的关系：\n1 2 3 4 5 6 7 8 private fun demo(){ val job = GlobalScope.launch { Log.d(TAG, &#34;demo: launch代码&#34;) } job.invokeOnCompletion { Log.d(TAG, &#34;demo: invokeOnCompletion&#34;) } } 执行结果：\n1 2 CoroutineJobActivity com.example.coroutinescopedemo D demo: launch代码 CoroutineJobActivity com.example.coroutinescopedemo D demo: invokeOnCompletion 可以看出来invokeOnCompletion是job执行完毕的回调。\n通过launch创建协程内部会构造一个StandaloneCoroutine，它就是一个job，并且launch返回的就是该job： StandaloneCoroutine继承自AbstractCoroutine： 因此parentHandle为NonDisposableHandle，然后方法结束。 此时执行完launch后，继续执行了job的invokeOnCompletion方法，它是一个抽象方法，实现方法在jobSupport类： ">
 <title>协程的异常处理</title>
 
 <link rel='canonical' href='https://example.com/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程的异常处理">
-<meta property='og:description' content="invokeOnCompletion监听协程状态 在了解协程的异常处理之前，先来熟悉下协程之间job是如何绑定关系，还是通过一个例子来熟悉他们之间的关系：\n1 2 3 4 5 6 7 8 private fun demo(){ val job = GlobalScope.launch { Log.d(TAG, &#34;demo: launch代码&#34;) } job.invokeOnCompletion { Log.d(TAG, &#34;demo: invokeOnCompletion&#34;) } } ">
+<meta property='og:description' content="invokeOnCompletion监听协程状态 在了解协程的异常处理之前，先来熟悉下协程之间job是如何绑定关系，还是通过一个例子来熟悉他们之间的关系：\n1 2 3 4 5 6 7 8 private fun demo(){ val job = GlobalScope.launch { Log.d(TAG, &#34;demo: launch代码&#34;) } job.invokeOnCompletion { Log.d(TAG, &#34;demo: invokeOnCompletion&#34;) } } 执行结果：\n1 2 CoroutineJobActivity com.example.coroutinescopedemo D demo: launch代码 CoroutineJobActivity com.example.coroutinescopedemo D demo: invokeOnCompletion 可以看出来invokeOnCompletion是job执行完毕的回调。\n通过launch创建协程内部会构造一个StandaloneCoroutine，它就是一个job，并且launch返回的就是该job： StandaloneCoroutine继承自AbstractCoroutine： 因此parentHandle为NonDisposableHandle，然后方法结束。 此时执行完launch后，继续执行了job的invokeOnCompletion方法，它是一个抽象方法，实现方法在jobSupport类： ">
 <meta property='og:url' content='https://example.com/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-12-16T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-12-16T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="协程的异常处理">
-<meta name="twitter:description" content="invokeOnCompletion监听协程状态 在了解协程的异常处理之前，先来熟悉下协程之间job是如何绑定关系，还是通过一个例子来熟悉他们之间的关系：\n1 2 3 4 5 6 7 8 private fun demo(){ val job = GlobalScope.launch { Log.d(TAG, &#34;demo: launch代码&#34;) } job.invokeOnCompletion { Log.d(TAG, &#34;demo: invokeOnCompletion&#34;) } } ">
+<meta name="twitter:description" content="invokeOnCompletion监听协程状态 在了解协程的异常处理之前，先来熟悉下协程之间job是如何绑定关系，还是通过一个例子来熟悉他们之间的关系：\n1 2 3 4 5 6 7 8 private fun demo(){ val job = GlobalScope.launch { Log.d(TAG, &#34;demo: launch代码&#34;) } job.invokeOnCompletion { Log.d(TAG, &#34;demo: invokeOnCompletion&#34;) } } 执行结果：\n1 2 CoroutineJobActivity com.example.coroutinescopedemo D demo: launch代码 CoroutineJobActivity com.example.coroutinescopedemo D demo: invokeOnCompletion 可以看出来invokeOnCompletion是job执行完毕的回调。\n通过launch创建协程内部会构造一个StandaloneCoroutine，它就是一个job，并且launch返回的就是该job： StandaloneCoroutine继承自AbstractCoroutine： 因此parentHandle为NonDisposableHandle，然后方法结束。 此时执行完launch后，继续执行了job的invokeOnCompletion方法，它是一个抽象方法，实现方法在jobSupport类： ">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -418,13 +418,12 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><blockquote>
-<p>可以看出来invokeOnCompletion是job执行完毕的回调。</p>
-</blockquote>
+<p>可以看出来invokeOnCompletion是job执行完毕的回调。</p></blockquote>
 <p>通过launch创建协程内部会构造一个StandaloneCoroutine，它就是一个job，并且launch返回的就是该job：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81.png"
 	width="1338"
 	height="670"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81_hu12390856992509383489.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81_hu1115891652662574519.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81_hu_9f8b9ebd4693a76b.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81_hu_f10c9438b36a36bd.png 1024w"
 	loading="lazy"
 	
 		alt="launch执行代码.png"
@@ -439,7 +438,7 @@ StandaloneCoroutine继承自AbstractCoroutine：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/AbstractCoroutine%E6%9E%84%E9%80%A0%E5%99%A8%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81.png"
 	width="1904"
 	height="872"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/AbstractCoroutine%E6%9E%84%E9%80%A0%E5%99%A8%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81_hu12033594672800403326.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/AbstractCoroutine%E6%9E%84%E9%80%A0%E5%99%A8%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81_hu11122120103143826030.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/AbstractCoroutine%E6%9E%84%E9%80%A0%E5%99%A8%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81_hu_95ccbc15661bf559.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/AbstractCoroutine%E6%9E%84%E9%80%A0%E5%99%A8%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81_hu_cb88bd72ee70f139.png 1024w"
 	loading="lazy"
 	
 		alt="AbstractCoroutine构造器执行代码.png"
@@ -453,7 +452,7 @@ StandaloneCoroutine继承自AbstractCoroutine：
 <p><img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/initParentJob.png"
 	width="1720"
 	height="854"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/initParentJob_hu15115013380148282422.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/initParentJob_hu5325312372490179630.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/initParentJob_hu_d9fe3706e1f9afc.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/initParentJob_hu_3608ba845fa34bdd.png 1024w"
 	loading="lazy"
 	
 		alt="initParentJob.png"
@@ -469,7 +468,7 @@ StandaloneCoroutine继承自AbstractCoroutine：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/JobSupport%E4%B8%8B%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95.png"
 	width="2800"
 	height="124"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/JobSupport%E4%B8%8B%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95_hu13151292981316171316.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/JobSupport%E4%B8%8B%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95_hu17365294587815558098.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/JobSupport%E4%B8%8B%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95_hu_c7e62b7137ba3c98.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/JobSupport%E4%B8%8B%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95_hu_fbf9afd1f0026297.png 1024w"
 	loading="lazy"
 	
 		alt="JobSupport下的invokeOnCompletion方法.png"
@@ -483,7 +482,7 @@ StandaloneCoroutine继承自AbstractCoroutine：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E4%B8%89%E4%B8%AA%E5%8F%82%E6%95%B0%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95.png"
 	width="2080"
 	height="1426"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E4%B8%89%E4%B8%AA%E5%8F%82%E6%95%B0%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95_hu11497432006843081940.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E4%B8%89%E4%B8%AA%E5%8F%82%E6%95%B0%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95_hu7757718997044286171.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E4%B8%89%E4%B8%AA%E5%8F%82%E6%95%B0%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95_hu_94bf7300f8d68a43.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E4%B8%89%E4%B8%AA%E5%8F%82%E6%95%B0%E7%9A%84invokeOnCompletion%E6%96%B9%E6%B3%95_hu_86ac6d8ee366b507.png 1024w"
 	loading="lazy"
 	
 		alt="三个参数的invokeOnCompletion方法.png"
@@ -498,7 +497,7 @@ StandaloneCoroutine继承自AbstractCoroutine：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/makeNode%E7%9A%84%E5%AE%9E%E7%8E%B0.png"
 	width="1568"
 	height="646"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/makeNode%E7%9A%84%E5%AE%9E%E7%8E%B0_hu12020501936751908219.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/makeNode%E7%9A%84%E5%AE%9E%E7%8E%B0_hu15521599246059739868.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/makeNode%E7%9A%84%E5%AE%9E%E7%8E%B0_hu_eb67a528d69d62af.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/makeNode%E7%9A%84%E5%AE%9E%E7%8E%B0_hu_cc2a56b14f4ac108.png 1024w"
 	loading="lazy"
 	
 		alt="makeNode的实现.png"
@@ -569,13 +568,11 @@ StandaloneCoroutine继承自AbstractCoroutine：
 </div><p>它也是实现了CompletionHandler接口，CompletionHandler是一个闭包，从上面继承以及JobNode实现来看，在它的invoke实现里面，会触发传进来的CompletionHandler的invoke实现，从实现来看其实这就是个静态代理的模式。</p>
 <blockquote>
 <p>结论：
-makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节点。</br></p>
-</blockquote>
+makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节点。</br></p></blockquote>
 <p>回到上面的invokeOnComletion的实现，创建了InvokeOnCompletion后，会走到loopOnState的函数，它是遍历state，它的初始状态是一个Empty状态，并且state.isActive=true。所以最终把刚才创建的InvokeOnCompletion设置到了state上，并且返回了该InvokeOnCompletion。</p>
 <blockquote>
 <p>结论：
-当调用了job的invokeOnCompletion方法后，会把外界创建好的CompletionHandler传给了InvokeCompletion，InvokeCompletion是一个JobNode，在它的invoke实现中，会回调到外界的CompletionHandler中。并且把创建的InvokeCompletion设置到当前job的state上了。</p>
-</blockquote>
+当调用了job的invokeOnCompletion方法后，会把外界创建好的CompletionHandler传给了InvokeCompletion，InvokeCompletion是一个JobNode，在它的invoke实现中，会回调到外界的CompletionHandler中。并且把创建的InvokeCompletion设置到当前job的state上了。</p></blockquote>
 <p>协程体执行完job的执行：
 在之前分析协程体其实是一个SuspendLambda，在它的invokeSuspend调用完后，会执行它的continuation的resumeWith方法，在上面例子中其实是StandaloneCoroutine，它是一个job，所以看下它的resumeWith实现：</p>
 <div class="highlight"><div class="chroma">
@@ -633,7 +630,7 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryMakeCompleting%E5%AE%9E%E7%8E%B0.png"
 	width="2314"
 	height="1002"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryMakeCompleting%E5%AE%9E%E7%8E%B0_hu11423810802926591286.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryMakeCompleting%E5%AE%9E%E7%8E%B0_hu15587123441217731922.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryMakeCompleting%E5%AE%9E%E7%8E%B0_hu_80c1dba403534ab5.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryMakeCompleting%E5%AE%9E%E7%8E%B0_hu_1847f796dd34cfe3.png 1024w"
 	loading="lazy"
 	
 		alt="tryMakeCompleting实现.png"
@@ -648,7 +645,7 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryFinalizeSimpleState%E5%AE%9E%E7%8E%B0.png"
 	width="2242"
 	height="478"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryFinalizeSimpleState%E5%AE%9E%E7%8E%B0_hu10630186520723620128.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryFinalizeSimpleState%E5%AE%9E%E7%8E%B0_hu2160643778422037512.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryFinalizeSimpleState%E5%AE%9E%E7%8E%B0_hu_a51decd8e24c2352.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryFinalizeSimpleState%E5%AE%9E%E7%8E%B0_hu_ee7551b4ae164a0f.png 1024w"
 	loading="lazy"
 	
 		alt="tryFinalizeSimpleState实现.png"
@@ -769,7 +766,7 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/resumeWith%E4%B9%8B%E5%90%8E%E5%BC%82%E5%B8%B8%E7%9A%84%E6%B5%81%E7%A8%8B.png"
 	width="2388"
 	height="1028"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/resumeWith%E4%B9%8B%E5%90%8E%E5%BC%82%E5%B8%B8%E7%9A%84%E6%B5%81%E7%A8%8B_hu4603273407275704131.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/resumeWith%E4%B9%8B%E5%90%8E%E5%BC%82%E5%B8%B8%E7%9A%84%E6%B5%81%E7%A8%8B_hu16795624713117450585.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/resumeWith%E4%B9%8B%E5%90%8E%E5%BC%82%E5%B8%B8%E7%9A%84%E6%B5%81%E7%A8%8B_hu_5a52acefb394e781.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/resumeWith%E4%B9%8B%E5%90%8E%E5%BC%82%E5%B8%B8%E7%9A%84%E6%B5%81%E7%A8%8B_hu_9e11583461fa7f78.png 1024w"
 	loading="lazy"
 	
 		alt="resumeWith之后异常的流程.png"
@@ -784,7 +781,7 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E4%B8%BB%E8%A6%81%E9%80%BB%E8%BE%91.png"
 	width="2274"
 	height="1434"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E4%B8%BB%E8%A6%81%E9%80%BB%E8%BE%91_hu17517826257319846876.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E4%B8%BB%E8%A6%81%E9%80%BB%E8%BE%91_hu9526593194401546048.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E4%B8%BB%E8%A6%81%E9%80%BB%E8%BE%91_hu_5d539d7f37e69ba1.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E4%B8%BB%E8%A6%81%E9%80%BB%E8%BE%91_hu_72a4f2e56257c543.png 1024w"
 	loading="lazy"
 	
 		alt="finalizeFinishingState主要逻辑.png"
@@ -799,7 +796,7 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/StandaloneCoroutine%E9%87%8D%E5%86%99handleJobException%E6%96%B9%E6%B3%95.png"
 	width="1580"
 	height="484"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/StandaloneCoroutine%E9%87%8D%E5%86%99handleJobException%E6%96%B9%E6%B3%95_hu17075837658011964929.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/StandaloneCoroutine%E9%87%8D%E5%86%99handleJobException%E6%96%B9%E6%B3%95_hu10702216456365766716.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/StandaloneCoroutine%E9%87%8D%E5%86%99handleJobException%E6%96%B9%E6%B3%95_hu_f7b3fd195da2e9a7.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/StandaloneCoroutine%E9%87%8D%E5%86%99handleJobException%E6%96%B9%E6%B3%95_hu_abcf5f16aa8220d8.png 1024w"
 	loading="lazy"
 	
 		alt="StandaloneCoroutine重写handleJobException方法.png"
@@ -814,7 +811,7 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/CoroutineExceptionHandler%E7%9A%84handleCoroutineException%E6%96%B9%E6%B3%95.png"
 	width="2116"
 	height="976"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/CoroutineExceptionHandler%E7%9A%84handleCoroutineException%E6%96%B9%E6%B3%95_hu2637752680679235144.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/CoroutineExceptionHandler%E7%9A%84handleCoroutineException%E6%96%B9%E6%B3%95_hu12191934445295765583.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/CoroutineExceptionHandler%E7%9A%84handleCoroutineException%E6%96%B9%E6%B3%95_hu_8d84073c139f7f18.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/CoroutineExceptionHandler%E7%9A%84handleCoroutineException%E6%96%B9%E6%B3%95_hu_191e762bfcf1f0ac.png 1024w"
 	loading="lazy"
 	
 		alt="CoroutineExceptionHandler的handleCoroutineException方法.png"
@@ -827,8 +824,7 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 ></p>
 <blockquote>
 <p>如果context中CoroutineExceptionHandler不为空，则异常不会往上抛了，所以此例中定义了context的CoroutineExceptionHandler程序不会崩溃。
-回到上面再来看invokeOnCompletion的CompletionHandler触发时机，它是在finalizeFinishingState中触发，接着会调用到completeStateFinalization，最终在里面触发了invokeOnCompletion传进来的CompletionHandler。</p>
-</blockquote>
+回到上面再来看invokeOnCompletion的CompletionHandler触发时机，它是在finalizeFinishingState中触发，接着会调用到completeStateFinalization，最终在里面触发了invokeOnCompletion传进来的CompletionHandler。</p></blockquote>
 <p>协程异常try住：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -886,7 +882,7 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%ADtry%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81.png"
 	width="1406"
 	height="862"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%ADtry%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu9250226129753474924.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%ADtry%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu17965867237583825733.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%ADtry%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu_6f1ae128ec48efe.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%ADtry%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81_hu_34c009ffdf707828.png 1024w"
 	loading="lazy"
 	
 		alt="协程中try后的字节码.png"
@@ -907,7 +903,7 @@ job执行阶段：前面我们分析过SuspendLambda执行完invokeSuspend逻辑
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/InvokeOnComplete%E7%B1%BB%E5%9B%BE.png"
 	width="562"
 	height="441"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/InvokeOnComplete%E7%B1%BB%E5%9B%BE_hu9535848413305546145.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/InvokeOnComplete%E7%B1%BB%E5%9B%BE_hu13975405308500655545.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/InvokeOnComplete%E7%B1%BB%E5%9B%BE_hu_2fb99c765abce35f.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/InvokeOnComplete%E7%B1%BB%E5%9B%BE_hu_5d753dbe01250c36.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -922,7 +918,7 @@ job执行阶段：前面我们分析过SuspendLambda执行完invokeSuspend逻辑
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B%E5%9B%BE.png"
 	width="1053"
 	height="1199"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B%E5%9B%BE_hu5505238035289390703.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B%E5%9B%BE_hu1145456136157972617.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B%E5%9B%BE_hu_c3ef6918f6e1f80f.png 480w, /p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B%E5%9B%BE_hu_98803292d86bdcc2.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
