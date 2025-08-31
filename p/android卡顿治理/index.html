@@ -1,30 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<<<<<<< HEAD
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Android中卡顿治理主要集中在recyclerView滑动列表时候有卡顿，我们结合android studio中profiler的systemTrace工具来查看卡顿情况，我目前的Android Studio已更新到Meerkat Feature Drop | 2024.3.2 Patch 1版本，下来来看看如何通过该工具来定位到具体的卡顿。\n首先Android Studio中System Trace工具是基于perfetto来进行定位，所以需要有一定的perfetto经验才能使用该功能，perfetto能通过内核、系统组件、本地内存、cpu等多方面进行收集数据，而我们的卡顿一般是监控应用的主线程绘制阶段的数据，而android代码中已经为主线程绘制阶段添加了各种tag，通过该tag能知道是什么组件的绘制阶段发生了卡顿。\n首先我的手机是Android13的版本，在卡顿检测官网中介绍了Android12以上、Android11、Android10以下的区别，这里我就以Android13来讲解如何识别卡顿。\n在官网中介绍有两种模式，一种是可分析应用，一种是可调试应用，新版android studio中的profiler中system trace要求是可分析的(profileable)应用，在启动应用时候，点击menu toolbar的更多操作，然后点击，便可进入到profileable模式，也可以将变体切换为release模式，在release变体下，在清单文件加上如下配置：\n1 &lt;profileable android:shell=&#34;true&#34; /&gt; ">
-=======
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Android中卡顿治理主要集中在recyclerView滑动列表时候有卡顿，我们结合android studio中profiler的systemTrace工具来查看卡顿情况，我目前的Android Studio已更新到Meerkat Feature Drop | 2024.3.2 Patch 1版本，下来来看看如何通过该工具来定位到具体的卡顿。\n首先Android Studio中System Trace工具是基于perfetto来进行定位，所以需要有一定的perfetto经验才能使用该功能，perfetto能通过内核、系统组件、本地内存、cpu等多方面进行收集数据，而我们的卡顿一般是监控应用的主线程绘制阶段的数据，而android代码中已经为主线程绘制阶段添加了各种tag，通过该tag能知道是什么组件的绘制阶段发生了卡顿。\n首先我的手机是Android13的版本，在卡顿检测官网中介绍了Android12以上、Android11、Android10以下的区别，这里我就以Android13来讲解如何识别卡顿。\n在官网中介绍有两种模式，一种是可分析应用，一种是可调试应用，新版android studio中的profiler中system trace要求是可分析的(profileable)应用，在启动应用时候，点击menu toolbar的更多操作，然后点击，便可进入到profileable模式，也可以将变体切换为release模式，在release变体下，在清单文件加上如下配置：\n1 &lt;profileable android:shell=&#34;true&#34; /&gt; 配置完后，接着就是选择相应的应用，然后点击System Trace选项进行监控应用。比如我在RecyclerView的列表adapter中onBindViewHolder进行Thread.sleep(50)，然后观察生成的trace文件： 整体上分为Janky frames、Threads、Analysis几个区域，Janky frames默认展示的是卡顿帧，我们也可以勾选All Frames，Threads部分展示的时候所有线程，比如app的主线程，RenderThread渲染线程等。Analysis区域展示的是某块的跟踪信息。\n卡顿帧：它是我们分析卡顿最直接的图形，我们首先选中某一个卡顿帧，然后该帧会出现两个颜色，左边的深红色表示一针的期望时间，而右边的暗红色表示该帧延迟了多久。我们可以看到右边Analysis区域标明了Jank type是Deadline missed（延迟帧），Layer name表明是哪个activity，Expected duration表示期望时间，Actual duration表示实际执行时间。events associated with frame展示的是该帧从主线程到RenderThread到gpu到SurfaceFlinger的关键事件。可以通过该区域分析该帧是应用层绘制耗时多，还是渲染线程或者是gpu等阶段耗时久。下面还会展示Main thread states和RenderThread states，分别记录了现成的状态、每个状态的耗时、以及每个状态的占比，Occurrences表示的是当前线程在该帧的生命周期内，在该状态下的次数。 从上面截图中可以看到在该帧中，主线程的sleeping状态占比是最高的。\n回到左边的Janky frames面板，再回到刚才那一帧，然后按m键会自动放大该帧的视图，在主线程视图中查看跟踪事件的tag。这里介绍系统system trace中常见的一帧的tag：\ntag名字 描述 Choreographer#doFrame *** 每一帧的父事件，其中后面的数字是vsync input 每一帧中执行input事件 animation 每一帧执行animation事件 RV Scroll recyclerview滑动事件 选中某一帧的Choreographer#doFrame后，在右侧的Analysis面板会看到该帧的相关信息。分为Summary、Top Down、Flame Chart、Bottom Up、Events几个tab。\n">
->>>>>>> f144d23 (更新plthook文章)
 <title>Android卡顿治理</title>
 
 <link rel='canonical' href='https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Android卡顿治理">
-<<<<<<< HEAD
-<meta property='og:description' content="Android中卡顿治理主要集中在recyclerView滑动列表时候有卡顿，我们结合android studio中profiler的systemTrace工具来查看卡顿情况，我目前的Android Studio已更新到Meerkat Feature Drop | 2024.3.2 Patch 1版本，下来来看看如何通过该工具来定位到具体的卡顿。\n首先Android Studio中System Trace工具是基于perfetto来进行定位，所以需要有一定的perfetto经验才能使用该功能，perfetto能通过内核、系统组件、本地内存、cpu等多方面进行收集数据，而我们的卡顿一般是监控应用的主线程绘制阶段的数据，而android代码中已经为主线程绘制阶段添加了各种tag，通过该tag能知道是什么组件的绘制阶段发生了卡顿。\n首先我的手机是Android13的版本，在卡顿检测官网中介绍了Android12以上、Android11、Android10以下的区别，这里我就以Android13来讲解如何识别卡顿。\n在官网中介绍有两种模式，一种是可分析应用，一种是可调试应用，新版android studio中的profiler中system trace要求是可分析的(profileable)应用，在启动应用时候，点击menu toolbar的更多操作，然后点击，便可进入到profileable模式，也可以将变体切换为release模式，在release变体下，在清单文件加上如下配置：\n1 &lt;profileable android:shell=&#34;true&#34; /&gt; ">
-=======
 <meta property='og:description' content="Android中卡顿治理主要集中在recyclerView滑动列表时候有卡顿，我们结合android studio中profiler的systemTrace工具来查看卡顿情况，我目前的Android Studio已更新到Meerkat Feature Drop | 2024.3.2 Patch 1版本，下来来看看如何通过该工具来定位到具体的卡顿。\n首先Android Studio中System Trace工具是基于perfetto来进行定位，所以需要有一定的perfetto经验才能使用该功能，perfetto能通过内核、系统组件、本地内存、cpu等多方面进行收集数据，而我们的卡顿一般是监控应用的主线程绘制阶段的数据，而android代码中已经为主线程绘制阶段添加了各种tag，通过该tag能知道是什么组件的绘制阶段发生了卡顿。\n首先我的手机是Android13的版本，在卡顿检测官网中介绍了Android12以上、Android11、Android10以下的区别，这里我就以Android13来讲解如何识别卡顿。\n在官网中介绍有两种模式，一种是可分析应用，一种是可调试应用，新版android studio中的profiler中system trace要求是可分析的(profileable)应用，在启动应用时候，点击menu toolbar的更多操作，然后点击，便可进入到profileable模式，也可以将变体切换为release模式，在release变体下，在清单文件加上如下配置：\n1 &lt;profileable android:shell=&#34;true&#34; /&gt; 配置完后，接着就是选择相应的应用，然后点击System Trace选项进行监控应用。比如我在RecyclerView的列表adapter中onBindViewHolder进行Thread.sleep(50)，然后观察生成的trace文件： 整体上分为Janky frames、Threads、Analysis几个区域，Janky frames默认展示的是卡顿帧，我们也可以勾选All Frames，Threads部分展示的时候所有线程，比如app的主线程，RenderThread渲染线程等。Analysis区域展示的是某块的跟踪信息。\n卡顿帧：它是我们分析卡顿最直接的图形，我们首先选中某一个卡顿帧，然后该帧会出现两个颜色，左边的深红色表示一针的期望时间，而右边的暗红色表示该帧延迟了多久。我们可以看到右边Analysis区域标明了Jank type是Deadline missed（延迟帧），Layer name表明是哪个activity，Expected duration表示期望时间，Actual duration表示实际执行时间。events associated with frame展示的是该帧从主线程到RenderThread到gpu到SurfaceFlinger的关键事件。可以通过该区域分析该帧是应用层绘制耗时多，还是渲染线程或者是gpu等阶段耗时久。下面还会展示Main thread states和RenderThread states，分别记录了现成的状态、每个状态的耗时、以及每个状态的占比，Occurrences表示的是当前线程在该帧的生命周期内，在该状态下的次数。 从上面截图中可以看到在该帧中，主线程的sleeping状态占比是最高的。\n回到左边的Janky frames面板，再回到刚才那一帧，然后按m键会自动放大该帧的视图，在主线程视图中查看跟踪事件的tag。这里介绍系统system trace中常见的一帧的tag：\ntag名字 描述 Choreographer#doFrame *** 每一帧的父事件，其中后面的数字是vsync input 每一帧中执行input事件 animation 每一帧执行animation事件 RV Scroll recyclerview滑动事件 选中某一帧的Choreographer#doFrame后，在右侧的Analysis面板会看到该帧的相关信息。分为Summary、Top Down、Flame Chart、Bottom Up、Events几个tab。\n">
->>>>>>> f144d23 (更新plthook文章)
 <meta property='og:url' content='https://example.com/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-06-05T17:39:52&#43;08:00'/><meta property='article:modified_time' content='2025-06-05T17:39:52&#43;08:00'/>
 <meta name="twitter:title" content="Android卡顿治理">
-<<<<<<< HEAD
-<meta name="twitter:description" content="Android中卡顿治理主要集中在recyclerView滑动列表时候有卡顿，我们结合android studio中profiler的systemTrace工具来查看卡顿情况，我目前的Android Studio已更新到Meerkat Feature Drop | 2024.3.2 Patch 1版本，下来来看看如何通过该工具来定位到具体的卡顿。\n首先Android Studio中System Trace工具是基于perfetto来进行定位，所以需要有一定的perfetto经验才能使用该功能，perfetto能通过内核、系统组件、本地内存、cpu等多方面进行收集数据，而我们的卡顿一般是监控应用的主线程绘制阶段的数据，而android代码中已经为主线程绘制阶段添加了各种tag，通过该tag能知道是什么组件的绘制阶段发生了卡顿。\n首先我的手机是Android13的版本，在卡顿检测官网中介绍了Android12以上、Android11、Android10以下的区别，这里我就以Android13来讲解如何识别卡顿。\n在官网中介绍有两种模式，一种是可分析应用，一种是可调试应用，新版android studio中的profiler中system trace要求是可分析的(profileable)应用，在启动应用时候，点击menu toolbar的更多操作，然后点击，便可进入到profileable模式，也可以将变体切换为release模式，在release变体下，在清单文件加上如下配置：\n1 &lt;profileable android:shell=&#34;true&#34; /&gt; ">
-=======
 <meta name="twitter:description" content="Android中卡顿治理主要集中在recyclerView滑动列表时候有卡顿，我们结合android studio中profiler的systemTrace工具来查看卡顿情况，我目前的Android Studio已更新到Meerkat Feature Drop | 2024.3.2 Patch 1版本，下来来看看如何通过该工具来定位到具体的卡顿。\n首先Android Studio中System Trace工具是基于perfetto来进行定位，所以需要有一定的perfetto经验才能使用该功能，perfetto能通过内核、系统组件、本地内存、cpu等多方面进行收集数据，而我们的卡顿一般是监控应用的主线程绘制阶段的数据，而android代码中已经为主线程绘制阶段添加了各种tag，通过该tag能知道是什么组件的绘制阶段发生了卡顿。\n首先我的手机是Android13的版本，在卡顿检测官网中介绍了Android12以上、Android11、Android10以下的区别，这里我就以Android13来讲解如何识别卡顿。\n在官网中介绍有两种模式，一种是可分析应用，一种是可调试应用，新版android studio中的profiler中system trace要求是可分析的(profileable)应用，在启动应用时候，点击menu toolbar的更多操作，然后点击，便可进入到profileable模式，也可以将变体切换为release模式，在release变体下，在清单文件加上如下配置：\n1 &lt;profileable android:shell=&#34;true&#34; /&gt; 配置完后，接着就是选择相应的应用，然后点击System Trace选项进行监控应用。比如我在RecyclerView的列表adapter中onBindViewHolder进行Thread.sleep(50)，然后观察生成的trace文件： 整体上分为Janky frames、Threads、Analysis几个区域，Janky frames默认展示的是卡顿帧，我们也可以勾选All Frames，Threads部分展示的时候所有线程，比如app的主线程，RenderThread渲染线程等。Analysis区域展示的是某块的跟踪信息。\n卡顿帧：它是我们分析卡顿最直接的图形，我们首先选中某一个卡顿帧，然后该帧会出现两个颜色，左边的深红色表示一针的期望时间，而右边的暗红色表示该帧延迟了多久。我们可以看到右边Analysis区域标明了Jank type是Deadline missed（延迟帧），Layer name表明是哪个activity，Expected duration表示期望时间，Actual duration表示实际执行时间。events associated with frame展示的是该帧从主线程到RenderThread到gpu到SurfaceFlinger的关键事件。可以通过该区域分析该帧是应用层绘制耗时多，还是渲染线程或者是gpu等阶段耗时久。下面还会展示Main thread states和RenderThread states，分别记录了现成的状态、每个状态的耗时、以及每个状态的占比，Occurrences表示的是当前线程在该帧的生命周期内，在该状态下的次数。 从上面截图中可以看到在该帧中，主线程的sleeping状态占比是最高的。\n回到左边的Janky frames面板，再回到刚才那一帧，然后按m键会自动放大该帧的视图，在主线程视图中查看跟踪事件的tag。这里介绍系统system trace中常见的一帧的tag：\ntag名字 描述 Choreographer#doFrame *** 每一帧的父事件，其中后面的数字是vsync input 每一帧中执行input事件 animation 每一帧执行animation事件 RV Scroll recyclerview滑动事件 选中某一帧的Choreographer#doFrame后，在右侧的Analysis面板会看到该帧的相关信息。分为Summary、Top Down、Flame Chart、Bottom Up、Events几个tab。\n">
->>>>>>> f144d23 (更新plthook文章)
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -70,11 +58,7 @@
                     
                     
                         
-<<<<<<< HEAD
-                        <img src="/img/logo_hu16514757392605978522.png" width="300"
-=======
                         <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
->>>>>>> f144d23 (更新plthook文章)
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -369,11 +353,7 @@
 <img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/trace%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84.png"
 	width="3648"
 	height="1510"
-<<<<<<< HEAD
-	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/trace%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84_hu16667502905443498615.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/trace%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84_hu3526640423949613719.png 1024w"
-=======
 	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/trace%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84_hu_90dde594b479d5e8.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/trace%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84_hu_136eeae43891eeae.png 1024w"
->>>>>>> f144d23 (更新plthook文章)
 	loading="lazy"
 	
 		alt="alt text"
@@ -389,11 +369,7 @@
 <img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E7%82%B9%E5%87%BB%E6%9F%90%E4%B8%80%E5%B8%A7%E5%90%8E%E7%9A%84analysis%E9%9D%A2%E6%9D%BF%E4%BF%A1%E6%81%AF.png"
 	width="2124"
 	height="1808"
-<<<<<<< HEAD
-	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E7%82%B9%E5%87%BB%E6%9F%90%E4%B8%80%E5%B8%A7%E5%90%8E%E7%9A%84analysis%E9%9D%A2%E6%9D%BF%E4%BF%A1%E6%81%AF_hu5840938220169730243.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E7%82%B9%E5%87%BB%E6%9F%90%E4%B8%80%E5%B8%A7%E5%90%8E%E7%9A%84analysis%E9%9D%A2%E6%9D%BF%E4%BF%A1%E6%81%AF_hu6008882954537841270.png 1024w"
-=======
 	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E7%82%B9%E5%87%BB%E6%9F%90%E4%B8%80%E5%B8%A7%E5%90%8E%E7%9A%84analysis%E9%9D%A2%E6%9D%BF%E4%BF%A1%E6%81%AF_hu_4be69b5a928d98d3.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E7%82%B9%E5%87%BB%E6%9F%90%E4%B8%80%E5%B8%A7%E5%90%8E%E7%9A%84analysis%E9%9D%A2%E6%9D%BF%E4%BF%A1%E6%81%AF_hu_c513a95c1b8164ca.png 1024w"
->>>>>>> f144d23 (更新plthook文章)
 	loading="lazy"
 	
 		alt="alt text"
@@ -409,33 +385,12 @@
 <div class="table-wrapper"><table>
   <thead>
       <tr>
-<<<<<<< HEAD
-          <th style="text-align: left">tag名字</th>
-          <th style="text-align: left">描述</th>
-=======
           <th>tag名字</th>
           <th>描述</th>
->>>>>>> f144d23 (更新plthook文章)
       </tr>
   </thead>
   <tbody>
       <tr>
-<<<<<<< HEAD
-          <td style="text-align: left">Choreographer#doFrame ***</td>
-          <td style="text-align: left">每一帧的父事件，其中后面的数字是vsync</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">input</td>
-          <td style="text-align: left">每一帧中执行input事件</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">animation</td>
-          <td style="text-align: left">每一帧执行animation事件</td>
-      </tr>
-      <tr>
-          <td style="text-align: left">RV Scroll</td>
-          <td style="text-align: left">recyclerview滑动事件</td>
-=======
           <td>Choreographer#doFrame ***</td>
           <td>每一帧的父事件，其中后面的数字是vsync</td>
       </tr>
@@ -450,7 +405,6 @@
       <tr>
           <td>RV Scroll</td>
           <td>recyclerview滑动事件</td>
->>>>>>> f144d23 (更新plthook文章)
       </tr>
   </tbody>
 </table></div>
@@ -461,11 +415,7 @@
 <p><img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/summary%E9%9D%A2%E6%9D%BF.png"
 	width="2780"
 	height="1454"
-<<<<<<< HEAD
-	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/summary%E9%9D%A2%E6%9D%BF_hu12489365243334364559.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/summary%E9%9D%A2%E6%9D%BF_hu1274625962053387718.png 1024w"
-=======
 	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/summary%E9%9D%A2%E6%9D%BF_hu_6eb69a2759e514bc.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/summary%E9%9D%A2%E6%9D%BF_hu_fca9b77951980a5b.png 1024w"
->>>>>>> f144d23 (更新plthook文章)
 	loading="lazy"
 	
 		alt="alt text"
@@ -494,11 +444,7 @@
 <img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/top_down%E5%9B%BE.png"
 	width="2536"
 	height="1462"
-<<<<<<< HEAD
-	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/top_down%E5%9B%BE_hu8415439255777515402.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/top_down%E5%9B%BE_hu2716274531812448889.png 1024w"
-=======
 	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/top_down%E5%9B%BE_hu_e1da721a3698c163.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/top_down%E5%9B%BE_hu_2f2523ccf4319923.png 1024w"
->>>>>>> f144d23 (更新plthook文章)
 	loading="lazy"
 	
 		alt="alt text"
@@ -524,11 +470,7 @@
 <img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/flame_chart%E5%9B%BE.png"
 	width="2066"
 	height="1406"
-<<<<<<< HEAD
-	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/flame_chart%E5%9B%BE_hu7645523747576029697.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/flame_chart%E5%9B%BE_hu15656606892943909130.png 1024w"
-=======
 	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/flame_chart%E5%9B%BE_hu_c9603d30ecbdfb18.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/flame_chart%E5%9B%BE_hu_da9cc4823d342a7c.png 1024w"
->>>>>>> f144d23 (更新plthook文章)
 	loading="lazy"
 	
 		alt="alt text"
@@ -548,11 +490,7 @@
 <img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/bottom_up%E5%9B%BE.png"
 	width="2052"
 	height="1378"
-<<<<<<< HEAD
-	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/bottom_up%E5%9B%BE_hu15734523610979815183.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/bottom_up%E5%9B%BE_hu8101433914803450038.png 1024w"
-=======
 	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/bottom_up%E5%9B%BE_hu_c45dc72eaa10ac5f.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/bottom_up%E5%9B%BE_hu_7666f2a0204de3fc.png 1024w"
->>>>>>> f144d23 (更新plthook文章)
 	loading="lazy"
 	
 		alt="alt text"
@@ -572,11 +510,7 @@
 <img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/Events%E5%9B%BE.png"
 	width="2248"
 	height="1462"
-<<<<<<< HEAD
-	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/Events%E5%9B%BE_hu11892006739445049400.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/Events%E5%9B%BE_hu16737892572054533565.png 1024w"
-=======
 	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/Events%E5%9B%BE_hu_430f2c7f7d04b675.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/Events%E5%9B%BE_hu_2fdc9479f4a8a86c.png 1024w"
->>>>>>> f144d23 (更新plthook文章)
 	loading="lazy"
 	
 		alt="alt text"
@@ -596,11 +530,7 @@
 <img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81.png"
 	width="1278"
 	height="1464"
-<<<<<<< HEAD
-	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81_hu3630628184989890666.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81_hu11172594456514611989.png 1024w"
-=======
 	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81_hu_e8667e826a9c2186.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81_hu_85a9290f16b49110.png 1024w"
->>>>>>> f144d23 (更新plthook文章)
 	loading="lazy"
 	
 		alt="alt text"
@@ -615,11 +545,7 @@
 <img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%9A%84RV_Scroll%E4%BA%8B%E4%BB%B6.png"
 	width="2460"
 	height="948"
-<<<<<<< HEAD
-	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%9A%84RV_Scroll%E4%BA%8B%E4%BB%B6_hu11585445045507053060.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%9A%84RV_Scroll%E4%BA%8B%E4%BB%B6_hu4588600957324732302.png 1024w"
-=======
 	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%9A%84RV_Scroll%E4%BA%8B%E4%BB%B6_hu_8e5a048d439e4a8e.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E7%9A%84RV_Scroll%E4%BA%8B%E4%BB%B6_hu_33b2c16d74563ff0.png 1024w"
->>>>>>> f144d23 (更新plthook文章)
 	loading="lazy"
 	
 		alt="alt text"
@@ -637,11 +563,7 @@
 <img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%AD%E6%95%B4%E4%BD%93%E5%8D%A1%E9%A1%BF%E5%B8%A7%E8%A7%86%E5%9B%BE.png"
 	width="3672"
 	height="1498"
-<<<<<<< HEAD
-	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%AD%E6%95%B4%E4%BD%93%E5%8D%A1%E9%A1%BF%E5%B8%A7%E8%A7%86%E5%9B%BE_hu3134920912543019231.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%AD%E6%95%B4%E4%BD%93%E5%8D%A1%E9%A1%BF%E5%B8%A7%E8%A7%86%E5%9B%BE_hu16098689211854603045.png 1024w"
-=======
 	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%AD%E6%95%B4%E4%BD%93%E5%8D%A1%E9%A1%BF%E5%B8%A7%E8%A7%86%E5%9B%BE_hu_5386b79c7cb7defb.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%AD%E6%95%B4%E4%BD%93%E5%8D%A1%E9%A1%BF%E5%B8%A7%E8%A7%86%E5%9B%BE_hu_bee9cbb2993a5bee.png 1024w"
->>>>>>> f144d23 (更新plthook文章)
 	loading="lazy"
 	
 		alt="alt text"
@@ -657,11 +579,7 @@
 <img src="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E4%B8%BB%E8%A6%81%E8%80%97%E6%97%B6%E5%9C%A8inflte%E9%98%B6%E6%AE%B5.png"
 	width="2008"
 	height="690"
-<<<<<<< HEAD
-	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E4%B8%BB%E8%A6%81%E8%80%97%E6%97%B6%E5%9C%A8inflte%E9%98%B6%E6%AE%B5_hu3730612488566794472.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E4%B8%BB%E8%A6%81%E8%80%97%E6%97%B6%E5%9C%A8inflte%E9%98%B6%E6%AE%B5_hu15271119570580169620.png 1024w"
-=======
 	srcset="/p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E4%B8%BB%E8%A6%81%E8%80%97%E6%97%B6%E5%9C%A8inflte%E9%98%B6%E6%AE%B5_hu_3689fd9011d92e30.png 480w, /p/android%E5%8D%A1%E9%A1%BF%E6%B2%BB%E7%90%86/%E5%8D%A1%E9%A1%BF%E5%B8%A7%E4%B8%BB%E8%A6%81%E8%80%97%E6%97%B6%E5%9C%A8inflte%E9%98%B6%E6%AE%B5_hu_a7d90312cfa67cb2.png 1024w"
->>>>>>> f144d23 (更新plthook文章)
 	loading="lazy"
 	
 		alt="alt text"
