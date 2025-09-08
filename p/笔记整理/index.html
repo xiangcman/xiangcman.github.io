@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 默认内联函数是能添加return来作为局部返回，由于存在平铺代码的特性，所以它能阻止调用lambda的外层函数的执行，那如果lambda作为间接调用的时候，此时添加return语句会编译失败，因为间接调用（比如匿名内部类或回调）不能阻止外层函数的调用，是为了避免多线程或回调中意外终止外层函数，所以kotlin编译器此时需要你添加crossinline，举个例子就清楚了： 此处的run闭包，它的调用是在runnable接口中的，此时编译器提示it may contain non-local returns，意思是此时存在间接调用，在间接调用lambda的时候，不允许在lambda中添加return来阻止外层的外层函数的执行。所以此处通过添加crossinline来阻止lambda中添加return 疑惑：crossinline添加后，内联效果还在吗？还是以上面的例子来说明： 假如上面的hello方法我就作为普通的方法，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 object TestInline1 { @JvmStatic fun main(args: Array&lt;String&gt;) { hello { println(&#34;hello的闭包&#34;) } } fun hello(run: () -&gt; Unit) { val runnable = Runnable { println(&#34;runnable run&#34;) run() } runnable.run() } } 对应的字节码如下： 如果我把它作为内联函数来处理，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 object TestInline1 { @JvmStatic fun main(args: Array&lt;String&gt;) { hello { println(&#34;hello的闭包&#34;) } } inline fun hello(crossinline run: () -&gt; Unit) { val runnable = Runnable { println(&#34;runnable run&#34;) run() } runnable.run() } } 对应的字节码如下： 可以看出来crossinline还是有内联效果，闭包直接在runnable中平铺开来了。 相关文档：https://juejin.cn/post/6869954460634841101 java lambda和kotlin lambda区别 在java中如果使用匿名内部类的形式，在编译时它是会单独生成一个类，其中类名是「外部类名$index.class」这种形式。如果使用lambda的形式，它不会在编译时单独生成一个类，它是执行了invokedynamic指令，在运行时动态生成lambda的类，其中类名是「外部类名$Lambda$index.class」这种形式。 参考:https://juejin.cn/post/7004642395060961310 kotlin lambda它是在编译时看是否需要生成单独的类，如果是内联的时候就直接平铺代码，如果是非内联的时候才生成单独的类。 协程是怎么挂起的？怎么恢复的？ 首先每一个协程代码块都会被编译成SuspendLambda对象，它也是一个Continuation对象，每次在执行到SuspendLambda的resume时候，都会去执行invokeSuspend方法，而该方法里面会去执行子协程，如果子协程返回COROUTINE_SUSPENDED状态的时候，父协程的resume方法会直接return了。当子协程执行完后，会通知父协程，此时父协程的的invokeSuspend方法再次被执行，而此时的状态机会发生变化，如果此时状态恢复后，会执行父协程中的Continuation，也就是父父协程的执行。 协程中的dispather是怎么指定在哪个线程上执行的？ 首先dispather它是CoroutineContext（上下文）的一部分，在协程启动过程中，会取CoroutineContext中的CoroutineDispathcer部分。此时会构造一个DispathedContinuation对象，并把前面取到的Dispather传到DispathedContinuation中，此时会将DispathedContinuation扔到线程池中，最终会执行DispathedContinuation的run方法，在run里面会执行到SuspendLambda，也就是协程的代码块，最终会执行它的invokeSuspend方法。所以协程代码块中代码要执行在哪个线程是协程上下文的dispather部分指定的线程。 相关文档：https://www.xiangcman.fun/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/\n">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 默认内联函数是能添加return来作为局部返回，由于存在平铺代码的特性，所以它能阻止调用lambda的外层函数的执行，那如果lambda作为间接调用的时候，此时添加return语句会编译失败，因为间接调用（比如匿名内部类或回调）不能阻止外层函数的调用，是为了避免多线程或回调中意外终止外层函数，所以kotlin编译器此时需要你添加crossinline，举个例子就清楚了： 此处的run闭包，它的调用是在runnable接口中的，此时编译器提示it may contain non-local returns，意思是此时存在间接调用，在间接调用lambda的时候，不允许在lambda中添加return来阻止外层的外层函数的执行。所以此处通过添加crossinline来阻止lambda中添加return 疑惑：crossinline添加后，内联效果还在吗？还是以上面的例子来说明： 假如上面的hello方法我就作为普通的方法，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ">
 <title>笔记整理</title>
 
 <link rel='canonical' href='https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="笔记整理">
-<meta property='og:description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 默认内联函数是能添加return来作为局部返回，由于存在平铺代码的特性，所以它能阻止调用lambda的外层函数的执行，那如果lambda作为间接调用的时候，此时添加return语句会编译失败，因为间接调用（比如匿名内部类或回调）不能阻止外层函数的调用，是为了避免多线程或回调中意外终止外层函数，所以kotlin编译器此时需要你添加crossinline，举个例子就清楚了： 此处的run闭包，它的调用是在runnable接口中的，此时编译器提示it may contain non-local returns，意思是此时存在间接调用，在间接调用lambda的时候，不允许在lambda中添加return来阻止外层的外层函数的执行。所以此处通过添加crossinline来阻止lambda中添加return 疑惑：crossinline添加后，内联效果还在吗？还是以上面的例子来说明： 假如上面的hello方法我就作为普通的方法，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 object TestInline1 { @JvmStatic fun main(args: Array&lt;String&gt;) { hello { println(&#34;hello的闭包&#34;) } } fun hello(run: () -&gt; Unit) { val runnable = Runnable { println(&#34;runnable run&#34;) run() } runnable.run() } } 对应的字节码如下： 如果我把它作为内联函数来处理，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 object TestInline1 { @JvmStatic fun main(args: Array&lt;String&gt;) { hello { println(&#34;hello的闭包&#34;) } } inline fun hello(crossinline run: () -&gt; Unit) { val runnable = Runnable { println(&#34;runnable run&#34;) run() } runnable.run() } } 对应的字节码如下： 可以看出来crossinline还是有内联效果，闭包直接在runnable中平铺开来了。 相关文档：https://juejin.cn/post/6869954460634841101 java lambda和kotlin lambda区别 在java中如果使用匿名内部类的形式，在编译时它是会单独生成一个类，其中类名是「外部类名$index.class」这种形式。如果使用lambda的形式，它不会在编译时单独生成一个类，它是执行了invokedynamic指令，在运行时动态生成lambda的类，其中类名是「外部类名$Lambda$index.class」这种形式。 参考:https://juejin.cn/post/7004642395060961310 kotlin lambda它是在编译时看是否需要生成单独的类，如果是内联的时候就直接平铺代码，如果是非内联的时候才生成单独的类。 协程是怎么挂起的？怎么恢复的？ 首先每一个协程代码块都会被编译成SuspendLambda对象，它也是一个Continuation对象，每次在执行到SuspendLambda的resume时候，都会去执行invokeSuspend方法，而该方法里面会去执行子协程，如果子协程返回COROUTINE_SUSPENDED状态的时候，父协程的resume方法会直接return了。当子协程执行完后，会通知父协程，此时父协程的的invokeSuspend方法再次被执行，而此时的状态机会发生变化，如果此时状态恢复后，会执行父协程中的Continuation，也就是父父协程的执行。 协程中的dispather是怎么指定在哪个线程上执行的？ 首先dispather它是CoroutineContext（上下文）的一部分，在协程启动过程中，会取CoroutineContext中的CoroutineDispathcer部分。此时会构造一个DispathedContinuation对象，并把前面取到的Dispather传到DispathedContinuation中，此时会将DispathedContinuation扔到线程池中，最终会执行DispathedContinuation的run方法，在run里面会执行到SuspendLambda，也就是协程的代码块，最终会执行它的invokeSuspend方法。所以协程代码块中代码要执行在哪个线程是协程上下文的dispather部分指定的线程。 相关文档：https://www.xiangcman.fun/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/\n">
+<meta property='og:description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 默认内联函数是能添加return来作为局部返回，由于存在平铺代码的特性，所以它能阻止调用lambda的外层函数的执行，那如果lambda作为间接调用的时候，此时添加return语句会编译失败，因为间接调用（比如匿名内部类或回调）不能阻止外层函数的调用，是为了避免多线程或回调中意外终止外层函数，所以kotlin编译器此时需要你添加crossinline，举个例子就清楚了： 此处的run闭包，它的调用是在runnable接口中的，此时编译器提示it may contain non-local returns，意思是此时存在间接调用，在间接调用lambda的时候，不允许在lambda中添加return来阻止外层的外层函数的执行。所以此处通过添加crossinline来阻止lambda中添加return 疑惑：crossinline添加后，内联效果还在吗？还是以上面的例子来说明： 假如上面的hello方法我就作为普通的方法，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ">
 <meta property='og:url' content='https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-11-04T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-04T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="笔记整理">
-<meta name="twitter:description" content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 默认内联函数是能添加return来作为局部返回，由于存在平铺代码的特性，所以它能阻止调用lambda的外层函数的执行，那如果lambda作为间接调用的时候，此时添加return语句会编译失败，因为间接调用（比如匿名内部类或回调）不能阻止外层函数的调用，是为了避免多线程或回调中意外终止外层函数，所以kotlin编译器此时需要你添加crossinline，举个例子就清楚了： 此处的run闭包，它的调用是在runnable接口中的，此时编译器提示it may contain non-local returns，意思是此时存在间接调用，在间接调用lambda的时候，不允许在lambda中添加return来阻止外层的外层函数的执行。所以此处通过添加crossinline来阻止lambda中添加return 疑惑：crossinline添加后，内联效果还在吗？还是以上面的例子来说明： 假如上面的hello方法我就作为普通的方法，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 object TestInline1 { @JvmStatic fun main(args: Array&lt;String&gt;) { hello { println(&#34;hello的闭包&#34;) } } fun hello(run: () -&gt; Unit) { val runnable = Runnable { println(&#34;runnable run&#34;) run() } runnable.run() } } 对应的字节码如下： 如果我把它作为内联函数来处理，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 object TestInline1 { @JvmStatic fun main(args: Array&lt;String&gt;) { hello { println(&#34;hello的闭包&#34;) } } inline fun hello(crossinline run: () -&gt; Unit) { val runnable = Runnable { println(&#34;runnable run&#34;) run() } runnable.run() } } 对应的字节码如下： 可以看出来crossinline还是有内联效果，闭包直接在runnable中平铺开来了。 相关文档：https://juejin.cn/post/6869954460634841101 java lambda和kotlin lambda区别 在java中如果使用匿名内部类的形式，在编译时它是会单独生成一个类，其中类名是「外部类名$index.class」这种形式。如果使用lambda的形式，它不会在编译时单独生成一个类，它是执行了invokedynamic指令，在运行时动态生成lambda的类，其中类名是「外部类名$Lambda$index.class」这种形式。 参考:https://juejin.cn/post/7004642395060961310 kotlin lambda它是在编译时看是否需要生成单独的类，如果是内联的时候就直接平铺代码，如果是非内联的时候才生成单独的类。 协程是怎么挂起的？怎么恢复的？ 首先每一个协程代码块都会被编译成SuspendLambda对象，它也是一个Continuation对象，每次在执行到SuspendLambda的resume时候，都会去执行invokeSuspend方法，而该方法里面会去执行子协程，如果子协程返回COROUTINE_SUSPENDED状态的时候，父协程的resume方法会直接return了。当子协程执行完后，会通知父协程，此时父协程的的invokeSuspend方法再次被执行，而此时的状态机会发生变化，如果此时状态恢复后，会执行父协程中的Continuation，也就是父父协程的执行。 协程中的dispather是怎么指定在哪个线程上执行的？ 首先dispather它是CoroutineContext（上下文）的一部分，在协程启动过程中，会取CoroutineContext中的CoroutineDispathcer部分。此时会构造一个DispathedContinuation对象，并把前面取到的Dispather传到DispathedContinuation中，此时会将DispathedContinuation扔到线程池中，最终会执行DispathedContinuation的run方法，在run里面会执行到SuspendLambda，也就是协程的代码块，最终会执行它的invokeSuspend方法。所以协程代码块中代码要执行在哪个线程是协程上下文的dispather部分指定的线程。 相关文档：https://www.xiangcman.fun/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/\n">
+<meta name="twitter:description" content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 默认内联函数是能添加return来作为局部返回，由于存在平铺代码的特性，所以它能阻止调用lambda的外层函数的执行，那如果lambda作为间接调用的时候，此时添加return语句会编译失败，因为间接调用（比如匿名内部类或回调）不能阻止外层函数的调用，是为了避免多线程或回调中意外终止外层函数，所以kotlin编译器此时需要你添加crossinline，举个例子就清楚了： 此处的run闭包，它的调用是在runnable接口中的，此时编译器提示it may contain non-local returns，意思是此时存在间接调用，在间接调用lambda的时候，不允许在lambda中添加return来阻止外层的外层函数的执行。所以此处通过添加crossinline来阻止lambda中添加return 疑惑：crossinline添加后，内联效果还在吗？还是以上面的例子来说明： 假如上面的hello方法我就作为普通的方法，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
+                        <img src="/img/logo_hu16514757392605978522.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -404,7 +404,7 @@
 <img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%87%BD%E6%95%B0%E4%B8%AD%E7%9A%84lambda%E4%BD%9C%E4%B8%BA%E9%97%B4%E6%8E%A5%E8%B0%83%E7%94%A8.png"
 	width="1840"
 	height="922"
-	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%87%BD%E6%95%B0%E4%B8%AD%E7%9A%84lambda%E4%BD%9C%E4%B8%BA%E9%97%B4%E6%8E%A5%E8%B0%83%E7%94%A8_hu_8141c10c1021773c.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%87%BD%E6%95%B0%E4%B8%AD%E7%9A%84lambda%E4%BD%9C%E4%B8%BA%E9%97%B4%E6%8E%A5%E8%B0%83%E7%94%A8_hu_79ca5a44c338094b.png 1024w"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%87%BD%E6%95%B0%E4%B8%AD%E7%9A%84lambda%E4%BD%9C%E4%B8%BA%E9%97%B4%E6%8E%A5%E8%B0%83%E7%94%A8_hu6587485076492757471.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%87%BD%E6%95%B0%E4%B8%AD%E7%9A%84lambda%E4%BD%9C%E4%B8%BA%E9%97%B4%E6%8E%A5%E8%B0%83%E7%94%A8_hu15377213413317146020.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -419,7 +419,7 @@
 <img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%B7%BB%E5%8A%A0%E5%AE%8Ccrossinline%E5%90%8E%E4%B8%8D%E5%85%81%E8%AE%B8%E6%B7%BB%E5%8A%A0return.png"
 	width="1128"
 	height="936"
-	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%B7%BB%E5%8A%A0%E5%AE%8Ccrossinline%E5%90%8E%E4%B8%8D%E5%85%81%E8%AE%B8%E6%B7%BB%E5%8A%A0return_hu_98f83de6f7629f8c.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%B7%BB%E5%8A%A0%E5%AE%8Ccrossinline%E5%90%8E%E4%B8%8D%E5%85%81%E8%AE%B8%E6%B7%BB%E5%8A%A0return_hu_4737b37f550d1c5f.png 1024w"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%B7%BB%E5%8A%A0%E5%AE%8Ccrossinline%E5%90%8E%E4%B8%8D%E5%85%81%E8%AE%B8%E6%B7%BB%E5%8A%A0return_hu15445602374189509796.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%B7%BB%E5%8A%A0%E5%AE%8Ccrossinline%E5%90%8E%E4%B8%8D%E5%85%81%E8%AE%B8%E6%B7%BB%E5%8A%A0return_hu5563822828698087603.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -474,7 +474,7 @@
 <img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%97%A0%E5%86%85%E8%81%94%E6%95%88%E6%9E%9C.png"
 	width="1232"
 	height="792"
-	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%97%A0%E5%86%85%E8%81%94%E6%95%88%E6%9E%9C_hu_7242460bfbb4037.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%97%A0%E5%86%85%E8%81%94%E6%95%88%E6%9E%9C_hu_68ff5132148f5768.png 1024w"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%97%A0%E5%86%85%E8%81%94%E6%95%88%E6%9E%9C_hu13589242433879598134.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E6%97%A0%E5%86%85%E8%81%94%E6%95%88%E6%9E%9C_hu11782509406054841245.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -530,7 +530,7 @@
 <img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8E%E7%9A%84%E6%95%88%E6%9E%9C.png"
 	width="1384"
 	height="718"
-	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8E%E7%9A%84%E6%95%88%E6%9E%9C_hu_7143ecedb4d8b89e.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8E%E7%9A%84%E6%95%88%E6%9E%9C_hu_e132491206eca610.png 1024w"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8E%E7%9A%84%E6%95%88%E6%9E%9C_hu8471907073440358240.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8E%E7%9A%84%E6%95%88%E6%9E%9C_hu8034423836580244129.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -544,7 +544,7 @@
 <img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8Erunnable%E6%95%88%E6%9E%9C.png"
 	width="1554"
 	height="288"
-	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8Erunnable%E6%95%88%E6%9E%9C_hu_291d4c16702b6bbe.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8Erunnable%E6%95%88%E6%9E%9C_hu_a7e339181d7e2fe8.png 1024w"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8Erunnable%E6%95%88%E6%9E%9C_hu7493244916653163035.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E5%86%85%E8%81%94%E5%90%8Erunnable%E6%95%88%E6%9E%9C_hu16760301671460075923.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -583,11 +583,13 @@ remove：移除头部节点，如果没有头部节点则抛异常，有的话�
 push：给链表头部插入元素，没有返回值</br>
 pop：和remove一样的，都是移除头部节点，如果没有头部节点则抛异常，有的话，则返回</br></p>
 <blockquote>
-<p>如果想实现队列的话，则使用offer和poll这一对方法；如果想实现栈的话，可以通过offerLast和pollLast来实现，或者通过offerFirst和pollFirst来实现。</p></blockquote>
+<p>如果想实现队列的话，则使用offer和poll这一对方法；如果想实现栈的话，可以通过offerLast和pollLast来实现，或者通过offerFirst和pollFirst来实现。</p>
+</blockquote>
 <h3 id="arraydeque特性">ArrayDeque特性
 </h3><p>它也是继承自Deque，和LinkedList的特性一样的，只不过ArrayDeque是通过数组实现的双端队列，内部用一个数组来放所有的节点，并且有两个int值用来存放头结点和尾结点的索引。并且ArrayDeque内部的默认节点容量是16个，也可以初始化容量大小。</p>
 <blockquote>
-<p>区别：如果频繁要插入和删除操作，那么使用LinkedList，如果是查询情况比较多，可以优先使用ArrayDeque。</p></blockquote>
+<p>区别：如果频繁要插入和删除操作，那么使用LinkedList，如果是查询情况比较多，可以优先使用ArrayDeque。</p>
+</blockquote>
 <h3 id="poolspool">Pools.Pool
 </h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -1655,7 +1657,7 @@ kotlin中的===：如果是对象类型，比较的是内存地址，指向的�
 <img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E8%8E%B7%E5%8F%96%E6%B3%9B%E5%9E%8B%E7%9A%84class%E7%B1%BB%E5%9E%8B.png"
 	width="1284"
 	height="244"
-	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E8%8E%B7%E5%8F%96%E6%B3%9B%E5%9E%8B%E7%9A%84class%E7%B1%BB%E5%9E%8B_hu_b2fc5ae36fb66a74.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E8%8E%B7%E5%8F%96%E6%B3%9B%E5%9E%8B%E7%9A%84class%E7%B1%BB%E5%9E%8B_hu_662b07cb48c57e0b.png 1024w"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E8%8E%B7%E5%8F%96%E6%B3%9B%E5%9E%8B%E7%9A%84class%E7%B1%BB%E5%9E%8B_hu16603866729984663634.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E8%8E%B7%E5%8F%96%E6%B3%9B%E5%9E%8B%E7%9A%84class%E7%B1%BB%E5%9E%8B_hu8415276271667395059.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1671,7 +1673,7 @@ kotlin中的===：如果是对象类型，比较的是内存地址，指向的�
 <img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/reified%E7%BC%96%E8%AF%91%E5%89%8D%E5%92%8C%E7%BC%96%E8%AF%91%E5%90%8E%E5%AF%B9%E6%AF%94.png"
 	width="3306"
 	height="1484"
-	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/reified%E7%BC%96%E8%AF%91%E5%89%8D%E5%92%8C%E7%BC%96%E8%AF%91%E5%90%8E%E5%AF%B9%E6%AF%94_hu_84da9ce362719951.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/reified%E7%BC%96%E8%AF%91%E5%89%8D%E5%92%8C%E7%BC%96%E8%AF%91%E5%90%8E%E5%AF%B9%E6%AF%94_hu_37e6e2557341c889.png 1024w"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/reified%E7%BC%96%E8%AF%91%E5%89%8D%E5%92%8C%E7%BC%96%E8%AF%91%E5%90%8E%E5%AF%B9%E6%AF%94_hu17684842508704805206.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/reified%E7%BC%96%E8%AF%91%E5%89%8D%E5%92%8C%E7%BC%96%E8%AF%91%E5%90%8E%E5%AF%B9%E6%AF%94_hu5785158618927532095.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1855,7 +1857,7 @@ kotlin中的===：如果是对象类型，比较的是内存地址，指向的�
 <img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/glide%E7%BC%93%E5%AD%98%E8%8E%B7%E5%8F%96.png"
 	width="958"
 	height="793"
-	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/glide%E7%BC%93%E5%AD%98%E8%8E%B7%E5%8F%96_hu_fe68fab10359265d.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/glide%E7%BC%93%E5%AD%98%E8%8E%B7%E5%8F%96_hu_b66940a1f79ab413.png 1024w"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/glide%E7%BC%93%E5%AD%98%E8%8E%B7%E5%8F%96_hu14351163840712398053.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/glide%E7%BC%93%E5%AD%98%E8%8E%B7%E5%8F%96_hu7461658697438760820.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"

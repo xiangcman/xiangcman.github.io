@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 如果是在Android9之前的版本，能通过Perfetto 脚本捕获跟踪记录record_android_trace。\n记录跟踪 命令行跟踪 record_android_trace脚本跟踪 首先将record_android_trace脚本下载下来： 1 2 3 4 //下载脚本 curl -O https://raw.githubusercontent.com/google/perfetto/main/tools/record_android_trace //给脚本分配执行权限 chmod u+x record_android_trace 开始跟踪 1 2 ./record_android_trace -o trace_file.perfetto-trace -t 30s -b 64mb \\ sched freq idle am wm gfx view binder_driver hal dalvik camera input res memory 命令解释： 上面的脚本中是通过record_android_trace这个脚本收集，接着-o后面跟的是输出的perfetto能识别的文件，-t是跟踪多久的时间，-b后面是最大的文件大小，最后是一堆的category分类。收集完后，它会自动在ui.perfetto.dev上打开该trace文件。上面拼接的分类有如下解释： sched：进程调度(Scheduler) freq：CPU 频率变化(CPU Frequency) idle：CPU 空闲状态(CPU Idle) am：应用生命周期、进程调度等(Activity Manager) wm：窗口管理、Activity 启动等(Window Manager) gfx:图形渲染、SurfaceFlinger、GPU 活动等(Graphics) view:视图绘制、布局、测量等(View System) binder_driver：进程间通信（Binder IPC） hal：硬件抽象层（Hardware Abstraction Layer） dalvik：ART 运行时、GC、JNI 调用等（ART Runtime） camera：摄像头操作（Camera） input：输入事件处理（Input） res：资源加载（Resource） memory：内存分配和使用（Memory） 想获取更多的类别，可以通过如下的指令获取：\n">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 ">
 <title>Android上启动perfetto跟踪</title>
 
 <link rel='canonical' href='https://example.com/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Android上启动perfetto跟踪">
-<meta property='og:description' content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 如果是在Android9之前的版本，能通过Perfetto 脚本捕获跟踪记录record_android_trace。\n记录跟踪 命令行跟踪 record_android_trace脚本跟踪 首先将record_android_trace脚本下载下来： 1 2 3 4 //下载脚本 curl -O https://raw.githubusercontent.com/google/perfetto/main/tools/record_android_trace //给脚本分配执行权限 chmod u+x record_android_trace 开始跟踪 1 2 ./record_android_trace -o trace_file.perfetto-trace -t 30s -b 64mb \\ sched freq idle am wm gfx view binder_driver hal dalvik camera input res memory 命令解释： 上面的脚本中是通过record_android_trace这个脚本收集，接着-o后面跟的是输出的perfetto能识别的文件，-t是跟踪多久的时间，-b后面是最大的文件大小，最后是一堆的category分类。收集完后，它会自动在ui.perfetto.dev上打开该trace文件。上面拼接的分类有如下解释： sched：进程调度(Scheduler) freq：CPU 频率变化(CPU Frequency) idle：CPU 空闲状态(CPU Idle) am：应用生命周期、进程调度等(Activity Manager) wm：窗口管理、Activity 启动等(Window Manager) gfx:图形渲染、SurfaceFlinger、GPU 活动等(Graphics) view:视图绘制、布局、测量等(View System) binder_driver：进程间通信（Binder IPC） hal：硬件抽象层（Hardware Abstraction Layer） dalvik：ART 运行时、GC、JNI 调用等（ART Runtime） camera：摄像头操作（Camera） input：输入事件处理（Input） res：资源加载（Resource） memory：内存分配和使用（Memory） 想获取更多的类别，可以通过如下的指令获取：\n">
+<meta property='og:description' content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 ">
 <meta property='og:url' content='https://example.com/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-06-18T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-06-18T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="Android上启动perfetto跟踪">
-<meta name="twitter:description" content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 如果是在Android9之前的版本，能通过Perfetto 脚本捕获跟踪记录record_android_trace。\n记录跟踪 命令行跟踪 record_android_trace脚本跟踪 首先将record_android_trace脚本下载下来： 1 2 3 4 //下载脚本 curl -O https://raw.githubusercontent.com/google/perfetto/main/tools/record_android_trace //给脚本分配执行权限 chmod u+x record_android_trace 开始跟踪 1 2 ./record_android_trace -o trace_file.perfetto-trace -t 30s -b 64mb \\ sched freq idle am wm gfx view binder_driver hal dalvik camera input res memory 命令解释： 上面的脚本中是通过record_android_trace这个脚本收集，接着-o后面跟的是输出的perfetto能识别的文件，-t是跟踪多久的时间，-b后面是最大的文件大小，最后是一堆的category分类。收集完后，它会自动在ui.perfetto.dev上打开该trace文件。上面拼接的分类有如下解释： sched：进程调度(Scheduler) freq：CPU 频率变化(CPU Frequency) idle：CPU 空闲状态(CPU Idle) am：应用生命周期、进程调度等(Activity Manager) wm：窗口管理、Activity 启动等(Window Manager) gfx:图形渲染、SurfaceFlinger、GPU 活动等(Graphics) view:视图绘制、布局、测量等(View System) binder_driver：进程间通信（Binder IPC） hal：硬件抽象层（Hardware Abstraction Layer） dalvik：ART 运行时、GC、JNI 调用等（ART Runtime） camera：摄像头操作（Camera） input：输入事件处理（Input） res：资源加载（Resource） memory：内存分配和使用（Memory） 想获取更多的类别，可以通过如下的指令获取：\n">
+<meta name="twitter:description" content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 ">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
+                        <img src="/img/logo_hu16514757392605978522.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -297,6 +297,15 @@
             <li><a href="#通过-perfetto-界面记录跟踪">通过 Perfetto 界面记录跟踪</a></li>
           </ol>
         </li>
+        <li><a href="#通用操作">通用操作</a>
+          <ol>
+            <li><a href="#导航操作">导航操作</a></li>
+            <li><a href="#鼠标操作">鼠标操作</a></li>
+            <li><a href="#命令行操作">命令行操作</a></li>
+            <li><a href="#sql页面操作">sql页面操作</a></li>
+            <li><a href="#快捷键操作">快捷键操作</a></li>
+          </ol>
+        </li>
         <li><a href="#参考">参考</a></li>
       </ol>
     </li>
@@ -462,7 +471,8 @@
 </div>
 </div><blockquote>
 <p>atrace &ndash;list_categories 列出的主要是 Atrace 类别。这些类别是 Perfetto 中最常用的类别之一。<br>
-一些厂商可能会添加自己的自定义类别，这些也会在这里列出。</p></blockquote>
+一些厂商可能会添加自己的自定义类别，这些也会在这里列出。</p>
+</blockquote>
 <h5 id="使用设备上的-systembinperfetto-命令">使用设备上的 /system/bin/perfetto 命令
 </h5><p>首先我得设备是Android13的，所以具备通过adb的命令来抓取跟踪文件，需要在<strong>开发者选项中选择调试应用为你要调试的应用</strong>。</p>
 <img src="选择调试的应用.png" width ="300"/>  
@@ -855,7 +865,7 @@
 <img src="/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/%E9%80%9A%E8%BF%87%E7%BD%91%E9%A1%B5%E6%9C%80%E7%BB%88%E7%94%9F%E6%88%90%E7%9A%84config%E4%BF%A1%E6%81%AF.png"
 	width="1810"
 	height="5739"
-	srcset="/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/%E9%80%9A%E8%BF%87%E7%BD%91%E9%A1%B5%E6%9C%80%E7%BB%88%E7%94%9F%E6%88%90%E7%9A%84config%E4%BF%A1%E6%81%AF_hu_177e058c53d96e9f.png 480w, /p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/%E9%80%9A%E8%BF%87%E7%BD%91%E9%A1%B5%E6%9C%80%E7%BB%88%E7%94%9F%E6%88%90%E7%9A%84config%E4%BF%A1%E6%81%AF_hu_800d35ce7ca4e99.png 1024w"
+	srcset="/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/%E9%80%9A%E8%BF%87%E7%BD%91%E9%A1%B5%E6%9C%80%E7%BB%88%E7%94%9F%E6%88%90%E7%9A%84config%E4%BF%A1%E6%81%AF_hu18189692106848121612.png 480w, /p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/%E9%80%9A%E8%BF%87%E7%BD%91%E9%A1%B5%E6%9C%80%E7%BB%88%E7%94%9F%E6%88%90%E7%9A%84config%E4%BF%A1%E6%81%AF_hu1450378046521330355.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -866,6 +876,57 @@
 		data-flex-basis="75px"
 	
 ></p>
+<h3 id="通用操作">通用操作
+</h3><p><img src="/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/image.png"
+	width="780"
+	height="1536"
+	srcset="/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/image_hu8923801292516471515.png 480w, /p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/image_hu9700300328278634613.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="50"
+		data-flex-basis="121px"
+	
+></p>
+<h4 id="导航操作">导航操作
+</h4><p>w：放大操作<br>
+s：缩小操作<br>
+a：轨道左移<br>
+d：轨道右移<br></p>
+<h4 id="鼠标操作">鼠标操作
+</h4><p>鼠标左键点击：选中区域或片段<br>
+control+滚轮：放大或缩小<br>
+鼠标左键长按+拖拽：选中区域<br>
+shift+左键长按+拖拽：轨道左移或右移<br></p>
+<h4 id="命令行操作">命令行操作
+</h4><p>在头部的搜索框中输入「&gt;」,进入快捷操作，点击delete退出快捷操作<br>
+在头部的搜索框中输入「:」，进入sql模式，点击delete退出sql模式<br>
+enter：在上面输入完sql后，就执行sql<br>
+control+enter：在上面输入完sql后，就执行sql，每次的sql都不会被覆盖<br></p>
+<h4 id="sql页面操作">sql页面操作
+</h4><p>control+enter：执行sql，也可以通过鼠标选中某段sql来执行结果<br></p>
+<h4 id="快捷键操作">快捷键操作
+</h4><p>shift+m：基于当前选中的区域或片段添加一个新的笔记片段<br>
+R：对当前选中的区域或片段转为区域选择<br>
+esc：取消当前选择的区域或片段<br>
+command+p：通过名字找轨道<br>
+f:将画面聚焦到当前选中的区域或片段<br>
+回车：对页面上的搜索结果（command+f）进行定位到下一个<br>
+shift+回车：对页面上的搜索结果（command+f）进行定位到上一个<br>
+command+shift+p:打开快捷操作，跟上面在搜索框中输入「&gt;」一样的效果<br>
+command+o：打开trace文件<br>
+command+t:置顶轨道<br>
+delete:移除掉选中的笔记片段<br>
+/:聚焦到搜索框<br>
+.:定位到下一个轨道的片段<br>
+,:定位到上一个轨道的片段<br>
+m：根据当前选中的区域或片段，添加临时的笔记片段，和上面的shift+m的区别是，此处如果再添加另外的笔记片段的时候，此时这种添加的笔记片段会被覆盖<br>
+q：切换底部的面板<br>
+command+b:切换左边的菜单面板<br>
+command+option+s：多个trace文件在浏览器中打开的时候，能同步多个trace的操作，方便对比<br></p>
 <h3 id="参考">参考
 </h3><ul>
 <li><a class="link" href="https://perfetto.dev/docs/quickstart/android-tracing"  target="_blank" rel="noopener"

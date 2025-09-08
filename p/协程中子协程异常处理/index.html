@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="本文通过案例来熟悉子协程到父协程之间的异常是如何处理的。\n案例一：子协程异常，父协程handler捕捉 1 2 3 4 5 6 7 8 9 10 11 12 13 14 private fun demo1() { val handler = CoroutineExceptionHandler { coroutineContext, throwable -&gt; Log.d(TAG, &#34;onCreate: CoroutineExceptionHandler:${throwable.message}&#34;) } GlobalScope.launch(handler) { Log.d(TAG, &#34;onCreate: parentJob start&#34;) withContext(Dispatchers.IO) { throw RuntimeException(&#34;runtime exception&#34;) delay(1000) Log.d(TAG, &#34;onCreate: withContext end&#34;) } Log.d(TAG, &#34;onCreate: parentJob end&#34;) } } 先上日志：\n">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="本文通过案例来熟悉子协程到父协程之间的异常是如何处理的。\n案例一：子协程异常，父协程handler捕捉 1 2 3 4 5 6 7 8 9 10 11 12 13 14 private fun demo1() { val handler = CoroutineExceptionHandler { coroutineContext, throwable -&gt; Log.d(TAG, &#34;onCreate: CoroutineExceptionHandler:${throwable.message}&#34;) } GlobalScope.launch(handler) { Log.d(TAG, &#34;onCreate: parentJob start&#34;) withContext(Dispatchers.IO) { throw RuntimeException(&#34;runtime exception&#34;) delay(1000) Log.d(TAG, &#34;onCreate: withContext end&#34;) } Log.d(TAG, &#34;onCreate: parentJob end&#34;) } } ">
 <title>协程中子协程异常处理</title>
 
 <link rel='canonical' href='https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程中子协程异常处理">
-<meta property='og:description' content="本文通过案例来熟悉子协程到父协程之间的异常是如何处理的。\n案例一：子协程异常，父协程handler捕捉 1 2 3 4 5 6 7 8 9 10 11 12 13 14 private fun demo1() { val handler = CoroutineExceptionHandler { coroutineContext, throwable -&gt; Log.d(TAG, &#34;onCreate: CoroutineExceptionHandler:${throwable.message}&#34;) } GlobalScope.launch(handler) { Log.d(TAG, &#34;onCreate: parentJob start&#34;) withContext(Dispatchers.IO) { throw RuntimeException(&#34;runtime exception&#34;) delay(1000) Log.d(TAG, &#34;onCreate: withContext end&#34;) } Log.d(TAG, &#34;onCreate: parentJob end&#34;) } } 先上日志：\n">
+<meta property='og:description' content="本文通过案例来熟悉子协程到父协程之间的异常是如何处理的。\n案例一：子协程异常，父协程handler捕捉 1 2 3 4 5 6 7 8 9 10 11 12 13 14 private fun demo1() { val handler = CoroutineExceptionHandler { coroutineContext, throwable -&gt; Log.d(TAG, &#34;onCreate: CoroutineExceptionHandler:${throwable.message}&#34;) } GlobalScope.launch(handler) { Log.d(TAG, &#34;onCreate: parentJob start&#34;) withContext(Dispatchers.IO) { throw RuntimeException(&#34;runtime exception&#34;) delay(1000) Log.d(TAG, &#34;onCreate: withContext end&#34;) } Log.d(TAG, &#34;onCreate: parentJob end&#34;) } } ">
 <meta property='og:url' content='https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-12-17T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-12-17T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cover.jpg' />
 <meta name="twitter:title" content="协程中子协程异常处理">
-<meta name="twitter:description" content="本文通过案例来熟悉子协程到父协程之间的异常是如何处理的。\n案例一：子协程异常，父协程handler捕捉 1 2 3 4 5 6 7 8 9 10 11 12 13 14 private fun demo1() { val handler = CoroutineExceptionHandler { coroutineContext, throwable -&gt; Log.d(TAG, &#34;onCreate: CoroutineExceptionHandler:${throwable.message}&#34;) } GlobalScope.launch(handler) { Log.d(TAG, &#34;onCreate: parentJob start&#34;) withContext(Dispatchers.IO) { throw RuntimeException(&#34;runtime exception&#34;) delay(1000) Log.d(TAG, &#34;onCreate: withContext end&#34;) } Log.d(TAG, &#34;onCreate: parentJob end&#34;) } } 先上日志：\n"><meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:description" content="本文通过案例来熟悉子协程到父协程之间的异常是如何处理的。\n案例一：子协程异常，父协程handler捕捉 1 2 3 4 5 6 7 8 9 10 11 12 13 14 private fun demo1() { val handler = CoroutineExceptionHandler { coroutineContext, throwable -&gt; Log.d(TAG, &#34;onCreate: CoroutineExceptionHandler:${throwable.message}&#34;) } GlobalScope.launch(handler) { Log.d(TAG, &#34;onCreate: parentJob start&#34;) withContext(Dispatchers.IO) { throw RuntimeException(&#34;runtime exception&#34;) delay(1000) Log.d(TAG, &#34;onCreate: withContext end&#34;) } Log.d(TAG, &#34;onCreate: parentJob end&#34;) } } "><meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content='https://example.com/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cover.jpg' />
     <link rel="shortcut icon" href="/static/logo.ico" />
 
@@ -59,7 +59,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
+                        <img src="/img/logo_hu16514757392605978522.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -321,8 +321,8 @@
     <header class="article-header">
         <div class="article-image">
             <a href="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/">
-                <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cover_hu_c02227ecb0d36a9a.jpg"
-                        srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cover_hu_c02227ecb0d36a9a.jpg 800w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cover_hu_622c6384f22f83e8.jpg 1600w"
+                <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cover_hu15397774380070187733.jpg"
+                        srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cover_hu15397774380070187733.jpg 800w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cover_hu4680098175249723955.jpg 1600w"
                         width="800" 
                         height="450" 
                         loading="lazy"
@@ -465,7 +465,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 <p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E5%88%A4%E6%96%AD%E5%BC%82%E5%B8%B8%E7%9A%84%E9%80%BB%E8%BE%91.png"
 	width="1860"
 	height="852"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E5%88%A4%E6%96%AD%E5%BC%82%E5%B8%B8%E7%9A%84%E9%80%BB%E8%BE%91_hu_56d96c6a393b541.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E5%88%A4%E6%96%AD%E5%BC%82%E5%B8%B8%E7%9A%84%E9%80%BB%E8%BE%91_hu_1551a3421958b139.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E5%88%A4%E6%96%AD%E5%BC%82%E5%B8%B8%E7%9A%84%E9%80%BB%E8%BE%91_hu2471317401933107831.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/finalizeFinishingState%E5%88%A4%E6%96%AD%E5%BC%82%E5%B8%B8%E7%9A%84%E9%80%BB%E8%BE%91_hu4018059375934370584.png 1024w"
 	loading="lazy"
 	
 		alt="finalizeFinishingState判断异常的逻辑.png"
@@ -479,7 +479,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 <p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cancelParent%E5%A4%84%E7%90%86%E7%BB%93%E6%9E%9C.png"
 	width="2126"
 	height="972"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cancelParent%E5%A4%84%E7%90%86%E7%BB%93%E6%9E%9C_hu_320cf07c375c86c.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cancelParent%E5%A4%84%E7%90%86%E7%BB%93%E6%9E%9C_hu_bd68d9dc21ca093b.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cancelParent%E5%A4%84%E7%90%86%E7%BB%93%E6%9E%9C_hu10996717946073602004.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/cancelParent%E5%A4%84%E7%90%86%E7%BB%93%E6%9E%9C_hu7283344256636440523.png 1024w"
 	loading="lazy"
 	
 		alt="cancelParent处理结果.png"
@@ -491,15 +491,17 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 	
 ></p>
 <blockquote>
-<p>可以看到如果isScopedCoroutine为true的时候，cancelParent直接返回true，如果返回true，那么就不触发自己的上面的handleJobException，也就是把异常继续往上抛了。例子中也就是launch对应的StandaloneCoroutine。而在StandaloneCoroutine中不会去cancelParent，因为它的parent是null，所以会把异常交给了handleJobException了，所以上面的launch中传入的CoroutineExceptionHandler能捕获到该异常。</p></blockquote>
+<p>可以看到如果isScopedCoroutine为true的时候，cancelParent直接返回true，如果返回true，那么就不触发自己的上面的handleJobException，也就是把异常继续往上抛了。例子中也就是launch对应的StandaloneCoroutine。而在StandaloneCoroutine中不会去cancelParent，因为它的parent是null，所以会把异常交给了handleJobException了，所以上面的launch中传入的CoroutineExceptionHandler能捕获到该异常。</p>
+</blockquote>
 <blockquote>
-<p>总结：如果子job中在处理异常的时候，cancelParent中如果isScopedCoroutine为true的时候，则不触发自己的handleJobException，也就是把异常交给了父job，如果父job不处理该异常，则会程序崩溃。</p></blockquote>
+<p>总结：如果子job中在处理异常的时候，cancelParent中如果isScopedCoroutine为true的时候，则不触发自己的handleJobException，也就是把异常交给了父job，如果父job不处理该异常，则会程序崩溃。</p>
+</blockquote>
 <h3 id="案例二子协程异常子协程try-catch捕捉">案例二：子协程异常，子协程try-catch捕捉
 </h3><p>上面代码如果把withContext中的异常通过try-catch住，父job就收不到该异常了：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry-catch%E4%BD%8F%E7%9A%84%E4%BE%8B%E5%AD%90.png"
 	width="1700"
 	height="1512"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry-catch%E4%BD%8F%E7%9A%84%E4%BE%8B%E5%AD%90_hu_d685458f45e0a2e1.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry-catch%E4%BD%8F%E7%9A%84%E4%BE%8B%E5%AD%90_hu_619273e430f580e0.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry-catch%E4%BD%8F%E7%9A%84%E4%BE%8B%E5%AD%90_hu6057706211218211667.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry-catch%E4%BD%8F%E7%9A%84%E4%BE%8B%E5%AD%90_hu12425237139876032559.png 1024w"
 	loading="lazy"
 	
 		alt="子协程try-catch住的例子.png"
@@ -513,7 +515,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry%E4%BD%8F%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97.png"
 	width="2700"
 	height="300"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry%E4%BD%8F%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97_hu_5fb94c38d4c7a591.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry%E4%BD%8F%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97_hu_b1257e65355fc05f.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry%E4%BD%8F%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97_hu3174166662571977716.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8Btry%E4%BD%8F%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97_hu9773031642937130551.png 1024w"
 	loading="lazy"
 	
 		alt="子协程try住后的日志.png"
@@ -530,7 +532,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84context%E4%BC%A0%E9%80%92handler%E7%9A%84%E4%BE%8B%E5%AD%90.png"
 	width="1888"
 	height="1642"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84context%E4%BC%A0%E9%80%92handler%E7%9A%84%E4%BE%8B%E5%AD%90_hu_f6b36c1fb6183f97.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84context%E4%BC%A0%E9%80%92handler%E7%9A%84%E4%BE%8B%E5%AD%90_hu_40ccabe70beaf2c8.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84context%E4%BC%A0%E9%80%92handler%E7%9A%84%E4%BE%8B%E5%AD%90_hu16986401170852377650.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84context%E4%BC%A0%E9%80%92handler%E7%9A%84%E4%BE%8B%E5%AD%90_hu12195155145508134238.png 1024w"
 	loading="lazy"
 	
 		alt="子协程中的context传递handler的例子.png"
@@ -544,7 +546,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%BC%A0%E9%80%92handler%E7%9A%84%E6%97%A5%E5%BF%97.png"
 	width="2860"
 	height="236"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%BC%A0%E9%80%92handler%E7%9A%84%E6%97%A5%E5%BF%97_hu_df3137592b7d455a.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%BC%A0%E9%80%92handler%E7%9A%84%E6%97%A5%E5%BF%97_hu_bd547c0989531e0c.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%BC%A0%E9%80%92handler%E7%9A%84%E6%97%A5%E5%BF%97_hu5440190123673016061.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E4%BC%A0%E9%80%92handler%E7%9A%84%E6%97%A5%E5%BF%97_hu17108930713661862523.png 1024w"
 	loading="lazy"
 	
 		alt="子协程传递handler的日志.png"
@@ -557,13 +559,14 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 ></p>
 <p>子协程抛了异常，然后子协程也传了CoroutineExceptionHandler，但是子协程的CoroutineExceptionHandler不起作用，还是把异常传给了父协程。并且父协程的invokeOnCompletion收到了异常回调，而且发现父协程的invokeSuspend方法也没走完，所以onCreate: parentJob end没有输出。</p>
 <blockquote>
-<p>分析：前面已经分析过withContext开启的协程对应的coroutineScope是一个DispatchedCoroutine重写了isScopedCoroutine=true，如果它为true，cancelParent方法则返回true，那么它自己的handleJobException就不会触发，所以就不会走到自己的CoroutineExceptionHandler回调了。</p></blockquote>
+<p>分析：前面已经分析过withContext开启的协程对应的coroutineScope是一个DispatchedCoroutine重写了isScopedCoroutine=true，如果它为true，cancelParent方法则返回true，那么它自己的handleJobException就不会触发，所以就不会走到自己的CoroutineExceptionHandler回调了。</p>
+</blockquote>
 <h3 id="案例四子协程抛cancellationexception父协程无法捕捉">案例四：子协程抛CancellationException，父协程无法捕捉
 </h3><p>当子协程抛的是CancellationException，父协程捕捉不到该异常：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%8A%9BCancellationException%E5%BC%82%E5%B8%B8%E7%9A%84%E4%BE%8B%E5%AD%90.png"
 	width="1654"
 	height="1168"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%8A%9BCancellationException%E5%BC%82%E5%B8%B8%E7%9A%84%E4%BE%8B%E5%AD%90_hu_e0c0959566e1ec6.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%8A%9BCancellationException%E5%BC%82%E5%B8%B8%E7%9A%84%E4%BE%8B%E5%AD%90_hu_6f129f35fc7c1572.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%8A%9BCancellationException%E5%BC%82%E5%B8%B8%E7%9A%84%E4%BE%8B%E5%AD%90_hu8044955092259504113.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%8A%9BCancellationException%E5%BC%82%E5%B8%B8%E7%9A%84%E4%BE%8B%E5%AD%90_hu2353986975263455310.png 1024w"
 	loading="lazy"
 	
 		alt="子协程抛CancellationException异常的例子.png"
@@ -577,7 +580,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%8A%9BCancelationException%E7%9A%84%E6%97%A5%E5%BF%97.png"
 	width="2614"
 	height="178"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%8A%9BCancelationException%E7%9A%84%E6%97%A5%E5%BF%97_hu_df9c53d013077980.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%8A%9BCancelationException%E7%9A%84%E6%97%A5%E5%BF%97_hu_7747f86df9149dd0.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%8A%9BCancelationException%E7%9A%84%E6%97%A5%E5%BF%97_hu7272531772253667221.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%8A%9BCancelationException%E7%9A%84%E6%97%A5%E5%BF%97_hu12222598072212115160.png 1024w"
 	loading="lazy"
 	
 		alt="子协程抛CancelationException的日志.png"
@@ -676,15 +679,17 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 </span></span></code></pre></td></tr></table>
 </div>
 </div><blockquote>
-<p>数据结构:父协程的job启动了三个子协程，在job1中抛出异常，job2和job3收到了JobCancellationException。其中父job是一个JobImpl对象，在每个子协程启动过程中都会创建一个ChildHandleNode对象，其中job指向了父Job，也就是JobImpl，childJob指向了当前子job，也就是StandaloneCoroutine，最后在子Job中通过parentHandle指向了父job（通过ChildHandleNode的parent指向了父job），state指向了InvokeOnCompletion对象(是通过invokeOnCompletion添加的)。父job中通过state指向了一个NodeList，每一个next节点指向了三个子job（分别都是ChildHandleNode对象）。在三个子job中通过delay实现挂起，在delay的时候，会创建CancellableContinuationImpl，它是用来监听job取消的task，它会通过ChildContinuation进行持有，最后ChildContinuation添加到当前子job的state上，所以目前每一个子job的state上有两个对象，一个是InvokeOnCompletion对象，一个是ChildContinuation，组合成一个NodeList对象。</p></blockquote>
+<p>数据结构:父协程的job启动了三个子协程，在job1中抛出异常，job2和job3收到了JobCancellationException。其中父job是一个JobImpl对象，在每个子协程启动过程中都会创建一个ChildHandleNode对象，其中job指向了父Job，也就是JobImpl，childJob指向了当前子job，也就是StandaloneCoroutine，最后在子Job中通过parentHandle指向了父job（通过ChildHandleNode的parent指向了父job），state指向了InvokeOnCompletion对象(是通过invokeOnCompletion添加的)。父job中通过state指向了一个NodeList，每一个next节点指向了三个子job（分别都是ChildHandleNode对象）。在三个子job中通过delay实现挂起，在delay的时候，会创建CancellableContinuationImpl，它是用来监听job取消的task，它会通过ChildContinuation进行持有，最后ChildContinuation添加到当前子job的state上，所以目前每一个子job的state上有两个对象，一个是InvokeOnCompletion对象，一个是ChildContinuation，组合成一个NodeList对象。</p>
+</blockquote>
 <blockquote>
 <p>异常处理:当第一个job发生异常后，先将自己的state设置上Finishing状态，并且给Finish添加异常信息，接着会调用到job1的cancelParent逻辑，该方法中会调用到parentHandle的childCancelled逻辑，它是一个ChildHandleNode对象，在它的childCancelled方法中，会触发父job的childCancelled方法，最终会来到父job的cancelImpl方法。在cancelImpl中会触发cancelMakeCompleting-&gt;tryMakeCompleting-&gt;tryMakeCompletingSlowPath，在tryMakeCompletingSlowPath里面也会给父job设置上Finishing状态，同时会触发每一个ChildHandleNode对象的invoke，在invoke里面又会触发childJob的parentCancelled方法。此时又会来到每个子job的cancelImpl方法，在里面会触发makeCancelling方法。由于第一个job的state是Finishing状态，所以会给state添加一个JobCancellationException异常，但是不会覆盖原始异常。在job2和job3触发到cancelImpl方法时候，在makeCancelling里面，由于job2和job3的state是一个Incomplete对象，所以会创建JobCancellationException异常，接着调用了tryMakeCancelling方法，在该方法里面会给job2和job3的state设置上Finishing状态，并且会触发前面创建的ChildContinuation的invoke方法，在ChildContinuation的invoke中会触发CancellableContinuationImpl的parentCancelled方法，在里面最终会触发到SuspnedLambda的resumeWith，最后会触发job2和job3的resume方法，最终会把JobCancellationException异常分发到当前state的InvokeOnCompletion上。分发完子Job的cancelImpl后，继续回到父Job的tryMakeCompletingSlowPath流程中，给当前出现异常的job的state添加一个ChildCompletion对象并结束了tryMakeCompletingSlowPath流程。当job1的cancelParent逻辑都处理完后，也就是在finalizeFinishingState方法中。此时的cancelParent返回false，是因为调用父job的childCancelled时候handlesException变量为false，所以cancelParent方法返回false，那么此时会回调handleJobException方法，回调到CoroutineExceptionHandler，最后给state设置上CompletedExceptionally。接着会触发自己state的NodeList上的JobNode，一个是InvokeOnCompletion，一个是ChildCompletion，在ChildCompletion中会触发父job的continueCompleting方法，在该方法中会触发finalizeFinishingState逻辑，在该方法里面会将异常给到CoroutineExceptionHandler处理，但是此时的父job（JobImpl）没有重写handleJobException方法，所以不会分发到CoroutineExceptionHandler。最后将state设置为CompletedExceptionally，到此整个流程结束。<br>
-所以上面的日志先是job2和job3的InvokeOnCompletion收到JobCancellationException异常，接着是context中的CoroutineExceptionHandler收到原始异常，最后是job1的InvokeOnCompletion收到原始异常。</p></blockquote>
+所以上面的日志先是job2和job3的InvokeOnCompletion收到JobCancellationException异常，接着是context中的CoroutineExceptionHandler收到原始异常，最后是job1的InvokeOnCompletion收到原始异常。</p>
+</blockquote>
 <p>上面涉及到几个关键的类，把关键类的结构梳理下：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%85%B3%E9%94%AE%E7%B1%BB.png"
 	width="2039"
 	height="474"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%85%B3%E9%94%AE%E7%B1%BB_hu_b3615ff1dd4032e9.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%85%B3%E9%94%AE%E7%B1%BB_hu_4373afd9d1bef904.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%85%B3%E9%94%AE%E7%B1%BB_hu4896298314814446054.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%85%B3%E9%94%AE%E7%B1%BB_hu12535213613817499247.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -698,7 +703,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%88%B0%E7%88%B6%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%88%86%E5%8F%91.png"
 	width="3383"
 	height="2415"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%88%B0%E7%88%B6%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%88%86%E5%8F%91_hu_17d5b05a77eb6613.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%88%B0%E7%88%B6%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%88%86%E5%8F%91_hu_8e0970dcd9601473.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%88%B0%E7%88%B6%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%88%86%E5%8F%91_hu48235827132543542.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%88%B0%E7%88%B6%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%88%86%E5%8F%91_hu82781782009653216.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -778,7 +783,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 </div><p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E7%88%B6%E5%8D%8F%E7%A8%8B%E6%8C%87%E5%AE%9ASupervisorJob%E5%90%AF%E5%8A%A8%E5%A4%9A%E4%B8%AA%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E6%97%A5%E5%BF%97.png"
 	width="2632"
 	height="442"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E7%88%B6%E5%8D%8F%E7%A8%8B%E6%8C%87%E5%AE%9ASupervisorJob%E5%90%AF%E5%8A%A8%E5%A4%9A%E4%B8%AA%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E6%97%A5%E5%BF%97_hu_ef927005f304327a.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E7%88%B6%E5%8D%8F%E7%A8%8B%E6%8C%87%E5%AE%9ASupervisorJob%E5%90%AF%E5%8A%A8%E5%A4%9A%E4%B8%AA%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E6%97%A5%E5%BF%97_hu_8354617ece32d72e.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E7%88%B6%E5%8D%8F%E7%A8%8B%E6%8C%87%E5%AE%9ASupervisorJob%E5%90%AF%E5%8A%A8%E5%A4%9A%E4%B8%AA%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E6%97%A5%E5%BF%97_hu17154830387940792995.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E7%88%B6%E5%8D%8F%E7%A8%8B%E6%8C%87%E5%AE%9ASupervisorJob%E5%90%AF%E5%8A%A8%E5%A4%9A%E4%B8%AA%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E6%97%A5%E5%BF%97_hu7615236068549095536.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -792,12 +797,13 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 只是换了个job，job1还是一样收到了原始异常，job2和job3正常执行，并能执行完。按照上面分析，当job1发生异常的时候，会调用到cancelParent，它会分发到父job的childCancelled方法，而SupervisorJob重写了该方法直接返回false。所以异常不会分发到子协程中，当job1的cancelParent返回false的时候，会执行到handleJobException，而job1使用的context中的CoroutineExceptionHandler是使用的父job中指定的CoroutineExceptionHandler。因为context是plus叠加的方式。所以最后handler中收到了异常。</p>
 <blockquote>
 <p>以下的案例来自于<a class="link" href="https://juejin.cn/post/7049537608262615070"  target="_blank" rel="noopener"
-    >https://juejin.cn/post/7049537608262615070</a></p></blockquote>
+    >https://juejin.cn/post/7049537608262615070</a></p>
+</blockquote>
 <h3 id="案例七try-catch在非异常协程位置无法捕捉">案例七：try-catch在非异常协程位置，无法捕捉
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%83.png"
 	width="1088"
 	height="780"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%83_hu_211987ef6e967446.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%83_hu_61fea8ef9c3f0335.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%83_hu3341441619265217729.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E4%B8%83_hu461829613786755774.png 1024w"
 	loading="lazy"
 	
 		alt="案例七"
@@ -809,7 +815,8 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 	
 ></p>
 <blockquote>
-<p>结果：try-catch竟然捕获不住，程序直接抛异常了</p></blockquote>
+<p>结果：try-catch竟然捕获不住，程序直接抛异常了</p>
+</blockquote>
 <p>如果想要调试的话，可以给协程拼接CoroutineName，这样在调试的时候知道job对应的context中CoroutineName。代码如下：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -859,7 +866,7 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 <p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99try-catch%E5%9C%A8%E7%88%B6launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E7%9A%84class%E5%AD%97%E8%8A%82%E7%A0%81.png"
 	width="1814"
 	height="784"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99try-catch%E5%9C%A8%E7%88%B6launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E7%9A%84class%E5%AD%97%E8%8A%82%E7%A0%81_hu_599fa42d5af29cd.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99try-catch%E5%9C%A8%E7%88%B6launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E7%9A%84class%E5%AD%97%E8%8A%82%E7%A0%81_hu_f829465e4bd9660.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99try-catch%E5%9C%A8%E7%88%B6launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E7%9A%84class%E5%AD%97%E8%8A%82%E7%A0%81_hu12410122709949252285.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99try-catch%E5%9C%A8%E7%88%B6launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E7%9A%84class%E5%AD%97%E8%8A%82%E7%A0%81_hu3996610697796404577.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -889,7 +896,7 @@ job2在finalizeFinishingState方法中执行完cancelParent之后，会执行com
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99%E5%9C%A8%E7%88%B6launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E6%B7%BB%E5%8A%A0handler.png"
 	width="1442"
 	height="706"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99%E5%9C%A8%E7%88%B6launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E6%B7%BB%E5%8A%A0handler_hu_ce6640cba0940bf1.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99%E5%9C%A8%E7%88%B6launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E6%B7%BB%E5%8A%A0handler_hu_df4862fe707712c7.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99%E5%9C%A8%E7%88%B6launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E6%B7%BB%E5%8A%A0handler_hu17960172113967801608.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99%E5%9C%A8%E7%88%B6launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E6%B7%BB%E5%8A%A0handler_hu4015448222839339511.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -902,12 +909,13 @@ job2在finalizeFinishingState方法中执行完cancelParent之后，会执行com
 ></p>
 <blockquote>
 <p>结果：此处不会发生异常，异常被exceptionHandler捕捉。<br>
-分析：结合案例七的分析，在第七阶段，job1处理异常的时候，会交给handleJobException方法，并让CoroutineExceptionHandler捕捉异常，因此不会崩溃。</p></blockquote>
+分析：结合案例七的分析，在第七阶段，job1处理异常的时候，会交给handleJobException方法，并让CoroutineExceptionHandler捕捉异常，因此不会崩溃。</p>
+</blockquote>
 <h3 id="案例九handler给到异常协程handler捕获不到异常">案例九：handler给到异常协程，handler捕获不到异常
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99%E5%9C%A8%E5%AD%90launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E6%B7%BB%E5%8A%A0handler.png"
 	width="1442"
 	height="558"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99%E5%9C%A8%E5%AD%90launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E6%B7%BB%E5%8A%A0handler_hu_eb7260c4338b8d1.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99%E5%9C%A8%E5%AD%90launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E6%B7%BB%E5%8A%A0handler_hu_379db7d6ad599cb8.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99%E5%9C%A8%E5%AD%90launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E6%B7%BB%E5%8A%A0handler_hu14565616917652492572.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8launch%E5%AD%90%E5%8D%8F%E7%A8%8B%E6%97%B6%E5%80%99%E5%9C%A8%E5%AD%90launch%E5%8D%8F%E7%A8%8B%E5%A4%84%E6%B7%BB%E5%8A%A0handler_hu11829027965785031623.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -919,12 +927,13 @@ job2在finalizeFinishingState方法中执行完cancelParent之后，会执行com
 	
 ></p>
 <blockquote>
-<p>分析：结合案例七的分析，最终是在job1中处理异常，而此处设置的handler是设置到job2处了，所以程序崩溃了。</p></blockquote>
+<p>分析：结合案例七的分析，最终是在job1中处理异常，而此处设置的handler是设置到job2处了，所以程序崩溃了。</p>
+</blockquote>
 <h3 id="案例十增加coroutinescope异常协程的父协程增加try-catch捕捉异常">案例十：增加coroutineScope，异常协程的父协程增加try-catch捕捉异常
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81.png"
 	width="1442"
 	height="780"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81_hu_13a0da3cc5209608.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81_hu_407c3acd89b2bea1.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81_hu2282031586697707980.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81_hu321957362114609612.png 1024w"
 	loading="lazy"
 	
 		alt="案例十"
@@ -936,12 +945,13 @@ job2在finalizeFinishingState方法中执行完cancelParent之后，会执行com
 	
 ></p>
 <blockquote>
-<p>结果：程序不会崩溃，异常被try catch捕获住，而不是被exceptionHandler捕获住。</p></blockquote>
+<p>结果：程序不会崩溃，异常被try catch捕获住，而不是被exceptionHandler捕获住。</p>
+</blockquote>
 <p>前面分析过当子协程发生异常后，会把异常分发给到父job，在父job中需要等子job都处理完异常了，才会往下走，该处逻辑主要体现在子job中添加了一个ChildCompletion节点到state中，在invoke中会执行到parent.continueCompletion方法：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryWaitForChild%E6%96%B9%E6%B3%95%E5%AE%9E%E7%8E%B0.png"
 	width="2098"
 	height="494"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryWaitForChild%E6%96%B9%E6%B3%95%E5%AE%9E%E7%8E%B0_hu_277fd2a6715ba419.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryWaitForChild%E6%96%B9%E6%B3%95%E5%AE%9E%E7%8E%B0_hu_5b8cf6f865ef2f8e.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryWaitForChild%E6%96%B9%E6%B3%95%E5%AE%9E%E7%8E%B0_hu6025124849485300535.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryWaitForChild%E6%96%B9%E6%B3%95%E5%AE%9E%E7%8E%B0_hu18422961727899620146.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -955,7 +965,7 @@ job2在finalizeFinishingState方法中执行完cancelParent之后，会执行com
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ChildCompletion%E5%AE%9E%E7%8E%B0.png"
 	width="1246"
 	height="514"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ChildCompletion%E5%AE%9E%E7%8E%B0_hu_eef175167c52e435.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ChildCompletion%E5%AE%9E%E7%8E%B0_hu_9e9cd551be09e66b.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ChildCompletion%E5%AE%9E%E7%8E%B0_hu14280715925862704875.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ChildCompletion%E5%AE%9E%E7%8E%B0_hu9541948660914048757.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -970,7 +980,7 @@ job2在finalizeFinishingState方法中执行完cancelParent之后，会执行com
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ScopeCoroutine%E7%9A%84continueCompleting.png"
 	width="2138"
 	height="536"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ScopeCoroutine%E7%9A%84continueCompleting_hu_89f5a686c057882d.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ScopeCoroutine%E7%9A%84continueCompleting_hu_6a4e90e255e89415.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ScopeCoroutine%E7%9A%84continueCompleting_hu1064590282643074288.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ScopeCoroutine%E7%9A%84continueCompleting_hu7410639173032966861.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -984,7 +994,7 @@ job2在finalizeFinishingState方法中执行完cancelParent之后，会执行com
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ScopeCoroutine%E7%9A%84afterCompletion.png"
 	width="1966"
 	height="1394"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ScopeCoroutine%E7%9A%84afterCompletion_hu_80da9d058d7dcf1f.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ScopeCoroutine%E7%9A%84afterCompletion_hu_4a4b62757271c66f.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ScopeCoroutine%E7%9A%84afterCompletion_hu2810290303664166810.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ScopeCoroutine%E7%9A%84afterCompletion_hu17802970516718675060.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -999,7 +1009,7 @@ job2在finalizeFinishingState方法中执行完cancelParent之后，会执行com
 <img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%AD%E6%9C%80%E5%A4%96%E5%B1%82launch%E7%9A%84suspendLambda%E5%AD%97%E8%8A%82%E7%A0%81.png"
 	width="2196"
 	height="1804"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%AD%E6%9C%80%E5%A4%96%E5%B1%82launch%E7%9A%84suspendLambda%E5%AD%97%E8%8A%82%E7%A0%81_hu_e95b86e3c5c44521.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%AD%E6%9C%80%E5%A4%96%E5%B1%82launch%E7%9A%84suspendLambda%E5%AD%97%E8%8A%82%E7%A0%81_hu_d2b5ccaba1c6108a.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%AD%E6%9C%80%E5%A4%96%E5%B1%82launch%E7%9A%84suspendLambda%E5%AD%97%E8%8A%82%E7%A0%81_hu6998863120242449699.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%AD%E6%9C%80%E5%A4%96%E5%B1%82launch%E7%9A%84suspendLambda%E5%AD%97%E8%8A%82%E7%A0%81_hu1204663660694475758.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1015,7 +1025,7 @@ job2在finalizeFinishingState方法中执行完cancelParent之后，会执行com
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%80.png"
 	width="1442"
 	height="780"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%80_hu_ebc5da1670f6e4a3.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%80_hu_fa4a4802127b701f.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%80_hu8349289531810142295.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%80_hu898103920186206775.png 1024w"
 	loading="lazy"
 	
 		alt="案例十一"
@@ -1028,12 +1038,13 @@ job2在finalizeFinishingState方法中执行完cancelParent之后，会执行com
 ></p>
 <blockquote>
 <p>结果：程序被内层launch指定的exceptionHandler捕捉了
-supervisorScope用到的job是SupervisorCoroutine，它重写了childCancel方法，并返回false，所以当子job发生异常的时候，不会抛给父job，并执行自己的handleJobException方法，所以被自己的handler捕获到。</p></blockquote>
+supervisorScope用到的job是SupervisorCoroutine，它重写了childCancel方法，并返回false，所以当子job发生异常的时候，不会抛给父job，并执行自己的handleJobException方法，所以被自己的handler捕获到。</p>
+</blockquote>
 <h3 id="案例十二">案例十二
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%BA%8C.png"
 	width="1512"
 	height="773"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%BA%8C_hu_f1793458b42870b8.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%BA%8C_hu_143b81797a175026.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%BA%8C_hu1660051524140384798.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%BA%8C_hu6211506780311176520.png 1024w"
 	loading="lazy"
 	
 		alt="案例十二"
@@ -1049,7 +1060,7 @@ supervisorScope用到的job是SupervisorCoroutine，它重写了childCancel方�
 </h3><p><img src="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%89.png"
 	width="1512"
 	height="773"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%89_hu_231895eda9e272d4.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%89_hu_a7d795af9870a9f5.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%89_hu2697167869217288771.png 480w, /p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%89_hu16725011183618049152.png 1024w"
 	loading="lazy"
 	
 		alt="案例十二"
