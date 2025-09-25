@@ -306,6 +306,12 @@
             <li><a href="#快捷键操作">快捷键操作</a></li>
           </ol>
         </li>
+        <li><a href="#常见sql">常见sql</a>
+          <ol>
+            <li><a href="#模糊匹配查询likeglobregexp">模糊匹配查询：like、glob、regexp</a></li>
+            <li><a href="#联表查询">联表查询</a></li>
+          </ol>
+        </li>
         <li><a href="#参考">参考</a></li>
       </ol>
     </li>
@@ -373,7 +379,7 @@
 
 
                 <time class="article-time--reading">
-                    4 minute read
+                    5 minute read
                 </time>
             </div>
         
@@ -927,12 +933,125 @@ m：根据当前选中的区域或片段，添加临时的笔记片段，和上�
 q：切换底部的面板<br>
 command+b:切换左边的菜单面板<br>
 command+option+s：多个trace文件在浏览器中打开的时候，能同步多个trace的操作，方便对比<br></p>
+<h3 id="常见sql">常见sql
+</h3><h4 id="模糊匹配查询likeglobregexp">模糊匹配查询：like、glob、regexp
+</h4><p>like:一般跟%和_来搭配使用，是不确定数量字符个数，_是匹配单个字符，并且like前面可以加not取反，比如我想查询所有fragment的onCreateView的耗时：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">slice</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;%onCreateView%&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在like中是不区分大小写。
+glob:一般和*、?、[&hellip;]搭配使用，*表示任意长度的字符串、?表示单个字符、[&hellip;]表示字符集。它是要区分大小写。并且前面也可以用not取反。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">slice</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">GLOB</span><span class="w"> </span><span class="s1">&#39;*interesting_slice*&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>regexp:是一种以正则来匹配的关键字，下面看一个统计slice的耗时sql：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">name</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">COUNT</span><span class="p">(</span><span class="n">dur</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">count_slice</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">-- Convert nanoseconds to milliseconds
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">  </span><span class="k">AVG</span><span class="p">(</span><span class="n">dur</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000000</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">avg_dur_ms</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">CAST</span><span class="p">(</span><span class="k">MAX</span><span class="p">(</span><span class="n">dur</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">DOUBLE</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000000</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">max_dur_ms</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">CAST</span><span class="p">(</span><span class="k">MIN</span><span class="p">(</span><span class="n">dur</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">DOUBLE</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000000</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">min_dur_ms</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">PERCENTILE</span><span class="p">(</span><span class="n">dur</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000000</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">P50_dur_ms</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">PERCENTILE</span><span class="p">(</span><span class="n">dur</span><span class="p">,</span><span class="mi">90</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000000</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">P90_dur_ms</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">PERCENTILE</span><span class="p">(</span><span class="n">dur</span><span class="p">,</span><span class="mi">99</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000000</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">P99_dur_ms</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">slice</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="n">REGEXP</span><span class="w"> </span><span class="s1">&#39;.*interesting_slice.*&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">name</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">count_slice</span><span class="w"> </span><span class="k">DESC</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面的sql通过regexp正则来匹配到感兴趣的slice，并且开头和结尾都是.*来匹配，该.表示匹配单个字符，而*则是匹配前一个字符是0次或多次，所以表示前面interesting_slice前面有任意个数的字符，interesting_slice后面有任意个数的字符。并且按照名字分组，列明有名字、count_slice表示该slice出现的次数、avg_dur_ms该slice的平均耗时，单位是ms、max_dur_ms最大耗时、min_dur_ms最小耗时、P50_dur_ms是p50耗时、P90_dur_ms是p90的耗时、P99_dur_ms是p99的耗时，最后按照出现次数降序排列，查询前10条。</p>
+<h4 id="联表查询">联表查询
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">s</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">s</span><span class="p">.</span><span class="n">ts</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">ts</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">s</span><span class="p">.</span><span class="n">track_id</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">track_id</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">s</span><span class="p">.</span><span class="n">slice_id</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">slice_id</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">s</span><span class="p">.</span><span class="n">dur</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">dur</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">s</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">slice</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">p</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">process</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">t</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">thread</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">slice</span><span class="w"> </span><span class="n">s</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">JOIN</span><span class="w"> </span><span class="n">thread_track</span><span class="w"> </span><span class="n">tt</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">s</span><span class="p">.</span><span class="n">track_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tt</span><span class="p">.</span><span class="n">id</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">JOIN</span><span class="w"> </span><span class="n">thread</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">tt</span><span class="p">.</span><span class="n">utid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">utid</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">JOIN</span><span class="w"> </span><span class="n">process</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">upid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">upid</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">s</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;%interesting_slice%&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- Only look for slices in your app&#39;s process
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">AND</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;com.example.myapp&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- Only look for slices on your app&#39;s main thread
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">AND</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">is_main_thread</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">dur</span><span class="w"> </span><span class="k">DESC</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面thread_track（线程轨道表）的id和slice的trace_id进行关联，thread（线程表）的utid（线程唯一id）和thread_track的utid进行关联，progress（进程表）的upid（进程唯一id）和thread的upid进行关联。</p>
 <h3 id="参考">参考
 </h3><ul>
 <li><a class="link" href="https://perfetto.dev/docs/quickstart/android-tracing"  target="_blank" rel="noopener"
     >https://perfetto.dev/docs/quickstart/android-tracing</a></li>
 <li><a class="link" href="https://perfetto.dev/docs/concepts/config"  target="_blank" rel="noopener"
     >https://perfetto.dev/docs/concepts/config</a></li>
+<li><a class="link" href="https://perfetto.dev/docs/getting-started/android-trace-analysis"  target="_blank" rel="noopener"
+    >https://perfetto.dev/docs/getting-started/android-trace-analysis</a></li>
 </ul>
 
 </section>

@@ -1882,6 +1882,61 @@ kotlin中的===：如果是对象类型，比较的是内存地址，指向的�
 &lt;/div&gt;
 &lt;/div&gt;&lt;/li&gt;
 &lt;/ul&gt;
+&lt;h3 id=&#34;kotlin协程中的withtimeoutornull作用&#34;&gt;kotlin协程中的withTimeoutOrNull作用
+&lt;/h3&gt;&lt;h3 id=&#34;场景adb中命令&#34;&gt;场景adb中命令
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;通过包名查看pid
+&lt;ul&gt;
+&lt;li&gt;adb shell pidof 包名
+&lt;ul&gt;
+&lt;li&gt;返回进程的id，通过该id后面可以做很多事情&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;adb shell cat /proc/pid/stat
+&lt;ul&gt;
+&lt;li&gt;获取App cpu使用时间
+&lt;ul&gt;
+&lt;li&gt;3541 (进程名) S 906 906 0 0 -1 1077952832 801953 19794 170 1 195874 29787 16 55 10 -10 247 0 76295047 29784014848 99929 18446744073709551615 1 1 0 0 0 0 4612 1 1073775868 0 0 0 17 4 0 0 3 0 0 0 0 0 0 0 0 0 0
+&lt;ul&gt;
+&lt;li&gt;上面的14-17部分是我们关心的数据
+&lt;ul&gt;
+&lt;li&gt;195874：utime（进程的用户态时间）&lt;/li&gt;
+&lt;li&gt;29787：stime（进程的内核态时间）&lt;/li&gt;
+&lt;li&gt;16：cutime（子进程的用户态时间）&lt;/li&gt;
+&lt;li&gt;55：cstime（子进程的内核态时间）&lt;/li&gt;
+&lt;li&gt;把这几个加起来就可以得到当前App总CPU使用时间&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;快速查看某个应用的activity栈的情况&#34;&gt;快速查看某个应用的activity栈的情况
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;adb shell dumpsys activity activities | grep Hist | grep 包名&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;阿里云域名如何关联github-page&#34;&gt;阿里云域名如何关联github page
+&lt;/h3&gt;&lt;p&gt;首先来到&lt;code&gt;云解析DNS/公网权威解析模块&lt;/code&gt;，然后找到购买的域名，进入到解析设置的tab，选择&lt;code&gt;添加记录&lt;/code&gt;，添加两项信息：
+&lt;img src=&#34;https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image.png&#34;
+	width=&#34;1874&#34;
+	height=&#34;274&#34;
+	srcset=&#34;https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image_hu10339209250820186242.png 480w, https://example.com/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image_hu4201524710192811932.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;683&#34;
+		data-flex-basis=&#34;1641px&#34;
+	
+&gt;&lt;/br&gt;
+其中此处的&lt;code&gt;185.199.108.153&lt;/code&gt;是github默认的ip地址&lt;/p&gt;
 </description>
         </item>
         

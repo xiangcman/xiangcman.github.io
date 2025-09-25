@@ -325,7 +325,7 @@
 
 
                 <time class="article-time--reading">
-                    1 minute read
+                    2 minute read
                 </time>
             </div>
         
@@ -407,8 +407,93 @@
 <li>第一行日志
 <ul>
 <li>Signal 11 (SIGSEGV):因为SIGSEGV信号失败的，和上面的clion中一致。</li>
+<li>SEGV_MAPERR：访问了未映射的内存。</li>
+<li>fault addr 0x0：出错地址是 0x0，说明是典型的 空指针访问。</li>
+<li>tid: 2487 (ample.nativelib), pid: 2487 (ample.nativelib)：崩溃发生在主线程（tid==pid==2487）。所以是ui线程直接调用native方法导致的crash。</li>
 </ul>
 </li>
+<li>调用堆栈
+<ul>
+<li>#00 pc 0000000000000644  libcrash_monitor.so (Java_com_example_nativelib_CrashActivity_testNativeCrash+28)
+<ul>
+<li>崩溃点在so库：libcrash_monitor.so</li>
+<li>对应JNI方法：Java_com_example_nativelib_CrashActivity_testNativeCrash</li>
+<li>+28表示在这个JNI函数的第28个字符处发生了错误</li>
+<li>0000000000000644：相对于该so加载基址（base address）的偏移量</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>崩溃定位
+<ul>
+<li>addr2line
+<ul>
+<li>它是在ndk目录中，首先需要查看项目使用的ndk版本，通过<code>./gradlew app:assembleDebug --info | grep ndk</code>来查看ndk版本，或者在app的module的build.gradle中指定ndk版本或者在local.properties中指定ndk版本，我这里用的是21.3.6528147版本，并且机器是64位，命令如下：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">/Users/xiangcheng/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android-addr2line -C -f -e /Users/xiangcheng/AndroidStudioProjects/NativeProject/app/build/intermediates/cxx/Debug/6p5m14a5/obj/arm64-v8a/libcrash_monitor.so 0x00644
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>首先是addr2line的本地地址，-C:启用 demangling（符号还原），把 C++ 的 mangled name（符号修饰名） 转换成人类可读的函数签名。我这里是jni方法，所以不存在函数还原。-f：打印函数名，默认只输入文件名+行号，加上-f才会显示对应的函数名。-e是so的路径，最后输入偏移地址。命令结果如下：
+<img src="/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/addr2line%E5%B7%A5%E5%85%B7%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C.png"
+	width="1512"
+	height="108"
+	srcset="/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/addr2line%E5%B7%A5%E5%85%B7%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C_hu11053909515151473321.png 480w, /p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/addr2line%E5%B7%A5%E5%85%B7%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C_hu9539803321389906552.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="1400"
+		data-flex-basis="3360px"
+	
+>
+第一行是方法名，第二行是哪个文件的行号，可以看到对应了cpp的第13行。</li>
+<li>addr2line的缺点是只能进行单条地址定位</li>
+<li>在上面取的so路径是build/intermediates/cxx，而最终打到apk的路径是</li>
+</ul>
+</li>
+<li>ndk-stack
+<ul>
+<li>它是ndk自带工具，可以直接解析logcat崩溃堆栈，把pc偏移映射回源码行</li>
+<li>用法：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">ndk-stack -sym /Users/xiangcheng/AndroidStudioProjects/NativeProject/app/build/intermediates/cxx/Debug/6p5m14a5/obj/arm64-v8a -dump log 
+</span></span></code></pre></td></tr></table>
+</div>
+</div>sys：指定so的路径，这里不用指明是哪一个so，只需要定位到cpu架构的类型文件夹就行，dump：指定log的地址，此处的log是在上面crash后，我通过logcat导出了log。最后输出的内容如下：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-txt" data-lang="txt"><span class="line"><span class="cl">********** Crash dump: **********
+</span></span><span class="line"><span class="cl">Build fingerprint: \u0027Xiaomi/umi/umi:13/TKQ1.221114.001/V816.0.5.0.TJBCNXM:user/release-keys\u0027&#34;
+</span></span><span class="line"><span class="cl">#00 0x0000000000000644 /data/app/~~uAk5HwqkTX5ikhOJ94KruQ\u003d\u003d/com.example.nativelib-nvfAk1bvIIxGrBGSolPLNw\u003d\u003d/base.apk!libcrash_monitor.so (Java_com_example_nativelib_CrashActivity_testNativeCrash+28) (BuildId: 3f3fdcb6b22b15038811fa94da4200e7cc25d684)&#34;
+</span></span><span class="line"><span class="cl">                                                                                                                                                            Java_com_example_nativelib_CrashActivity_testNativeCrash
+</span></span><span class="line"><span class="cl">                                                                                                                                                            /Users/xiangcheng/AndroidStudioProjects/NativeProject/app/src/main/cpp/signal_crash.cpp:13:8
+</span></span><span class="line"><span class="cl">Crash dump is completed
+</span></span></code></pre></td></tr></table>
+</div>
+</div>可以看到也是定位到signal_crash.cpp文件的第13行出现了问题。</li>
 </ul>
 </li>
 </ul>

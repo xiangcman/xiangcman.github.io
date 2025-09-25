@@ -314,6 +314,10 @@
         <li><a href="#kotlin中sequence和集合的stream区别">kotlin中Sequence和集合的Stream区别</a></li>
         <li><a href="#companion-object和object中定义变量">companion object和object中定义变量</a></li>
         <li><a href="#记录一次gradle编译问题">记录一次gradle编译问题</a></li>
+        <li><a href="#kotlin协程中的withtimeoutornull作用">kotlin协程中的withTimeoutOrNull作用</a></li>
+        <li><a href="#场景adb中命令">场景adb中命令</a></li>
+        <li><a href="#快速查看某个应用的activity栈的情况">快速查看某个应用的activity栈的情况</a></li>
+        <li><a href="#阿里云域名如何关联github-page">阿里云域名如何关联github page</a></li>
       </ol>
     </li>
   </ol>
@@ -380,7 +384,7 @@
 
 
                 <time class="article-time--reading">
-                    13 minute read
+                    14 minute read
                 </time>
             </div>
         
@@ -2264,6 +2268,61 @@ kotlin中的===：如果是对象类型，比较的是内存地址，指向的�
 </div>
 </div></li>
 </ul>
+<h3 id="kotlin协程中的withtimeoutornull作用">kotlin协程中的withTimeoutOrNull作用
+</h3><h3 id="场景adb中命令">场景adb中命令
+</h3><ul>
+<li>通过包名查看pid
+<ul>
+<li>adb shell pidof 包名
+<ul>
+<li>返回进程的id，通过该id后面可以做很多事情</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>adb shell cat /proc/pid/stat
+<ul>
+<li>获取App cpu使用时间
+<ul>
+<li>3541 (进程名) S 906 906 0 0 -1 1077952832 801953 19794 170 1 195874 29787 16 55 10 -10 247 0 76295047 29784014848 99929 18446744073709551615 1 1 0 0 0 0 4612 1 1073775868 0 0 0 17 4 0 0 3 0 0 0 0 0 0 0 0 0 0
+<ul>
+<li>上面的14-17部分是我们关心的数据
+<ul>
+<li>195874：utime（进程的用户态时间）</li>
+<li>29787：stime（进程的内核态时间）</li>
+<li>16：cutime（子进程的用户态时间）</li>
+<li>55：cstime（子进程的内核态时间）</li>
+<li>把这几个加起来就可以得到当前App总CPU使用时间</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="快速查看某个应用的activity栈的情况">快速查看某个应用的activity栈的情况
+</h3><ul>
+<li>adb shell dumpsys activity activities | grep Hist | grep 包名</li>
+</ul>
+<h3 id="阿里云域名如何关联github-page">阿里云域名如何关联github page
+</h3><p>首先来到<code>云解析DNS/公网权威解析模块</code>，然后找到购买的域名，进入到解析设置的tab，选择<code>添加记录</code>，添加两项信息：
+<img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image.png"
+	width="1874"
+	height="274"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image_hu10339209250820186242.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/image_hu4201524710192811932.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="683"
+		data-flex-basis="1641px"
+	
+></br>
+其中此处的<code>185.199.108.153</code>是github默认的ip地址</p>
 
 </section>
 
