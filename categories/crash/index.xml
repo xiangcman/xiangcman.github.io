@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>Crash on xiangcman</title>
-        <link>https://example.com/categories/crash/</link>
+        <link>http://xiangcman.xyz/categories/crash/</link>
         <description>Recent content in Crash on xiangcman</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <copyright>Example Person</copyright>
-        <lastBuildDate>Tue, 19 Aug 2025 18:11:25 +0800</lastBuildDate><atom:link href="https://example.com/categories/crash/index.xml" rel="self" type="application/rss+xml" /><item>
+        <copyright>xiangcheng</copyright>
+        <lastBuildDate>Tue, 19 Aug 2025 00:00:00 +0000</lastBuildDate><atom:link href="http://xiangcman.xyz/categories/crash/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Native的crash如何定位</title>
-        <link>https://example.com/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/</link>
-        <pubDate>Tue, 19 Aug 2025 18:11:25 +0800</pubDate>
+        <link>http://xiangcman.xyz/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/</link>
+        <pubDate>Tue, 19 Aug 2025 00:00:00 +0000</pubDate>
         
-        <guid>https://example.com/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/</guid>
-        <description>&lt;p&gt;我们先看一个native的crash例子:
-&lt;img src =&#34;image.png&#34; width = &#34;60%&#34;/&gt;
+        <guid>http://xiangcman.xyz/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/</guid>
+        <description>&lt;p&gt;我们先看一个native的crash例子:&lt;br&gt;
+&lt;img src =&#34;image.png&#34; width = &#34;60%&#34;/&gt;&lt;br&gt;
 这是我在clion中写的一个测试代码，这个很明显，在程序第8行使用了一个未初始化的指针，然后运行最后，说程序被SIGSEGV信号终止了，该信号在c/c++中表示非法访问内存的信号，并且该终止没有指明代码行号。这在调试c++程序很头痛，不过在安卓ndk项目中如果想要定位是c++的问题，我们来一起看下。&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
@@ -115,10 +115,10 @@
 &lt;/div&gt;
 &lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;首先是addr2line的本地地址，-C:启用 demangling（符号还原），把 C++ 的 mangled name（符号修饰名） 转换成人类可读的函数签名。我这里是jni方法，所以不存在函数还原。-f：打印函数名，默认只输入文件名+行号，加上-f才会显示对应的函数名。-e是so的路径，最后输入偏移地址。命令结果如下：
-&lt;img src=&#34;https://example.com/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/addr2line%E5%B7%A5%E5%85%B7%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C.png&#34;
+&lt;img src=&#34;http://xiangcman.xyz/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/addr2line%E5%B7%A5%E5%85%B7%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C.png&#34;
 	width=&#34;1512&#34;
 	height=&#34;108&#34;
-	srcset=&#34;https://example.com/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/addr2line%E5%B7%A5%E5%85%B7%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C_hu11053909515151473321.png 480w, https://example.com/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/addr2line%E5%B7%A5%E5%85%B7%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C_hu9539803321389906552.png 1024w&#34;
+	srcset=&#34;http://xiangcman.xyz/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/addr2line%E5%B7%A5%E5%85%B7%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C_hu_517ae2a1fa2a67a2.png 480w, http://xiangcman.xyz/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/addr2line%E5%B7%A5%E5%85%B7%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C_hu_901e4a9f9a91215d.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;
@@ -131,7 +131,80 @@
 &gt;
 第一行是方法名，第二行是哪个文件的行号，可以看到对应了cpp的第13行。&lt;/li&gt;
 &lt;li&gt;addr2line的缺点是只能进行单条地址定位&lt;/li&gt;
-&lt;li&gt;在上面取的so路径是build/intermediates/cxx，而最终打到apk的路径是&lt;/li&gt;
+&lt;li&gt;在上面取的so路径是build/intermediates/cxx/..下面，而最终打到apk的so是这样的过程：&lt;/li&gt;
+&lt;li&gt;在agp4.0之前是&lt;code&gt;build/intermediates/cmake|ndkBuild/.../obj/...(编译产物)&lt;/code&gt;-&amp;gt;&lt;code&gt;build/intermediates/merged_native_libs/.../out/lib/...(打包前，也就是汇总所有依赖之后的集合目录，也是没有被剔除符号的so)&lt;/code&gt;-&amp;gt;&lt;code&gt;/build/intermediates/stripped_native_libs/so文件(剥离了调试符号后的版本)&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;在agp4.0之后是&lt;code&gt;build/intermediates/cxx/.../obj/...(编译产物，带符号)&lt;/code&gt;-&amp;gt;&lt;code&gt;build/intermediates/merged_native_libs/.../out/lib/...(打包前，也就是汇总所有依赖之后的集合目录，也是没有被剔除符号的so)&lt;/code&gt;-&amp;gt;&lt;code&gt;/build/intermediates/stripped_native_libs/so文件(剥离了调试符号后的版本)&lt;/code&gt;
+&lt;ul&gt;
+&lt;li&gt;这里验证下三者的区别：
+&lt;ul&gt;
+&lt;li&gt;使用merged_native_libs下的so，命令如下：
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;/Users/xiangcheng/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android-addr2line -C -f -e /Users/xiangcheng/AndroidStudioProjects/NativeProject/app/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/arm64-v8a/libcrash_monitor.so 0x00644
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;结果如下：
+&lt;img src=&#34;http://xiangcman.xyz/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/%E4%BD%BF%E7%94%A8merged_native_libs%E7%9B%AE%E5%BD%95%E4%B8%8B%E7%9A%84so%E6%9F%A5%E5%87%BA%E7%9A%84%E7%BB%93%E6%9E%9C.png&#34;
+	width=&#34;1516&#34;
+	height=&#34;86&#34;
+	srcset=&#34;http://xiangcman.xyz/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/%E4%BD%BF%E7%94%A8merged_native_libs%E7%9B%AE%E5%BD%95%E4%B8%8B%E7%9A%84so%E6%9F%A5%E5%87%BA%E7%9A%84%E7%BB%93%E6%9E%9C_hu_eae5a83b1026fa74.png 480w, http://xiangcman.xyz/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/%E4%BD%BF%E7%94%A8merged_native_libs%E7%9B%AE%E5%BD%95%E4%B8%8B%E7%9A%84so%E6%9F%A5%E5%87%BA%E7%9A%84%E7%BB%93%E6%9E%9C_hu_e8c7140394994ad9.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;1762&#34;
+		data-flex-basis=&#34;4230px&#34;
+	
+&gt;
+可以看到类名和行号基本和前面的obj目录下的so基本一致。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;使用stripped_native_libs下的so，命令如下：
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;/Users/xiangcheng/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android-addr2line -C -f -e /Users/xiangcheng/AndroidStudioProjects/NativeProject/app/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/arm64-v8a/libcrash_monitor.so 0x00644
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;结果如下：
+&lt;img src=&#34;http://xiangcman.xyz/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/%E4%BD%BF%E7%94%A8strip%E7%9B%AE%E5%BD%95%E4%B8%8B%E7%9A%84so%E6%9F%A5%E5%87%BA%E7%9A%84%E7%BB%93%E6%9E%9C.png&#34;
+	width=&#34;954&#34;
+	height=&#34;82&#34;
+	srcset=&#34;http://xiangcman.xyz/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/%E4%BD%BF%E7%94%A8strip%E7%9B%AE%E5%BD%95%E4%B8%8B%E7%9A%84so%E6%9F%A5%E5%87%BA%E7%9A%84%E7%BB%93%E6%9E%9C_hu_946bb5abd88135fe.png 480w, http://xiangcman.xyz/p/native%E7%9A%84crash%E5%A6%82%E4%BD%95%E5%AE%9A%E4%BD%8D/%E4%BD%BF%E7%94%A8strip%E7%9B%AE%E5%BD%95%E4%B8%8B%E7%9A%84so%E6%9F%A5%E5%87%BA%E7%9A%84%E7%BB%93%E6%9E%9C_hu_797a5927a42c4744.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;1163&#34;
+		data-flex-basis=&#34;2792px&#34;
+	
+&gt;
+&lt;ul&gt;
+&lt;li&gt;此处由于testNativeCrash方法是一个jni方法，不会被混淆方法名，但是行号信息是丢失了，可以看出来strip之后的so是不带有行号信息。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;打进apk中的so是剥离调试符号的so吗？
+&lt;ul&gt;
+&lt;li&gt;不一定是。如果没有开启strip，那就取的是merged_native_libs目录下的。否则取的是stripped_native_libs目录下的so文件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;ndk-stack

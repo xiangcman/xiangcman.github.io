@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="协程创建 demo 1 2 3 4 5 6 7 8 9 10 11 12 suspend { Log.d(TAG, &#34;suspend block:&#34;) &#34;123&#34; }.createCoroutine(object : Continuation&lt;String&gt; { override val context: CoroutineContext get() = EmptyCoroutineContext override fun resumeWith(result: Result&lt;String&gt;) { val value = result.getOrNull() Log.d(TAG, &#34;resumeWith:$value&#34;) } }).resume(Unit) Log.d(TAG, &#34;onCreate&#34;) ">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="协程创建 demo 1 2 3 4 5 6 7 8 9 10 11 12 suspend { Log.d(TAG, &#34;suspend block:&#34;) &#34;123&#34; }.createCoroutine(object : Continuation&lt;String&gt; { override val context: CoroutineContext get() = EmptyCoroutineContext override fun resumeWith(result: Result&lt;String&gt;) { val value = result.getOrNull() Log.d(TAG, &#34;resumeWith:$value&#34;) } }).resume(Unit) Log.d(TAG, &#34;onCreate&#34;) 上面日志先打印suspend中的代码块，然后执行Continuation的resumeWith，最后执行主线程的代码。\ncreateCoroutine 是挂起函数的扩展方法，方法参数是Continuation类型，对应上面的匿名内部类。创建了一个SafeContinuation对象，它也是一个Continuation类型，并传递两个参数。\nresume resume方法会调用resumeWith，看下SafeContinuation的resumeWith方法： 此处提醒下，kotlin的源码需要到对应的** Jvm类下找，要不然方法只是一个申明。此处的result是构造SafeContinuation传递进来的COROUTINE_SUSPENDED，因此会执行delegate.resumeWith(result)，此处的delegate是createCoroutineUnintercepted(completion).intercepted()创建的。\ncreateCoroutineUnintercepted 它是挂起函数的扩展方法：\n判断当前挂起函数是不是BaseContinuationImpl类型，如果是则调用create方法。\n">
 <title>Android 协程启动到执行</title>
 
-<link rel='canonical' href='https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/'>
+<link rel='canonical' href='http://xiangcman.xyz/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Android 协程启动到执行">
-<meta property='og:description' content="协程创建 demo 1 2 3 4 5 6 7 8 9 10 11 12 suspend { Log.d(TAG, &#34;suspend block:&#34;) &#34;123&#34; }.createCoroutine(object : Continuation&lt;String&gt; { override val context: CoroutineContext get() = EmptyCoroutineContext override fun resumeWith(result: Result&lt;String&gt;) { val value = result.getOrNull() Log.d(TAG, &#34;resumeWith:$value&#34;) } }).resume(Unit) Log.d(TAG, &#34;onCreate&#34;) ">
-<meta property='og:url' content='https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/'>
+<meta property='og:description' content="协程创建 demo 1 2 3 4 5 6 7 8 9 10 11 12 suspend { Log.d(TAG, &#34;suspend block:&#34;) &#34;123&#34; }.createCoroutine(object : Continuation&lt;String&gt; { override val context: CoroutineContext get() = EmptyCoroutineContext override fun resumeWith(result: Result&lt;String&gt;) { val value = result.getOrNull() Log.d(TAG, &#34;resumeWith:$value&#34;) } }).resume(Unit) Log.d(TAG, &#34;onCreate&#34;) 上面日志先打印suspend中的代码块，然后执行Continuation的resumeWith，最后执行主线程的代码。\ncreateCoroutine 是挂起函数的扩展方法，方法参数是Continuation类型，对应上面的匿名内部类。创建了一个SafeContinuation对象，它也是一个Continuation类型，并传递两个参数。\nresume resume方法会调用resumeWith，看下SafeContinuation的resumeWith方法： 此处提醒下，kotlin的源码需要到对应的** Jvm类下找，要不然方法只是一个申明。此处的result是构造SafeContinuation传递进来的COROUTINE_SUSPENDED，因此会执行delegate.resumeWith(result)，此处的delegate是createCoroutineUnintercepted(completion).intercepted()创建的。\ncreateCoroutineUnintercepted 它是挂起函数的扩展方法：\n判断当前挂起函数是不是BaseContinuationImpl类型，如果是则调用create方法。\n">
+<meta property='og:url' content='http://xiangcman.xyz/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/'>
 <meta property='og:site_name' content='xiangcman'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-11-02T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-02T00:00:00&#43;00:00'/><meta property='og:image' content='https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/cover.jpg' />
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-11-02T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-02T00:00:00&#43;00:00'/><meta property='og:image' content='http://xiangcman.xyz/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/cover.jpg' />
 <meta name="twitter:title" content="Android 协程启动到执行">
-<meta name="twitter:description" content="协程创建 demo 1 2 3 4 5 6 7 8 9 10 11 12 suspend { Log.d(TAG, &#34;suspend block:&#34;) &#34;123&#34; }.createCoroutine(object : Continuation&lt;String&gt; { override val context: CoroutineContext get() = EmptyCoroutineContext override fun resumeWith(result: Result&lt;String&gt;) { val value = result.getOrNull() Log.d(TAG, &#34;resumeWith:$value&#34;) } }).resume(Unit) Log.d(TAG, &#34;onCreate&#34;) "><meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content='https://example.com/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/cover.jpg' />
+<meta name="twitter:description" content="协程创建 demo 1 2 3 4 5 6 7 8 9 10 11 12 suspend { Log.d(TAG, &#34;suspend block:&#34;) &#34;123&#34; }.createCoroutine(object : Continuation&lt;String&gt; { override val context: CoroutineContext get() = EmptyCoroutineContext override fun resumeWith(result: Result&lt;String&gt;) { val value = result.getOrNull() Log.d(TAG, &#34;resumeWith:$value&#34;) } }).resume(Unit) Log.d(TAG, &#34;onCreate&#34;) 上面日志先打印suspend中的代码块，然后执行Continuation的resumeWith，最后执行主线程的代码。\ncreateCoroutine 是挂起函数的扩展方法，方法参数是Continuation类型，对应上面的匿名内部类。创建了一个SafeContinuation对象，它也是一个Continuation类型，并传递两个参数。\nresume resume方法会调用resumeWith，看下SafeContinuation的resumeWith方法： 此处提醒下，kotlin的源码需要到对应的** Jvm类下找，要不然方法只是一个申明。此处的result是构造SafeContinuation传递进来的COROUTINE_SUSPENDED，因此会执行delegate.resumeWith(result)，此处的delegate是createCoroutineUnintercepted(completion).intercepted()创建的。\ncreateCoroutineUnintercepted 它是挂起函数的扩展方法：\n判断当前挂起函数是不是BaseContinuationImpl类型，如果是则调用create方法。\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='http://xiangcman.xyz/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/cover.jpg' />
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -59,7 +59,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -323,8 +323,8 @@
     <header class="article-header">
         <div class="article-image">
             <a href="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/">
-                <img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/cover_hu15397774380070187733.jpg"
-                        srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/cover_hu15397774380070187733.jpg 800w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/cover_hu4680098175249723955.jpg 1600w"
+                <img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/cover_hu_c02227ecb0d36a9a.jpg"
+                        srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/cover_hu_c02227ecb0d36a9a.jpg 800w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/cover_hu_622c6384f22f83e8.jpg 1600w"
                         width="800" 
                         height="450" 
                         loading="lazy"
@@ -445,7 +445,7 @@
 </h4><p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutine.png"
 	width="1988"
 	height="246"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutine_hu17353243712076936128.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutine_hu9867042398564460185.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutine_hu_36cf33842585ab9a.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutine_hu_e88ef99844b80c45.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -461,7 +461,7 @@
 </h4><p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resume.png"
 	width="1434"
 	height="150"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resume_hu4104536995059056195.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resume_hu9889674969297594195.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resume_hu_4fc922d90e0cf4e4.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resume_hu_b79aa4664cb1553.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -476,7 +476,7 @@
 <img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resumeWith.png"
 	width="2552"
 	height="932"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resumeWith_hu8003343872576880167.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resumeWith_hu1114294976415646936.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resumeWith_hu_529d5baf56490d4f.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/resumeWith_hu_2f33bdc45a54a841.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -493,7 +493,7 @@
 <p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutineUnintercepted.png"
 	width="1836"
 	height="930"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutineUnintercepted_hu15635087535112369954.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutineUnintercepted_hu3032104325456931809.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutineUnintercepted_hu_d3d21bf5434f4459.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/createCoroutineUnintercepted_hu_a6c638d0c82432bf.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -509,7 +509,7 @@
 <p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E4%BA%8B%E4%BE%8B%E7%9A%84class%E6%96%87%E4%BB%B6.png"
 	width="3932"
 	height="1304"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E4%BA%8B%E4%BE%8B%E7%9A%84class%E6%96%87%E4%BB%B6_hu5585946001264839434.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E4%BA%8B%E4%BE%8B%E7%9A%84class%E6%96%87%E4%BB%B6_hu12809399808810934867.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E4%BA%8B%E4%BE%8B%E7%9A%84class%E6%96%87%E4%BB%B6_hu_4c9577b9a1281fc4.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E4%BA%8B%E4%BE%8B%E7%9A%84class%E6%96%87%E4%BB%B6_hu_76a20b7acb168d84.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -524,7 +524,7 @@
 <p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1.png"
 	width="2060"
 	height="1234"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1_hu13609711794502215322.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1_hu5950224694337833121.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1_hu_41112a501edd19e9.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1_hu_64de6319e2be2177.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -538,7 +538,7 @@
 <p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$2.png"
 	width="1376"
 	height="614"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$2_hu7562899221193942890.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$2_hu11783159877060174879.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$2_hu_bafdac9e23286c7.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$2_hu_1e377c775afe1639.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -553,7 +553,7 @@
 <p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SuspendLambda%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB.png"
 	width="2796"
 	height="1268"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SuspendLambda%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB_hu13029852010876743680.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SuspendLambda%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB_hu4528197366431948351.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SuspendLambda%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB_hu_18a52bf2cdfeeb22.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SuspendLambda%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB_hu_cf813c46008dda4c.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -568,7 +568,7 @@
 <p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/create.png"
 	width="1982"
 	height="252"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/create_hu17254302941091053781.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/create_hu4109423128277940046.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/create_hu_7e48f2e1510e709c.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/create_hu_762e044558aa0ea3.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -583,7 +583,7 @@
 <p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1%E7%9A%84create%E6%96%B9%E6%B3%95.png"
 	width="1570"
 	height="152"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1%E7%9A%84create%E6%96%B9%E6%B3%95_hu1493749643918257189.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1%E7%9A%84create%E6%96%B9%E6%B3%95_hu11851528321127195555.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1%E7%9A%84create%E6%96%B9%E6%B3%95_hu_c0149ee9c9bfc737.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/CoroutineActivity$onCreate$1%E7%9A%84create%E6%96%B9%E6%B3%95_hu_1ef98a7d4923f0d1.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -596,14 +596,13 @@
 >
 此时重新new了一个CoroutineActivity$onCreate$1，并把completion传入其中，而此处的completion就是上面的CoroutineActivity$onCreate$2，它是一个Continuation。而开端在分析createCoroutine的时候，创建CoroutineActivity$onCreate$1传入的Continuation是null。</p>
 <blockquote>
-<p>不太明白，为什么不在createCoroutine时候直接直接把CoroutineActivity$onCreate$2传入到CoroutineActivity$onCreate$1中，而非要通过create方法再创建一个CoroutineActivity$onCreate$1。</p>
-</blockquote>
+<p>不太明白，为什么不在createCoroutine时候直接直接把CoroutineActivity$onCreate$2传入到CoroutineActivity$onCreate$1中，而非要通过create方法再创建一个CoroutineActivity$onCreate$1。</p></blockquote>
 <p>我们再来看intercepted方法。</p>
 <h4 id="intercepted">intercepted
 </h4><p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/intercepted.png"
 	width="1780"
 	height="748"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/intercepted_hu3839909464271033655.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/intercepted_hu15833475015402205408.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/intercepted_hu_4696fa80b1de0f83.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/intercepted_hu_d75a331dda026660.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -618,7 +617,7 @@
 <p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/ContinueationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95.png"
 	width="2048"
 	height="990"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/ContinueationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu7925993854635734873.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/ContinueationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu940625654783991224.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/ContinueationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu_cf2abb095255d489.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/ContinueationImpl%E7%9A%84intercepted%E6%96%B9%E6%B3%95_hu_7c9c080058b9bcf6.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -633,14 +632,13 @@
 <blockquote>
 <p>小节：<br/>
 ①、createCoroutine创建了一个SafeContinuation，并把CoroutineActivity$onCreate$1和一个标志位COROUTINE_SUSPENDED传入其中。CoroutineActivity$onCreate$1继承自SuspendLambda，并且是一个Function接口的实例。SuspendLambda继承自ContinuationImpl，ContinuationImpl继承自BaseContinuationImpl，BaseContinuationImpl继承自Continuation，CoroutineActivity$onCreate$1继承自SuspendLambda，也就是上面的协成要执行的闭包。CoroutineActivity$onCreate$1持有了CoroutineActivity$onCreate$2，它实现了Continuation。CoroutineActivity$onCreate$1重写了create方法，返回了一个新的CoroutineActivity$onCreate$1对象。<br/>
-②、resume方法中会调用到SafeContinuation的resumeWith方法，最终会触发CoroutineActivity$onCreate$1的resumeWith方法。</p>
-</blockquote>
+②、resume方法中会调用到SafeContinuation的resumeWith方法，最终会触发CoroutineActivity$onCreate$1的resumeWith方法。</p></blockquote>
 <h3 id="协程执行">协程执行
 </h3><p>CoroutineActivity$onCreate$1继承自SuspendLambda，最终会继承自BaseContinuationImpl，来看下它的resumeWith：</p>
 <p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95.png"
 	width="2400"
 	height="1808"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu13767287833176473319.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu7336875486880149131.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu_462cd7c94661c5ae.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu_b8841e60911207d2.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -655,7 +653,7 @@
 <p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/invokeSuspend.png"
 	width="1396"
 	height="446"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/invokeSuspend_hu6092574313257794024.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/invokeSuspend_hu920990581141760749.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/invokeSuspend_hu_addb42c8a0e95ef1.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/invokeSuspend_hu_9171732cdc958cf6.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -671,7 +669,7 @@
 <p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SafeContinuation%E7%9A%84resumeWith%E6%96%B9%E6%B3%95.png"
 	width="2574"
 	height="984"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SafeContinuation%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu5066432224240922016.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SafeContinuation%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu270478109847141729.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SafeContinuation%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu_ac48178912694837.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/SafeContinuation%E7%9A%84resumeWith%E6%96%B9%E6%B3%95_hu_8af4ee5ca68194b4.png 1024w"
 	loading="lazy"
 	
 		alt="image.png"
@@ -683,8 +681,7 @@
 	
 ></p>
 <blockquote>
-<p>可以看到执行SafeContinuation的resumeWith的时候是一个while(true)，传入的this.resume是一个COROUTINE_SUSPENDED标志位，所以会把CoroutineActivity$onCreate$1的resumeWith执行完后，才跳出while循环。因此日志最后输出协成外的代码。</p>
-</blockquote>
+<p>可以看到执行SafeContinuation的resumeWith的时候是一个while(true)，传入的this.resume是一个COROUTINE_SUSPENDED标志位，所以会把CoroutineActivity$onCreate$1的resumeWith执行完后，才跳出while循环。因此日志最后输出协成外的代码。</p></blockquote>
 <h3 id="总结">总结
 </h3><h4 id="过程">过程
 </h4><p>协程分为创建和执行，在创建过程中首先会创建一个SuspendLambda的子类，但是该子类它的completion(Continuation)是空的，然后在createCoroutineUnintercepted方法中会调用到该SuspendLambda的子类的create方法，在create方法里面会再次创建一个SuspendLambda的子类，此时SuspendLambda的子类中completion(Continuation)是非空的，指向了createCoroutine方法传入的Continuation内部类。接着来到了执行阶段，执行是调用了SuspendLambda的子类的resume方法，它会执行resumeWith方法。在resumeWith中会调用到invokeSuspend方法，而invokeSuspend中的代码实际是suspend代码块中的代码，所以suspend代码块中的代码最先执行。执行完invokeSuspend后会执行completion的resumeWith方法，所以createCoroutine方法传入的Continuation内部类的resumeWith被执行。而为什么主线程在最后才执行呢？这是因为在创建协程的时候实际包装了一个SafeContinuation对象，在它的resumeWith里面会启动while(true)循环，等到执行完deletate(也就是SuspendLambda的子类)的resumeWith后才会退出while(true)循环，所以最后才会执行主线程后面的代码。</p>
@@ -693,7 +690,7 @@
 <p><img src="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E7%B1%BB%E5%9B%BE.png"
 	width="737"
 	height="788"
-	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E7%B1%BB%E5%9B%BE_hu12035595649759449504.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E7%B1%BB%E5%9B%BE_hu4538701071498676197.png 1024w"
+	srcset="/p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E7%B1%BB%E5%9B%BE_hu_224f8d95b27c3e0e.png 480w, /p/android-%E5%8D%8F%E7%A8%8B%E5%90%AF%E5%8A%A8%E5%88%B0%E6%89%A7%E8%A1%8C/%E7%B1%BB%E5%9B%BE_hu_a77f161f6f20125d.png 1024w"
 	loading="lazy"
 	
 		alt="协程类图.png"
@@ -792,7 +789,7 @@
         
             2020 - 
         
-        2025 Example Person
+        2025 xiangcheng
     </section>
     
     <section class="powerby">

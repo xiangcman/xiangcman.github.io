@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="weditor是一个Python的插件，通过该插件，可以通过一些命令控制手机，比如我今天要讲的是通过它能自动化连接设置手机的wifi代理。\nweditor安装 基本都是python的常规命令，首先是安装weditor：\n1 pip install weditor 安装完我们检查下是否安装上：\n1 which weditor 该命令会输出weditor的安装目录，然后通过weditor命令可以打开网页版： 左边是手机当前呈现的样式，右边是命令，中间是描述组件的一些属性，其实我们在手机上操作什么，最右边会把命令输出出来。最右边就是我连接代理的命令：\n">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="weditor是一个Python的插件，通过该插件，可以通过一些命令控制手机，比如我今天要讲的是通过它能自动化连接设置手机的wifi代理。\nweditor安装 基本都是python的常规命令，首先是安装weditor：\n1 pip install weditor 安装完我们检查下是否安装上：\n1 which weditor 该命令会输出weditor的安装目录，然后通过weditor命令可以打开网页版： 左边是手机当前呈现的样式，右边是命令，中间是描述组件的一些属性，其实我们在手机上操作什么，最右边会把命令输出出来。最右边就是我连接代理的命令：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 import uiautomator2 as u2 d = u2.connect() # 连接设备 # 打开 WiFi 设置 d.app_start(&#34;com.android.settings&#34;) d(text=&#34;WLAN&#34;).click() d.sleep(1) d(text=&#34;Wifi的名字&#34;).click() d.swipe_ext(&#34;up&#34;,0.8) d.sleep(1) d(text=&#34;代理&#34;).click() d(text=&#34;手动&#34;).click() d.swipe_ext(&#34;up&#34;,0.8) ipNode = d.xpath(&#39;//*[@resource-id=&#34;com.oplus.wirelesssettings:id/recycler_view&#34;]/android.widget.LinearLayout[8]/android.widget.LinearLayout[1]/android.view.ViewGroup[1]/android.view.ViewGroup[1]/android.widget.FrameLayout[1]&#39;) # ipNode.click() ipNode.set_text(&#34;10.100.3.152&#34;) portNode = d.xpath(&#39;//*[@resource-id=&#34;com.oplus.wirelesssettings:id/recycler_view&#34;]/android.widget.LinearLayout[9]/android.widget.LinearLayout[1]/android.view.ViewGroup[1]/android.view.ViewGroup[1]/android.widget.FrameLayout[1]&#39;) # portNode.click() portNode.set_text(&#34;8888&#34;) d(resourceId=&#34;com.oplus.wirelesssettings:id/coui_toolbar_back_view&#34;).click() 这就实现了一个wifi连接代理，但是如果要做好自动化连接代码，需要考虑的因素很多，比如下面我把连接代码和取消代理的过程按照如下写出：\n">
 <title>通过python的weditor插件搭建手机wifi自动连接代理</title>
 
-<link rel='canonical' href='https://example.com/p/%E9%80%9A%E8%BF%87python%E7%9A%84weditor%E6%8F%92%E4%BB%B6%E6%90%AD%E5%BB%BA%E6%89%8B%E6%9C%BAwifi%E8%87%AA%E5%8A%A8%E8%BF%9E%E6%8E%A5%E4%BB%A3%E7%90%86/'>
+<link rel='canonical' href='http://xiangcman.xyz/p/%E9%80%9A%E8%BF%87python%E7%9A%84weditor%E6%8F%92%E4%BB%B6%E6%90%AD%E5%BB%BA%E6%89%8B%E6%9C%BAwifi%E8%87%AA%E5%8A%A8%E8%BF%9E%E6%8E%A5%E4%BB%A3%E7%90%86/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="通过python的weditor插件搭建手机wifi自动连接代理">
-<meta property='og:description' content="weditor是一个Python的插件，通过该插件，可以通过一些命令控制手机，比如我今天要讲的是通过它能自动化连接设置手机的wifi代理。\nweditor安装 基本都是python的常规命令，首先是安装weditor：\n1 pip install weditor 安装完我们检查下是否安装上：\n1 which weditor 该命令会输出weditor的安装目录，然后通过weditor命令可以打开网页版： 左边是手机当前呈现的样式，右边是命令，中间是描述组件的一些属性，其实我们在手机上操作什么，最右边会把命令输出出来。最右边就是我连接代理的命令：\n">
-<meta property='og:url' content='https://example.com/p/%E9%80%9A%E8%BF%87python%E7%9A%84weditor%E6%8F%92%E4%BB%B6%E6%90%AD%E5%BB%BA%E6%89%8B%E6%9C%BAwifi%E8%87%AA%E5%8A%A8%E8%BF%9E%E6%8E%A5%E4%BB%A3%E7%90%86/'>
+<meta property='og:description' content="weditor是一个Python的插件，通过该插件，可以通过一些命令控制手机，比如我今天要讲的是通过它能自动化连接设置手机的wifi代理。\nweditor安装 基本都是python的常规命令，首先是安装weditor：\n1 pip install weditor 安装完我们检查下是否安装上：\n1 which weditor 该命令会输出weditor的安装目录，然后通过weditor命令可以打开网页版： 左边是手机当前呈现的样式，右边是命令，中间是描述组件的一些属性，其实我们在手机上操作什么，最右边会把命令输出出来。最右边就是我连接代理的命令：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 import uiautomator2 as u2 d = u2.connect() # 连接设备 # 打开 WiFi 设置 d.app_start(&#34;com.android.settings&#34;) d(text=&#34;WLAN&#34;).click() d.sleep(1) d(text=&#34;Wifi的名字&#34;).click() d.swipe_ext(&#34;up&#34;,0.8) d.sleep(1) d(text=&#34;代理&#34;).click() d(text=&#34;手动&#34;).click() d.swipe_ext(&#34;up&#34;,0.8) ipNode = d.xpath(&#39;//*[@resource-id=&#34;com.oplus.wirelesssettings:id/recycler_view&#34;]/android.widget.LinearLayout[8]/android.widget.LinearLayout[1]/android.view.ViewGroup[1]/android.view.ViewGroup[1]/android.widget.FrameLayout[1]&#39;) # ipNode.click() ipNode.set_text(&#34;10.100.3.152&#34;) portNode = d.xpath(&#39;//*[@resource-id=&#34;com.oplus.wirelesssettings:id/recycler_view&#34;]/android.widget.LinearLayout[9]/android.widget.LinearLayout[1]/android.view.ViewGroup[1]/android.view.ViewGroup[1]/android.widget.FrameLayout[1]&#39;) # portNode.click() portNode.set_text(&#34;8888&#34;) d(resourceId=&#34;com.oplus.wirelesssettings:id/coui_toolbar_back_view&#34;).click() 这就实现了一个wifi连接代理，但是如果要做好自动化连接代码，需要考虑的因素很多，比如下面我把连接代码和取消代理的过程按照如下写出：\n">
+<meta property='og:url' content='http://xiangcman.xyz/p/%E9%80%9A%E8%BF%87python%E7%9A%84weditor%E6%8F%92%E4%BB%B6%E6%90%AD%E5%BB%BA%E6%89%8B%E6%9C%BAwifi%E8%87%AA%E5%8A%A8%E8%BF%9E%E6%8E%A5%E4%BB%A3%E7%90%86/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-09-25T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-09-25T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="通过python的weditor插件搭建手机wifi自动连接代理">
-<meta name="twitter:description" content="weditor是一个Python的插件，通过该插件，可以通过一些命令控制手机，比如我今天要讲的是通过它能自动化连接设置手机的wifi代理。\nweditor安装 基本都是python的常规命令，首先是安装weditor：\n1 pip install weditor 安装完我们检查下是否安装上：\n1 which weditor 该命令会输出weditor的安装目录，然后通过weditor命令可以打开网页版： 左边是手机当前呈现的样式，右边是命令，中间是描述组件的一些属性，其实我们在手机上操作什么，最右边会把命令输出出来。最右边就是我连接代理的命令：\n">
+<meta name="twitter:description" content="weditor是一个Python的插件，通过该插件，可以通过一些命令控制手机，比如我今天要讲的是通过它能自动化连接设置手机的wifi代理。\nweditor安装 基本都是python的常规命令，首先是安装weditor：\n1 pip install weditor 安装完我们检查下是否安装上：\n1 which weditor 该命令会输出weditor的安装目录，然后通过weditor命令可以打开网页版： 左边是手机当前呈现的样式，右边是命令，中间是描述组件的一些属性，其实我们在手机上操作什么，最右边会把命令输出出来。最右边就是我连接代理的命令：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 import uiautomator2 as u2 d = u2.connect() # 连接设备 # 打开 WiFi 设置 d.app_start(&#34;com.android.settings&#34;) d(text=&#34;WLAN&#34;).click() d.sleep(1) d(text=&#34;Wifi的名字&#34;).click() d.swipe_ext(&#34;up&#34;,0.8) d.sleep(1) d(text=&#34;代理&#34;).click() d(text=&#34;手动&#34;).click() d.swipe_ext(&#34;up&#34;,0.8) ipNode = d.xpath(&#39;//*[@resource-id=&#34;com.oplus.wirelesssettings:id/recycler_view&#34;]/android.widget.LinearLayout[8]/android.widget.LinearLayout[1]/android.view.ViewGroup[1]/android.view.ViewGroup[1]/android.widget.FrameLayout[1]&#39;) # ipNode.click() ipNode.set_text(&#34;10.100.3.152&#34;) portNode = d.xpath(&#39;//*[@resource-id=&#34;com.oplus.wirelesssettings:id/recycler_view&#34;]/android.widget.LinearLayout[9]/android.widget.LinearLayout[1]/android.view.ViewGroup[1]/android.view.ViewGroup[1]/android.widget.FrameLayout[1]&#39;) # portNode.click() portNode.set_text(&#34;8888&#34;) d(resourceId=&#34;com.oplus.wirelesssettings:id/coui_toolbar_back_view&#34;).click() 这就实现了一个wifi连接代理，但是如果要做好自动化连接代码，需要考虑的因素很多，比如下面我把连接代码和取消代理的过程按照如下写出：\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu16514757392605978522.png" width="300"
+                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -399,7 +399,7 @@
 <img src="/p/%E9%80%9A%E8%BF%87python%E7%9A%84weditor%E6%8F%92%E4%BB%B6%E6%90%AD%E5%BB%BA%E6%89%8B%E6%9C%BAwifi%E8%87%AA%E5%8A%A8%E8%BF%9E%E6%8E%A5%E4%BB%A3%E7%90%86/image.png"
 	width="3782"
 	height="1696"
-	srcset="/p/%E9%80%9A%E8%BF%87python%E7%9A%84weditor%E6%8F%92%E4%BB%B6%E6%90%AD%E5%BB%BA%E6%89%8B%E6%9C%BAwifi%E8%87%AA%E5%8A%A8%E8%BF%9E%E6%8E%A5%E4%BB%A3%E7%90%86/image_hu5208818678377307006.png 480w, /p/%E9%80%9A%E8%BF%87python%E7%9A%84weditor%E6%8F%92%E4%BB%B6%E6%90%AD%E5%BB%BA%E6%89%8B%E6%9C%BAwifi%E8%87%AA%E5%8A%A8%E8%BF%9E%E6%8E%A5%E4%BB%A3%E7%90%86/image_hu4431610154567679636.png 1024w"
+	srcset="/p/%E9%80%9A%E8%BF%87python%E7%9A%84weditor%E6%8F%92%E4%BB%B6%E6%90%AD%E5%BB%BA%E6%89%8B%E6%9C%BAwifi%E8%87%AA%E5%8A%A8%E8%BF%9E%E6%8E%A5%E4%BB%A3%E7%90%86/image_hu_e70a7b885ca24104.png 480w, /p/%E9%80%9A%E8%BF%87python%E7%9A%84weditor%E6%8F%92%E4%BB%B6%E6%90%AD%E5%BB%BA%E6%89%8B%E6%9C%BAwifi%E8%87%AA%E5%8A%A8%E8%BF%9E%E6%8E%A5%E4%BB%A3%E7%90%86/image_hu_b7acd0d87300448d.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1492,7 +1492,7 @@
         
             2020 - 
         
-        2025 Example Person
+        2025 xiangcheng
     </section>
     
     <section class="powerby">

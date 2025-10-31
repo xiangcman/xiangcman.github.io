@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "请输入要删除的文件夹路径："
+# 指定要删除的文件夹
+read folder_path
+
+# 批量删除所有以 "-1.png" 结尾的文件
+find "$folder_path" -type f -name "*-1.png" -exec rm -f {} \;
+
+echo "删除完成！"
