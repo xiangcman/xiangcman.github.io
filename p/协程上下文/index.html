@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-us" dir="ltr">
+<html lang="zh-CN" dir="ltr">
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content=" 在讲协程的如何切换线程之前，有必要先了解下协程的上下文是什么？它的结构是什么样的？以及我们如何使用它？今天带着该问题来认识它。\nCoroutineContext 协程上下文都是继承自CoroutineContext，它是一个接口，内部方法以及内部类如下：\n它的实现子类有如下：\n比如我们常见的EmptyCoroutineContext，它的内部实现如下：\n可以看到它的get、fold、plus、minusKey几个方法都是默认实现，你可以理解它就是个空壳子的context。\nElement 在讲CoroutineContext内部结构之前，先来认识下Element，它也实现了CoroutineContext接口：\nElement中有一个key的属性，这里可以理解key就是当前Element的唯一标识。实现一个context的时候需要指明它的key是啥，此处就是用该key来标识 get：如果传进来的key和自己的key相等，则返回自己，否则返回null fold：将初始值和当前element返回给lambda，让lambda自己去处理 minusKey：如果传进来的key和自己相同，则返回EmptyCoroutineContext，否则返回自己，其实是删除对应key的context.\n写了3个context，然后用&quot;+&ldquo;拼接：\n自定义context的时候，需要继承自AbstractCoroutineContextElement，它是继承自Element，因为它强制要求需要一个key作为context的标识，一般key的element标识是当前context，看上面的One这个context，它的key拥有的element是One。\n输出日志如下：\nOne()+Two()+Three()得到的是一个CombinedContext，get方法通过One这个key取到了One这个取对应的Context\n日志如下： 可以看到我给One的context拼接了一个EmptyCoroutineContext时候，得到的是它自己，&quot;+&ldquo;是重载了context的plus方法，看下plus方法的实现：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 public operator fun plus(context: CoroutineContext): CoroutineContext = //① if (context === EmptyCoroutineContext) this else // fast path -- avoid lambda creation //② context.fold(this) { acc, element -&gt; //③ val removed = acc.minusKey(element.key) //③.1 if (removed === EmptyCoroutineContext) element else { // make sure interceptor is always last in the context (and thus is fast to get when present) //④ val interceptor = removed[ContinuationInterceptor] //⑤ if (interceptor == null) CombinedContext(removed, element) else { //⑥ val left = removed.minusKey(ContinuationInterceptor) //⑦ if (left === EmptyCoroutineContext) CombinedContext(element, interceptor) else //⑧ CombinedContext(CombinedContext(left, element), interceptor) } } } 1.如果传进来的context是EmptyCoroutineContext，则返回自己，所以上面的One()+EmptyCoroutineContext，得到的是One这个context 2.context.fold，会把初始值和context传给闭包，所以acc是当前context，element是传进来的context 3.acc.minuskey(element.key)，如果传进来的context的key和当前context的key相等，则返回传进来的context，所以新的context会把旧的context给覆盖掉了 4.如果传进来的context的key和当前context的key不相等，removed则是当前context，查看当前context中是否有ContinuationInterceptor类型的context，我们的dispatcher都是属于该类型，需要单独处理 5.如果context中没有ContinuationInterceptor类型的context，则初始化出一个CombinedContext的context，所以上面的One()+Two()+Three()是一个CombinedContext的context 6.如果当前context中存在ContinuationInterceptor类型的context，则继续判断当前context是不是ContinuationInterceptor类型的context 7.如果是ContinuationInterceptor类型的context，则把传进来的context和当前的context组合成CombinedContext的context 8.如果当前的context不是一个ContinuationInterceptor类型的context，则把当前当前的context和传进来的context新组合成一个CombinedContext的context，再和前面的ContinuationInterceptor组合成一个新的CombinedContext的context\n">
 <title>协程上下文</title>
@@ -78,7 +78,7 @@
             
                 <li>
                     <a 
-                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        href='https://github.com/xiangcman'
                         target="_blank"
                         title="GitHub"
                         rel="me"
@@ -88,26 +88,6 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
   <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
-</svg>
-
-
-
-                        
-                    </a>
-                </li>
-            
-                <li>
-                    <a 
-                        href='https://twitter.com'
-                        target="_blank"
-                        title="Twitter"
-                        rel="me"
-                    >
-                        
-                        
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
 </svg>
 
 
@@ -135,33 +115,13 @@
 
 
                 
-                <span>Home</span>
-            </a>
-        </li>
-        
-        
-        <li >
-            <a href='/_index.zh-cn/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <polyline points="5 12 3 12 12 3 21 12 19 12" />
-  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
-</svg>
-
-
-
-                
                 <span>主页</span>
             </a>
         </li>
         
         
         <li >
-            <a href='/%E5%85%B3%E4%BA%8E/' >
+            <a href='/%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D/' >
                 
                 
                 
@@ -194,7 +154,7 @@
 
 
                 
-                <span>Archives</span>
+                <span>分类</span>
             </a>
         </li>
         
@@ -213,26 +173,7 @@
 
 
                 
-                <span>Search</span>
-            </a>
-        </li>
-        
-        
-        <li >
-            <a href='/links/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
-  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
-</svg>
-
-
-
-                
-                <span>Links</span>
+                <span>搜索</span>
             </a>
         </li>
         

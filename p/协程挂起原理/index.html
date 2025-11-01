@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-us" dir="ltr">
+<html lang="zh-CN" dir="ltr">
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="先来一个例子： 日志如下： 可以看到上面先是执行了withContext中的代码，然后执行了launch中的代码，注意到launch中也是在单独线程中执行的，其中launch中使用的Dispatcher是Dispatchers.Default类型的。前面分析过launch调度情况，最后会执行到continuation的resumeWith，然后调用它的invokeSuspend方法： 可以看到先执行withContext，因为withContext启动的时候，默认的状态是COROUTINE_SUSPENDED，所以退出了invokeSuspend方法，返回了var2，此时的label=1了。当执行完withContext的时候，会通知传给withContext的continuation，也就是上面的CoroutineDispatchersActivity$demo2$1这个SuspendLambda。所以会再次执行它的invokeSuspend方法，此时lable=1，所以最后返回了Unit.INSTANCE，整个invokeSuspend结束，这就是挂起的原因。 至于为什么在CoroutineDispatchersActivity$demo2$1中遇到了返回值为COROUTINE_SUSPENDED时候，不会继续执行了呢？看下BaseContinuationImpl中的resumeWith逻辑： 在BaseContinuationImpl的resumeWith中，如果invokeSuspend返回值是COROUTINE_SUSPENDED，则直接return了，不往上层的continuation调用了。\n至于再次执行CoroutineDispatchersActivity$demo2$1的invokeSuspend方法是在什么时候，可以追溯到withContext中： 执行了block的startCoroutineCancellable： 此处很熟悉啊，这不又启动了一个协程吗？协程套协程啊。好吧，我们直接看completion的回调，在协程挂起函数执行完后，会执行complete的resumeWith方法，此处是DispatchedCoroutine对象，继承自ScopeCoroutine： 它是先取continuation中context的ContinuationInterceptor，也就是上面launch启动的dispatchers，对应的是Dispatchers.Default，最终执行Dispatchers的resumeCancellableWith方法，在该方法里面最终会在协程指定的线程中执行协程代码块。所以在上面日志中能看到withContext执行完后，launch之后的代码能回到指定的线程中执行。\nwithcontext执行完了后会执行外面协程的resumeWith，所以launch的invokeSuspend再次执行。再次执行的时候会回到自己的线程。真相大白了！\n总结： 首先每一个协程代码块都会被编译成SuspendLambda对象，它也是一个Continuation对象，每次在执行到SuspendLambda的resume时候，都会去执行invokeSuspend方法，而该方法里面会去执行子协程，如果子协程返回COROUTINE_SUSPENDED状态的时候，父协程的resume方法会直接return了。当子协程执行完后，会通知父协程，此时父协程的的invokeSuspend方法再次被执行，而此时的状态机会发生变化，如果此时状态恢复后，会执行父协程中的Continuation，也就是父父协程的执行。\n">
 <title>协程挂起原理</title>
@@ -78,7 +78,7 @@
             
                 <li>
                     <a 
-                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        href='https://github.com/xiangcman'
                         target="_blank"
                         title="GitHub"
                         rel="me"
@@ -88,26 +88,6 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
   <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
-</svg>
-
-
-
-                        
-                    </a>
-                </li>
-            
-                <li>
-                    <a 
-                        href='https://twitter.com'
-                        target="_blank"
-                        title="Twitter"
-                        rel="me"
-                    >
-                        
-                        
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
 </svg>
 
 
@@ -135,33 +115,13 @@
 
 
                 
-                <span>Home</span>
-            </a>
-        </li>
-        
-        
-        <li >
-            <a href='/_index.zh-cn/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <polyline points="5 12 3 12 12 3 21 12 19 12" />
-  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
-</svg>
-
-
-
-                
                 <span>主页</span>
             </a>
         </li>
         
         
         <li >
-            <a href='/%E5%85%B3%E4%BA%8E/' >
+            <a href='/%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D/' >
                 
                 
                 
@@ -194,7 +154,7 @@
 
 
                 
-                <span>Archives</span>
+                <span>分类</span>
             </a>
         </li>
         
@@ -213,26 +173,7 @@
 
 
                 
-                <span>Search</span>
-            </a>
-        </li>
-        
-        
-        <li >
-            <a href='/links/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
-  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
-</svg>
-
-
-
-                
-                <span>Links</span>
+                <span>搜索</span>
             </a>
         </li>
         

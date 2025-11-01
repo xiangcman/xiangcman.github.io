@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-us" dir="ltr">
+<html lang="zh-CN" dir="ltr">
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="我们先看一个native的crash例子:\n这是我在clion中写的一个测试代码，这个很明显，在程序第8行使用了一个未初始化的指针，然后运行最后，说程序被SIGSEGV信号终止了，该信号在c/c++中表示非法访问内存的信号，并且该终止没有指明代码行号。这在调试c++程序很头痛，不过在安卓ndk项目中如果想要定位是c++的问题，我们来一起看下。\n1 2 3 4 5 6 7 extern &#34;C&#34; JNIEXPORT void JNICALL Java_com_example_nativelib_CrashActivity_testNativeCrash(JNIEnv *env, jobject thiz) { int* p; int a = 10; *p = 20; } 然后在activity里面通过jni调用该方法：\n1 2 3 4 5 native void testNativeCrash(); static { System.loadLibrary(&#34;crash_monitor&#34;); } crash的日志如下：\n1 2 3 4 5 6 7 --------- beginning of crash 2025-08-28 14:56:29.639 2487-2487 libc com.example.nativelib A Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0 in tid 2487 (ample.nativelib), pid 2487 (ample.nativelib) 2025-08-28 14:56:30.559 2724-2724 DEBUG pid-2724 A Cmdline: com.example.nativelib 2025-08-28 14:56:30.559 2724-2724 DEBUG pid-2724 A pid: 2487, tid: 2487, name: ample.nativelib &gt;&gt;&gt; com.example.nativelib &lt;&lt;&lt; 2025-08-28 14:56:30.559 2724-2724 DEBUG pid-2724 A #00 pc 0000000000000644 /data/app/~~uAk5HwqkTX5ikhOJ94KruQ==/com.example.nativelib-nvfAk1bvIIxGrBGSolPLNw==/base.apk!libcrash_monitor.so (Java_com_example_nativelib_CrashActivity_testNativeCrash+28) (BuildId: 3f3fdcb6b22b15038811fa94da4200e7cc25d684) 2025-08-28 14:56:30.559 2724-2724 DEBUG pid-2724 A #03 pc 0000000000000880 [anon:dalvik-classes4.dex extracted in memory from /data/app/~~uAk5HwqkTX5ikhOJ94KruQ==/com.example.nativelib-nvfAk1bvIIxGrBGSolPLNw==/base.apk!classes4.dex] (com.example.nativelib.CrashActivity$1.onClick+4) 2025-08-28 14:56:30.559 2724-2724 DEBUG pid-2724 A #07 pc 000000000038fa62 [anon:dalvik-classes.dex extracted in memory from /data/app/~~uAk5HwqkTX5ikhOJ94KruQ==/com.example.nativelib-nvfAk1bvIIxGrBGSolPLNw==/base.apk] (com.google.android.material.button.MaterialButton.performClick+22) 日志解读 第一行日志 Signal 11 (SIGSEGV):因为SIGSEGV信号失败的，和上面的clion中一致。 SEGV_MAPERR：访问了未映射的内存。 fault addr 0x0：出错地址是 0x0，说明是典型的 空指针访问。 tid: 2487 (ample.nativelib), pid: 2487 (ample.nativelib)：崩溃发生在主线程（tid==pid==2487）。所以是ui线程直接调用native方法导致的crash。 调用堆栈 #00 pc 0000000000000644 libcrash_monitor.so (Java_com_example_nativelib_CrashActivity_testNativeCrash+28) 崩溃点在so库：libcrash_monitor.so 对应JNI方法：Java_com_example_nativelib_CrashActivity_testNativeCrash +28表示在这个JNI函数的第28个字符处发生了错误 0000000000000644：相对于该so加载基址（base address）的偏移量 崩溃定位 addr2line 它是在ndk目录中，首先需要查看项目使用的ndk版本，通过./gradlew app:assembleDebug --info | grep ndk来查看ndk版本，或者在app的module的build.gradle中指定ndk版本或者在local.properties中指定ndk版本，我这里用的是21.3.6528147版本，并且机器是64位，命令如下： 1 /Users/xiangcheng/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android-addr2line -C -f -e /Users/xiangcheng/AndroidStudioProjects/NativeProject/app/build/intermediates/cxx/Debug/6p5m14a5/obj/arm64-v8a/libcrash_monitor.so 0x00644 首先是addr2line的本地地址，-C:启用 demangling（符号还原），把 C++ 的 mangled name（符号修饰名） 转换成人类可读的函数签名。我这里是jni方法，所以不存在函数还原。-f：打印函数名，默认只输入文件名+行号，加上-f才会显示对应的函数名。-e是so的路径，最后输入偏移地址。命令结果如下： 第一行是方法名，第二行是哪个文件的行号，可以看到对应了cpp的第13行。 addr2line的缺点是只能进行单条地址定位 在上面取的so路径是build/intermediates/cxx/..下面，而最终打到apk的so是这样的过程： 在agp4.0之前是build/intermediates/cmake|ndkBuild/.../obj/...(编译产物)-&gt;build/intermediates/merged_native_libs/.../out/lib/...(打包前，也就是汇总所有依赖之后的集合目录，也是没有被剔除符号的so)-&gt;/build/intermediates/stripped_native_libs/so文件(剥离了调试符号后的版本) 在agp4.0之后是build/intermediates/cxx/.../obj/...(编译产物，带符号)-&gt;build/intermediates/merged_native_libs/.../out/lib/...(打包前，也就是汇总所有依赖之后的集合目录，也是没有被剔除符号的so)-&gt;/build/intermediates/stripped_native_libs/so文件(剥离了调试符号后的版本) 这里验证下三者的区别： 使用merged_native_libs下的so，命令如下： 1 /Users/xiangcheng/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android-addr2line -C -f -e /Users/xiangcheng/AndroidStudioProjects/NativeProject/app/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/arm64-v8a/libcrash_monitor.so 0x00644 结果如下： 可以看到类名和行号基本和前面的obj目录下的so基本一致。 使用stripped_native_libs下的so，命令如下： 1 /Users/xiangcheng/Library/Android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android-addr2line -C -f -e /Users/xiangcheng/AndroidStudioProjects/NativeProject/app/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/arm64-v8a/libcrash_monitor.so 0x00644 结果如下： 此处由于testNativeCrash方法是一个jni方法，不会被混淆方法名，但是行号信息是丢失了，可以看出来strip之后的so是不带有行号信息。 打进apk中的so是剥离调试符号的so吗？ 不一定是。如果没有开启strip，那就取的是merged_native_libs目录下的。否则取的是stripped_native_libs目录下的so文件 ndk-stack 它是ndk自带工具，可以直接解析logcat崩溃堆栈，把pc偏移映射回源码行 用法： 1 ndk-stack -sym /Users/xiangcheng/AndroidStudioProjects/NativeProject/app/build/intermediates/cxx/Debug/6p5m14a5/obj/arm64-v8a -dump log sys：指定so的路径，这里不用指明是哪一个so，只需要定位到cpu架构的类型文件夹就行，dump：指定log的地址，此处的log是在上面crash后，我通过logcat导出了log。最后输出的内容如下： 1 2 3 4 5 6 ********** Crash dump: ********** Build fingerprint: \\u0027Xiaomi/umi/umi:13/TKQ1.221114.001/V816.0.5.0.TJBCNXM:user/release-keys\\u0027&#34; #00 0x0000000000000644 /data/app/~~uAk5HwqkTX5ikhOJ94KruQ\\u003d\\u003d/com.example.nativelib-nvfAk1bvIIxGrBGSolPLNw\\u003d\\u003d/base.apk!libcrash_monitor.so (Java_com_example_nativelib_CrashActivity_testNativeCrash+28) (BuildId: 3f3fdcb6b22b15038811fa94da4200e7cc25d684)&#34; Java_com_example_nativelib_CrashActivity_testNativeCrash /Users/xiangcheng/AndroidStudioProjects/NativeProject/app/src/main/cpp/signal_crash.cpp:13:8 Crash dump is completed 可以看到也是定位到signal_crash.cpp文件的第13行出现了问题。 ">
 <title>Native的crash如何定位</title>
@@ -78,7 +78,7 @@
             
                 <li>
                     <a 
-                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        href='https://github.com/xiangcman'
                         target="_blank"
                         title="GitHub"
                         rel="me"
@@ -88,26 +88,6 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
   <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
-</svg>
-
-
-
-                        
-                    </a>
-                </li>
-            
-                <li>
-                    <a 
-                        href='https://twitter.com'
-                        target="_blank"
-                        title="Twitter"
-                        rel="me"
-                    >
-                        
-                        
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
 </svg>
 
 
@@ -135,33 +115,13 @@
 
 
                 
-                <span>Home</span>
-            </a>
-        </li>
-        
-        
-        <li >
-            <a href='/_index.zh-cn/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <polyline points="5 12 3 12 12 3 21 12 19 12" />
-  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
-</svg>
-
-
-
-                
                 <span>主页</span>
             </a>
         </li>
         
         
         <li >
-            <a href='/%E5%85%B3%E4%BA%8E/' >
+            <a href='/%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D/' >
                 
                 
                 
@@ -194,7 +154,7 @@
 
 
                 
-                <span>Archives</span>
+                <span>分类</span>
             </a>
         </li>
         
@@ -213,26 +173,7 @@
 
 
                 
-                <span>Search</span>
-            </a>
-        </li>
-        
-        
-        <li >
-            <a href='/links/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
-  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
-</svg>
-
-
-
-                
-                <span>Links</span>
+                <span>搜索</span>
             </a>
         </li>
         

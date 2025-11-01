@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-us" dir="ltr">
+<html lang="zh-CN" dir="ltr">
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。\nCoroutineScope(协程作用域) CoroutineScope组成 可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：\nCoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它 Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob CoroutineName：用来给协程起名字的作用 CoroutineExceptionHandler：它是用来捕捉协程异常的回调器 所以完整的CoroutineContext组成部分如下： job+dispatchers+CoroutineName+CoroutineExceptionHandler\nCoroutineScope分类 目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别\nGlobalScope 上面用到的GlobalScope就是一个协程作用域： 可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它\nrunBlocking 是一个阻塞式的协程作用域，会阻塞协程外面的线程，内部是通过java的LockSupport.park阻塞住线程来实现的。 MainScope 它是一个指定协程分发在主线程中，并且使用到的Job是SupervisorJob，它的作用是当子协程出错的时候，不影响到父协程中的其他子协程 它是一个ContextScope，继承自CoroutineScope，并且它的context是由SupervisorJob()和Dispatchers.Main组成的一个context。我们一般自定义CoroutineScope的时候也是定义一个ContextScope，他的构造方法需要传入一个CoroutineContext。 CoroutineScope顶级方法 它也是一个ContextScope，它的上下文先看传进来的context中的job是否为空，如果为空，则初始化一个job。如果不为空，则使用传进来的context。\ncoroutineScope顶级方法 它是一个suspend方法，它是通过闭包的形式返回一个CoroutineScope，对应的字节码如下： 会将ScopeCoroutine给到block，也就是闭包中的CoroutineScope，接着会调用UndispatchedKt.startUndispatchedOrReturn: 最终调用了block.invoke方法，写个demo看下效果： 日志如下： 从日志可以看出来，它是先等到coroutineScope里面delay执行完了，才执行外面的逻辑。在字节码层面，它会把coroutineScope外面的代码编译成SuspendLambda，它也是个Continuation，等到执行完了coroutineScope内部的代码，才会回调到coroutineScope外面的SuspendLambda中来： 上面分析过UndispatchedKt.startUndispatchedOrReturn中调用了block的invoke方法，此处的block正对应了CoroutineDispatchersActivity$demo7$1这个SuspendLambda对象： 在demo7中将CoroutineDispatchersActivity$demo7$1这个continuation传递到coroutineScope中，而它的invoke方法如下： 创建了CoroutineDispatchersActivity$demo7$1后，继而调用了invokeSuspend方法，而invokeSuspend里面是要等到coroutineScope闭包中的delay挂起结束后，才会再次回到invokeSuspend方法，最后才会输出「demo7: coroutineScope outside」的日志，这也是协程挂起的调用顺序。\n">
 <title>协程如何切换线程</title>
@@ -78,7 +78,7 @@
             
                 <li>
                     <a 
-                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        href='https://github.com/xiangcman'
                         target="_blank"
                         title="GitHub"
                         rel="me"
@@ -88,26 +88,6 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
   <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
-</svg>
-
-
-
-                        
-                    </a>
-                </li>
-            
-                <li>
-                    <a 
-                        href='https://twitter.com'
-                        target="_blank"
-                        title="Twitter"
-                        rel="me"
-                    >
-                        
-                        
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
 </svg>
 
 
@@ -135,33 +115,13 @@
 
 
                 
-                <span>Home</span>
-            </a>
-        </li>
-        
-        
-        <li >
-            <a href='/_index.zh-cn/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <polyline points="5 12 3 12 12 3 21 12 19 12" />
-  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
-</svg>
-
-
-
-                
                 <span>主页</span>
             </a>
         </li>
         
         
         <li >
-            <a href='/%E5%85%B3%E4%BA%8E/' >
+            <a href='/%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D/' >
                 
                 
                 
@@ -194,7 +154,7 @@
 
 
                 
-                <span>Archives</span>
+                <span>分类</span>
             </a>
         </li>
         
@@ -213,26 +173,7 @@
 
 
                 
-                <span>Search</span>
-            </a>
-        </li>
-        
-        
-        <li >
-            <a href='/links/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
-  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
-</svg>
-
-
-
-                
-                <span>Links</span>
+                <span>搜索</span>
             </a>
         </li>
         

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-us" dir="ltr">
+<html lang="zh-CN" dir="ltr">
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 默认内联函数是能添加return来作为局部返回，由于存在平铺代码的特性，所以它能阻止调用lambda的外层函数的执行，那如果lambda作为间接调用的时候，此时添加return语句会编译失败，因为间接调用（比如匿名内部类或回调）不能阻止外层函数的调用，是为了避免多线程或回调中意外终止外层函数，所以kotlin编译器此时需要你添加crossinline，举个例子就清楚了： 此处的run闭包，它的调用是在runnable接口中的，此时编译器提示it may contain non-local returns，意思是此时存在间接调用，在间接调用lambda的时候，不允许在lambda中添加return来阻止外层的外层函数的执行。所以此处通过添加crossinline来阻止lambda中添加return 疑惑：crossinline添加后，内联效果还在吗？还是以上面的例子来说明： 假如上面的hello方法我就作为普通的方法，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 object TestInline1 { @JvmStatic fun main(args: Array&lt;String&gt;) { hello { println(&#34;hello的闭包&#34;) } } fun hello(run: () -&gt; Unit) { val runnable = Runnable { println(&#34;runnable run&#34;) run() } runnable.run() } } 对应的字节码如下： 如果我把它作为内联函数来处理，如下： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 object TestInline1 { @JvmStatic fun main(args: Array&lt;String&gt;) { hello { println(&#34;hello的闭包&#34;) } } inline fun hello(crossinline run: () -&gt; Unit) { val runnable = Runnable { println(&#34;runnable run&#34;) run() } runnable.run() } } 对应的字节码如下： 可以看出来crossinline还是有内联效果，闭包直接在runnable中平铺开来了。 相关文档：https://juejin.cn/post/6869954460634841101 java lambda和kotlin lambda区别 在java中如果使用匿名内部类的形式，在编译时它是会单独生成一个类，其中类名是「外部类名$index.class」这种形式。如果使用lambda的形式，它不会在编译时单独生成一个类，它是执行了invokedynamic指令，在运行时动态生成lambda的类，其中类名是「外部类名$Lambda$index.class」这种形式。 参考:https://juejin.cn/post/7004642395060961310 kotlin lambda它是在编译时看是否需要生成单独的类，如果是内联的时候就直接平铺代码，如果是非内联的时候才生成单独的类。 协程是怎么挂起的？怎么恢复的？ 首先每一个协程代码块都会被编译成SuspendLambda对象，它也是一个Continuation对象，每次在执行到SuspendLambda的resume时候，都会去执行invokeSuspend方法，而该方法里面会去执行子协程，如果子协程返回COROUTINE_SUSPENDED状态的时候，父协程的resume方法会直接return了。当子协程执行完后，会通知父协程，此时父协程的的invokeSuspend方法再次被执行，而此时的状态机会发生变化，如果此时状态恢复后，会执行父协程中的Continuation，也就是父父协程的执行。 协程中的dispather是怎么指定在哪个线程上执行的？ 首先dispather它是CoroutineContext（上下文）的一部分，在协程启动过程中，会取CoroutineContext中的CoroutineDispathcer部分。此时会构造一个DispathedContinuation对象，并把前面取到的Dispather传到DispathedContinuation中，此时会将DispathedContinuation扔到线程池中，最终会执行DispathedContinuation的run方法，在run里面会执行到SuspendLambda，也就是协程的代码块，最终会执行它的invokeSuspend方法。所以协程代码块中代码要执行在哪个线程是协程上下文的dispather部分指定的线程。 相关文档：https://www.xiangcman.fun/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/\n">
 <title>笔记整理</title>
@@ -78,7 +78,7 @@
             
                 <li>
                     <a 
-                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        href='https://github.com/xiangcman'
                         target="_blank"
                         title="GitHub"
                         rel="me"
@@ -88,26 +88,6 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
   <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
-</svg>
-
-
-
-                        
-                    </a>
-                </li>
-            
-                <li>
-                    <a 
-                        href='https://twitter.com'
-                        target="_blank"
-                        title="Twitter"
-                        rel="me"
-                    >
-                        
-                        
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
 </svg>
 
 
@@ -135,33 +115,13 @@
 
 
                 
-                <span>Home</span>
-            </a>
-        </li>
-        
-        
-        <li >
-            <a href='/_index.zh-cn/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <polyline points="5 12 3 12 12 3 21 12 19 12" />
-  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
-</svg>
-
-
-
-                
                 <span>主页</span>
             </a>
         </li>
         
         
         <li >
-            <a href='/%E5%85%B3%E4%BA%8E/' >
+            <a href='/%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D/' >
                 
                 
                 
@@ -194,7 +154,7 @@
 
 
                 
-                <span>Archives</span>
+                <span>分类</span>
             </a>
         </li>
         
@@ -213,26 +173,7 @@
 
 
                 
-                <span>Search</span>
-            </a>
-        </li>
-        
-        
-        <li >
-            <a href='/links/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
-  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
-</svg>
-
-
-
-                
-                <span>Links</span>
+                <span>搜索</span>
             </a>
         </li>
         

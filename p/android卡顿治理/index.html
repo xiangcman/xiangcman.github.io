@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-us" dir="ltr">
+<html lang="zh-CN" dir="ltr">
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Android中卡顿治理主要集中在recyclerView滑动列表时候有卡顿，我们结合android studio中profiler的systemTrace工具来查看卡顿情况，我目前的Android Studio已更新到Meerkat Feature Drop | 2024.3.2 Patch 1版本，下来来看看如何通过该工具来定位到具体的卡顿。\n首先Android Studio中System Trace工具是基于perfetto来进行定位，所以需要有一定的perfetto经验才能使用该功能，perfetto能通过内核、系统组件、本地内存、cpu等多方面进行收集数据，而我们的卡顿一般是监控应用的主线程绘制阶段的数据，而android代码中已经为主线程绘制阶段添加了各种tag，通过该tag能知道是什么组件的绘制阶段发生了卡顿。\n首先我的手机是Android13的版本，在卡顿检测官网中介绍了Android12以上、Android11、Android10以下的区别，这里我就以Android13来讲解如何识别卡顿。\n在官网中介绍有两种模式，一种是可分析应用，一种是可调试应用，新版android studio中的profiler中system trace要求是可分析的(profileable)应用，在启动应用时候，点击menu toolbar的更多操作，然后点击，便可进入到profileable模式，也可以将变体切换为release模式，在release变体下，在清单文件加上如下配置：\n1 &lt;profileable android:shell=&#34;true&#34; /&gt; 配置完后，接着就是选择相应的应用，然后点击System Trace选项进行监控应用。比如我在RecyclerView的列表adapter中onBindViewHolder进行Thread.sleep(50)，然后观察生成的trace文件： 整体上分为Janky frames、Threads、Analysis几个区域，Janky frames默认展示的是卡顿帧，我们也可以勾选All Frames，Threads部分展示的时候所有线程，比如app的主线程，RenderThread渲染线程等。Analysis区域展示的是某块的跟踪信息。\n卡顿帧：它是我们分析卡顿最直接的图形，我们首先选中某一个卡顿帧，然后该帧会出现两个颜色，左边的深红色表示一针的期望时间，而右边的暗红色表示该帧延迟了多久。我们可以看到右边Analysis区域标明了Jank type是Deadline missed（延迟帧），Layer name表明是哪个activity，Expected duration表示期望时间，Actual duration表示实际执行时间。events associated with frame展示的是该帧从主线程到RenderThread到gpu到SurfaceFlinger的关键事件。可以通过该区域分析该帧是应用层绘制耗时多，还是渲染线程或者是gpu等阶段耗时久。下面还会展示Main thread states和RenderThread states，分别记录了现成的状态、每个状态的耗时、以及每个状态的占比，Occurrences表示的是当前线程在该帧的生命周期内，在该状态下的次数。 从上面截图中可以看到在该帧中，主线程的sleeping状态占比是最高的。\n回到左边的Janky frames面板，再回到刚才那一帧，然后按m键会自动放大该帧的视图，在主线程视图中查看跟踪事件的tag。这里介绍系统system trace中常见的一帧的tag：\ntag名字 描述 Choreographer#doFrame *** 每一帧的父事件，其中后面的数字是vsync input 每一帧中执行input事件 animation 每一帧执行animation事件 RV Scroll recyclerview滑动事件 选中某一帧的Choreographer#doFrame后，在右侧的Analysis面板会看到该帧的相关信息。分为Summary、Top Down、Flame Chart、Bottom Up、Events几个tab。\n">
 <title>Android卡顿治理</title>
@@ -78,7 +78,7 @@
             
                 <li>
                     <a 
-                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        href='https://github.com/xiangcman'
                         target="_blank"
                         title="GitHub"
                         rel="me"
@@ -88,26 +88,6 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
   <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
   <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
-</svg>
-
-
-
-                        
-                    </a>
-                </li>
-            
-                <li>
-                    <a 
-                        href='https://twitter.com'
-                        target="_blank"
-                        title="Twitter"
-                        rel="me"
-                    >
-                        
-                        
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
 </svg>
 
 
@@ -135,33 +115,13 @@
 
 
                 
-                <span>Home</span>
-            </a>
-        </li>
-        
-        
-        <li >
-            <a href='/_index.zh-cn/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <polyline points="5 12 3 12 12 3 21 12 19 12" />
-  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
-</svg>
-
-
-
-                
                 <span>主页</span>
             </a>
         </li>
         
         
         <li >
-            <a href='/%E5%85%B3%E4%BA%8E/' >
+            <a href='/%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D/' >
                 
                 
                 
@@ -194,7 +154,7 @@
 
 
                 
-                <span>Archives</span>
+                <span>分类</span>
             </a>
         </li>
         
@@ -213,26 +173,7 @@
 
 
                 
-                <span>Search</span>
-            </a>
-        </li>
-        
-        
-        <li >
-            <a href='/links/' >
-                
-                
-                
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
-  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
-</svg>
-
-
-
-                
-                <span>Links</span>
+                <span>搜索</span>
             </a>
         </li>
         
