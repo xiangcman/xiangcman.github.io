@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-CN" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nglide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制。接着调用了initializeGlide方法：\n">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nglide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：\n">
 <title>Glide加载图片流程</title>
 
 <link rel='canonical' href='http://xiangcman.xyz/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Glide加载图片流程">
-<meta property='og:description' content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nglide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制。接着调用了initializeGlide方法：\n">
+<meta property='og:description' content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nglide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-05-22T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-05-22T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="Glide加载图片流程">
-<meta name="twitter:description" content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nglide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制。接着调用了initializeGlide方法：\n">
+<meta name="twitter:description" content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nglide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -301,7 +301,7 @@
 
 
                 <time class="article-time--reading">
-                    2 minute read
+                    4 minute read
                 </time>
             </div>
         
@@ -394,7 +394,7 @@
 		data-flex-basis="672px"
 	
 ><br>
-此处不允许多次初始化glide对象，通过一个布尔值控制。接着调用了initializeGlide方法：</p>
+此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -560,6 +560,216 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>初始化线程池，构造了Engine、RequestManagerRetriever对象，最后初始化了Glide对象。所以上面的getRequestManagerRetriever方法返回的对象就是此处new的RequestManagerRetriever对象。接着调用了RequestManagerRetriever的get方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@NonNull</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="n">RequestManager</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IllegalArgumentException</span><span class="p">(</span><span class="s">&#34;You cannot start a load on a null Context&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Util</span><span class="p">.</span><span class="na">isOnMainThread</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">context</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">Application</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">FragmentActivity</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">get</span><span class="p">((</span><span class="n">FragmentActivity</span><span class="p">)</span><span class="w"> </span><span class="n">context</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">ContextWrapper</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">((</span><span class="n">ContextWrapper</span><span class="p">)</span><span class="w"> </span><span class="n">context</span><span class="p">).</span><span class="na">getBaseContext</span><span class="p">().</span><span class="na">getApplicationContext</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">get</span><span class="p">(((</span><span class="n">ContextWrapper</span><span class="p">)</span><span class="w"> </span><span class="n">context</span><span class="p">).</span><span class="na">getBaseContext</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">getApplicationManager</span><span class="p">(</span><span class="n">context</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>该方法会返回一个RequestManager对象，如果context不是Application类型，则通过get方法创建RequestManager对象，如果是Application类型，则通过getApplicationManager方法创建。首先来看下通过FragmentActivity来创建RequestManager对象：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">RequestManager</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">FragmentActivity</span><span class="w"> </span><span class="n">activity</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//如果当前不是主线程，则通过Application创建</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Util</span><span class="p">.</span><span class="na">isOnBackgroundThread</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">get</span><span class="p">(</span><span class="n">activity</span><span class="p">.</span><span class="na">getApplicationContext</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">assertNotDestroyed</span><span class="p">(</span><span class="n">activity</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">frameWaiter</span><span class="p">.</span><span class="na">registerSelf</span><span class="p">(</span><span class="n">activity</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isActivityVisible</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">isActivityVisible</span><span class="p">(</span><span class="n">activity</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Glide</span><span class="w"> </span><span class="n">glide</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Glide</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">activity</span><span class="p">.</span><span class="na">getApplicationContext</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">lifecycleRequestManagerRetriever</span><span class="p">.</span><span class="na">getOrCreate</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">activity</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">glide</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">activity</span><span class="p">.</span><span class="na">getLifecycle</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">activity</span><span class="p">.</span><span class="na">getSupportFragmentManager</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">isActivityVisible</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>首先判断当前线程如果不是主线程，则通过Application创建RequestManager，接着判断activity是否可见，可见的条件是activity没有finish掉。最终通过LifecycleRequestManagerRetriever的getOrCreate方法来创建RequestManager：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">RequestManager</span><span class="w"> </span><span class="nf">getOrCreate</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Glide</span><span class="w"> </span><span class="n">glide</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">Lifecycle</span><span class="w"> </span><span class="n">lifecycle</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">FragmentManager</span><span class="w"> </span><span class="n">childFragmentManager</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isParentVisible</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Util</span><span class="p">.</span><span class="na">assertMainThread</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">RequestManager</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getOnly</span><span class="p">(</span><span class="n">lifecycle</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">LifecycleLifecycle</span><span class="w"> </span><span class="n">glideLifecycle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">LifecycleLifecycle</span><span class="p">(</span><span class="n">lifecycle</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">factory</span><span class="p">.</span><span class="na">build</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">glide</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">glideLifecycle</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">new</span><span class="w"> </span><span class="n">SupportRequestManagerTreeNode</span><span class="p">(</span><span class="n">childFragmentManager</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">context</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">lifecycleToRequestManager</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">lifecycle</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">glideLifecycle</span><span class="p">.</span><span class="na">addListener</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">LifecycleListener</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onStart</span><span class="p">()</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onStop</span><span class="p">()</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onDestroy</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">lifecycleToRequestManager</span><span class="p">.</span><span class="na">remove</span><span class="p">(</span><span class="n">lifecycle</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">});</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isParentVisible</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">result</span><span class="p">.</span><span class="na">onStart</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>先通过getOnly从lifecycleToRequestManager这个map中取，key是activity的lifecycle对象，如果没有取到则通过factory.build来创建RequestManager，factory是RequestManagerFactory接口，它是在glide初始化的时候构造的。LifecycleRequestManagerRetriever中的factory是在RequestManagerRetriever构造方法中传进来的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="nf">RequestManagerRetriever</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">RequestManagerFactory</span><span class="w"> </span><span class="n">factory</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="na">factory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">factory</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">factory</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">DEFAULT_FACTORY</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">lifecycleRequestManagerRetriever</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">LifecycleRequestManagerRetriever</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="na">factory</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">frameWaiter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buildFrameWaiter</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>RequestManagerRetriever构造方法中默认传入的RequestManagerFactory是空的，因此会用DEFAULT_FACTORY：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">RequestManagerFactory</span><span class="w"> </span><span class="n">DEFAULT_FACTORY</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="n">RequestManagerFactory</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nd">@NonNull</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="kd">public</span><span class="w"> </span><span class="n">RequestManager</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Glide</span><span class="w"> </span><span class="n">glide</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Lifecycle</span><span class="w"> </span><span class="n">lifecycle</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">RequestManagerTreeNode</span><span class="w"> </span><span class="n">requestManagerTreeNode</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">RequestManager</span><span class="p">(</span><span class="n">glide</span><span class="p">,</span><span class="w"> </span><span class="n">lifecycle</span><span class="p">,</span><span class="w"> </span><span class="n">requestManagerTreeNode</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">};</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>直接new了一个RequestManager对象，可见典型的工厂模式创建对象。</p>
+<ul>
+<li>小结
+<ul>
+<li>Glide.with方法里面判断glide单例对象是否存在，如果不存在先在GlideBuilder的build方法中创建各种线程池，包括访问资源的线程池，缓存线程池，动画线程池等。然后创建Engine和RequestManagerRetriever对象，接着把创建的各种线程池，pool，Engine和RequestManagerRetriever都传入到Glide对象中，方便后面使用。上面在构建Glide之前会判断GeneratedAppGlideModule注解的类存不存在，它是通过注解来配置各种参数的类。</li>
+<li>构建完Glide对象后，接着通过RequestManagerRetriever的get方法创建RequestManager，其中创建RequestManager的方式有Application，Fragment，Activity的形式，我们拿Activity的形式创建来说，如果当前线程不是主线程，则使用Application的形式来创建，因为非主线程是不带生命周期。接着通过LifecycleRequestManagerRetriever的getOrCreate方法来获取RequestManager，此处的LifecycleRequestManagerRetriever是在RequestManagerRetriever构造方法中创建的。</li>
+<li>LifecycleRequestManagerRetriever的getOrCreate方法中通过map存储了Lifecycle中的RequestManager，也就是说每一个Lifecycle对应一个RequestManager。首先判断该map中是否存在RequestManager，如果不存在，创建了一个LifecycleLifecycle，它是一个LifecycleObserver对象</li>
+</ul>
+</li>
+</ul>
 
 </section>
 
