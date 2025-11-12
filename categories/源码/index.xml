@@ -6400,7 +6400,14 @@ minusKey：如果传进来的key和自己相同，则返回EmptyCoroutineContext
         <pubDate>Fri, 25 Oct 2024 00:00:00 +0000</pubDate>
         
         <guid>http://xiangcman.xyz/p/android-context%E6%80%BB%E7%BB%93/</guid>
-        <description>&lt;h3 id=&#34;类图&#34;&gt;类图
+        <description>&lt;style&gt;
+    .red_font {
+    color: #ff0000;
+    font-weight: bold;
+    }
+&lt;/style&gt;
+&lt;p&gt;&lt;span class = &#34;red_font&#34;&gt;Context相关源码是在android33的版本上分析的。&lt;/span&gt;&lt;/p&gt;
+&lt;h3 id=&#34;类图&#34;&gt;类图
 &lt;/h3&gt;&lt;img src=context.png width=60% /&gt;
 &lt;h3 id=&#34;context创建&#34;&gt;Context创建
 &lt;/h3&gt;&lt;p&gt;Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建ContextImpl，我们可以在ActivityThread.performLaunchActivity中找到ContextImpl的创建：&lt;/p&gt;
