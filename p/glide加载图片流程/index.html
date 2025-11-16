@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-CN" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nglide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：\n">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nGlide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：\n">
 <title>Glide加载图片流程</title>
 
 <link rel='canonical' href='http://xiangcman.xyz/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Glide加载图片流程">
-<meta property='og:description' content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nglide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：\n">
+<meta property='og:description' content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nGlide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-05-22T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-05-22T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="Glide加载图片流程">
-<meta name="twitter:description" content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nglide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：\n">
+<meta name="twitter:description" content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nGlide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -230,7 +230,9 @@
   <ol>
     <li>
       <ol>
-        <li><a href="#glidewith">glide.with</a></li>
+        <li><a href="#glidewith">Glide.with</a></li>
+        <li><a href="#glidewithcontextloadurl">Glide.with(Context).load(url)</a></li>
+        <li><a href="#glidewithcontextloadurlintoimageview">Glide.with(Context).load(url).into(imageView)</a></li>
       </ol>
     </li>
   </ol>
@@ -301,7 +303,7 @@
 
 
                 <time class="article-time--reading">
-                    4 minute read
+                    9 minute read
                 </time>
             </div>
         
@@ -325,7 +327,7 @@
 </style>
 <p><span class = "red_font">glide源码是在4.16.0的版本上分析的。</span>
 平常我们使用glide时候直接<code>glide.with(activity).load(url).into(imageview)</code>加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。</p>
-<h3 id="glidewith">glide.with
+<h3 id="glidewith">Glide.with
 </h3><p>我们是基于参数是activity的重载方法：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -766,11 +768,807 @@
 <ul>
 <li>Glide.with方法里面判断glide单例对象是否存在，如果不存在先在GlideBuilder的build方法中创建各种线程池，包括访问资源的线程池，缓存线程池，动画线程池等。然后创建Engine和RequestManagerRetriever对象，接着把创建的各种线程池，pool，Engine和RequestManagerRetriever都传入到Glide对象中，方便后面使用。上面在构建Glide之前会判断GeneratedAppGlideModule注解的类存不存在，它是通过注解来配置各种参数的类。</li>
 <li>构建完Glide对象后，接着通过RequestManagerRetriever的get方法创建RequestManager，其中创建RequestManager的方式有Application，Fragment，Activity的形式，我们拿Activity的形式创建来说，如果当前线程不是主线程，则使用Application的形式来创建，因为非主线程是不带生命周期。接着通过LifecycleRequestManagerRetriever的getOrCreate方法来获取RequestManager，此处的LifecycleRequestManagerRetriever是在RequestManagerRetriever构造方法中创建的。</li>
-<li>LifecycleRequestManagerRetriever的getOrCreate方法中通过map存储了Lifecycle中的RequestManager，也就是说每一个Lifecycle对应一个RequestManager。首先判断该map中是否存在RequestManager，如果不存在，创建了一个LifecycleLifecycle，它是一个LifecycleObserver对象</li>
+<li>LifecycleRequestManagerRetriever的getOrCreate方法中通过map存储了Lifecycle中的RequestManager，也就是说每一个Lifecycle对应一个RequestManager。首先判断该map中是否存在RequestManager，如果不存在，创建了一个LifecycleLifecycle，它是一个LifecycleObserver对象，它通过监听Activity等类型的Lifecycle的生命周期，来管理Lifecycle和RequestManager。</li>
+<li>上面就是整个Glide.with创建RequestManager的流程。</li>
 </ul>
 </li>
 </ul>
-
+<h3 id="glidewithcontextloadurl">Glide.with(Context).load(url)
+</h3><p>上面分析了Glide.with是创建RequestManager的过程，那其实load方法也就对应了RequestManager的load方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;</span><span class="n">Drawable</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">string</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">asDrawable</span><span class="p">().</span><span class="na">load</span><span class="p">(</span><span class="n">string</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们通过传进来的string作为讲解，首先调用了asDrawable方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;</span><span class="n">Drawable</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">asDrawable</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">as</span><span class="p">(</span><span class="n">Drawable</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">ResourceType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;</span><span class="n">ResourceType</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">as</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;</span><span class="n">ResourceType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">resourceClass</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="n">glide</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">resourceClass</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>将Drawable作为RequestBuilder的泛型，并返回了RequestBuilder实例，接着看RequestBuilder的load方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">string</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">loadGeneric</span><span class="p">(</span><span class="n">string</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">loadGeneric</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">model</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isAutoCloneEnabled</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">clone</span><span class="p">().</span><span class="na">loadGeneric</span><span class="p">(</span><span class="n">model</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">isModelSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">selfOrThrowIfLocked</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>load方法将url传给了RequestBuilder的model属性，然后返回自己。</p>
+<h3 id="glidewithcontextloadurlintoimageview">Glide.with(Context).load(url).into(imageView)
+</h3><p>调完load方法，实际就返回了RequestBuilder对象了。所以into就是它的方法了：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">ViewTarget</span><span class="o">&lt;</span><span class="n">ImageView</span><span class="p">,</span><span class="w"> </span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">into</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ImageView</span><span class="w"> </span><span class="n">view</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Util</span><span class="p">.</span><span class="na">assertMainThread</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">BaseRequestOptions</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">requestOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">requestOptions</span><span class="p">.</span><span class="na">isTransformationSet</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">isTransformationAllowed</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">getScaleType</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">view</span><span class="p">.</span><span class="na">getScaleType</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="n">CENTER_CROP</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">requestOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">clone</span><span class="p">().</span><span class="na">optionalCenterCrop</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="n">CENTER_INSIDE</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">requestOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">clone</span><span class="p">().</span><span class="na">optionalCenterInside</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="n">FIT_CENTER</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="n">FIT_START</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="n">FIT_END</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">requestOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">clone</span><span class="p">().</span><span class="na">optionalFitCenter</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="n">FIT_XY</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">requestOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">clone</span><span class="p">().</span><span class="na">optionalCenterInside</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="n">CENTER</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">case</span><span class="w"> </span><span class="n">MATRIX</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">default</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">into</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">glideContext</span><span class="p">.</span><span class="na">buildImageViewTarget</span><span class="p">(</span><span class="n">view</span><span class="p">,</span><span class="w"> </span><span class="n">transcodeClass</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="cm">/* targetListener= */</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Executors</span><span class="p">.</span><span class="na">mainThreadExecutor</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>RequestBbuilder继承自BaseRequestOptions，在into里面首先通过imageView的scaleType，然后生成不同的BaseRequestOptions，然后通过glideContext.buildImageViewTarget方法将ImageView包装成ViewTarget：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">X</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ViewTarget</span><span class="o">&lt;</span><span class="n">ImageView</span><span class="p">,</span><span class="w"> </span><span class="n">X</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">buildImageViewTarget</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ImageView</span><span class="w"> </span><span class="n">imageView</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;</span><span class="n">X</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transcodeClass</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">imageViewTargetFactory</span><span class="p">.</span><span class="na">buildTarget</span><span class="p">(</span><span class="n">imageView</span><span class="p">,</span><span class="w"> </span><span class="n">transcodeClass</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ViewTarget</span><span class="o">&lt;</span><span class="n">ImageView</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">buildTarget</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ImageView</span><span class="w"> </span><span class="n">view</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">clazz</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Bitmap</span><span class="p">.</span><span class="na">class</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">clazz</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">ViewTarget</span><span class="o">&lt;</span><span class="n">ImageView</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BitmapImageViewTarget</span><span class="p">(</span><span class="n">view</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Drawable</span><span class="p">.</span><span class="na">class</span><span class="p">.</span><span class="na">isAssignableFrom</span><span class="p">(</span><span class="n">clazz</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">ViewTarget</span><span class="o">&lt;</span><span class="n">ImageView</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">DrawableImageViewTarget</span><span class="p">(</span><span class="n">view</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面分析过clazz传进来的是Drawable.class，所以会包装成DrawableImageViewTarget。
+接着调用了另外一个into方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="o">&lt;</span><span class="n">Y</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">Target</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">Y</span><span class="w"> </span><span class="nf">into</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Y</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">RequestListener</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">targetListener</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">BaseRequestOptions</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Executor</span><span class="w"> </span><span class="n">callbackExecutor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Request</span><span class="w"> </span><span class="n">request</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buildRequest</span><span class="p">(</span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="n">targetListener</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Request</span><span class="w"> </span><span class="n">previous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">target</span><span class="p">.</span><span class="na">getRequest</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="na">isEquivalentTo</span><span class="p">(</span><span class="n">previous</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">isSkipMemoryCacheWithCompletePreviousRequest</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">previous</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">Preconditions</span><span class="p">.</span><span class="na">checkNotNull</span><span class="p">(</span><span class="n">previous</span><span class="p">).</span><span class="na">isRunning</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">previous</span><span class="p">.</span><span class="na">begin</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">target</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">requestManager</span><span class="p">.</span><span class="na">clear</span><span class="p">(</span><span class="n">target</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">target</span><span class="p">.</span><span class="na">setRequest</span><span class="p">(</span><span class="n">request</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">requestManager</span><span class="p">.</span><span class="na">track</span><span class="p">(</span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="n">request</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">target</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>首先调用了buildRequest方法来构建Request，然后获取target的request和当前request是不是同一个，如果是的话，则直接返回已经存在的target，否则调用requestManager.track，我们先看buildRequest：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="nf">buildRequest</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Target</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">RequestListener</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">targetListener</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">BaseRequestOptions</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">requestOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Executor</span><span class="w"> </span><span class="n">callbackExecutor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">buildRequestRecursive</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="cm">/* requestLock= */</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Object</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">target</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">targetListener</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="cm">/* parentCoordinator= */</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">transitionOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">getPriority</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">getOverrideWidth</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">getOverrideHeight</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="nf">buildRequestRecursive</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="n">requestLock</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Target</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">RequestListener</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">targetListener</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">RequestCoordinator</span><span class="w"> </span><span class="n">parentCoordinator</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">TransitionOptions</span><span class="o">&lt;?</span><span class="p">,</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="kd">super</span><span class="w"> </span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transitionOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Priority</span><span class="w"> </span><span class="n">priority</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">overrideWidth</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">overrideHeight</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">BaseRequestOptions</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">requestOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Executor</span><span class="w"> </span><span class="n">callbackExecutor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Request</span><span class="w"> </span><span class="n">mainRequest</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">buildThumbnailRequestRecursive</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">requestLock</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">target</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">targetListener</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">parentCoordinator</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">transitionOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">priority</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">overrideWidth</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">overrideHeight</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">requestOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">mainRequest</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面的buildRequestRecursive方法省去了errorBuilder相关的处理，默认是不用去处理的，所以可以看到上面构建Request实际调用了buildThumbnailRequestRecursive方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="nf">buildThumbnailRequestRecursive</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="n">requestLock</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Target</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">RequestListener</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">targetListener</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">RequestCoordinator</span><span class="w"> </span><span class="n">parentCoordinator</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">TransitionOptions</span><span class="o">&lt;?</span><span class="p">,</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="kd">super</span><span class="w"> </span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transitionOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Priority</span><span class="w"> </span><span class="n">priority</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">overrideWidth</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">overrideHeight</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">BaseRequestOptions</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">requestOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Executor</span><span class="w"> </span><span class="n">callbackExecutor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">obtainRequest</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestLock</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">target</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">targetListener</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">parentCoordinator</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">transitionOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">priority</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">overrideWidth</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">overrideHeight</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面也是省去了其他相关逻辑，所以我们直接看obtainRequest方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="nf">obtainRequest</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="n">requestLock</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Target</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">RequestListener</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">targetListener</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">BaseRequestOptions</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">requestOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">RequestCoordinator</span><span class="w"> </span><span class="n">requestCoordinator</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">TransitionOptions</span><span class="o">&lt;?</span><span class="p">,</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="kd">super</span><span class="w"> </span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transitionOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Priority</span><span class="w"> </span><span class="n">priority</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">overrideWidth</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">overrideHeight</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Executor</span><span class="w"> </span><span class="n">callbackExecutor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">SingleRequest</span><span class="p">.</span><span class="na">obtain</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">context</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">glideContext</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestLock</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">model</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">transcodeClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">overrideWidth</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">overrideHeight</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">priority</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">target</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">targetListener</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestListeners</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestCoordinator</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">glideContext</span><span class="p">.</span><span class="na">getEngine</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">transitionOptions</span><span class="p">.</span><span class="na">getTransitionFactory</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">SingleRequest</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">obtain</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">GlideContext</span><span class="w"> </span><span class="n">glideContext</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="n">requestLock</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Class</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transcodeClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">BaseRequestOptions</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">requestOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">overrideWidth</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">overrideHeight</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Priority</span><span class="w"> </span><span class="n">priority</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Target</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">RequestListener</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">targetListener</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">RequestListener</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">requestListeners</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">RequestCoordinator</span><span class="w"> </span><span class="n">requestCoordinator</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Engine</span><span class="w"> </span><span class="n">engine</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">TransitionFactory</span><span class="o">&lt;?</span><span class="w"> </span><span class="kd">super</span><span class="w"> </span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">animationFactory</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Executor</span><span class="w"> </span><span class="n">callbackExecutor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SingleRequest</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">context</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">glideContext</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestLock</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">model</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">transcodeClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestOptions</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">overrideWidth</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">overrideHeight</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">priority</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">target</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">targetListener</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestListeners</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestCoordinator</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">engine</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">animationFactory</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面都没什么好说的，直接new了一个SingleRequest，此处SingleRequest的发型是Drawable，这是在上面分析load的时候知道的，先明确这点。我们再回到上面RequestBuilder的into方法，先构建一个SingleRequest，然后看当前target的request和构建的SingleRequest是不是同一个，如果是直接返回，如果不是调用requestManager.track，先看target.getRequest，前面分析过target是一个DrawableImageViewTarget，它的父父类ViewTarget：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="nf">getRequest</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Object</span><span class="w"> </span><span class="n">tag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getTag</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Request</span><span class="w"> </span><span class="n">request</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tag</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tag</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">Request</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">request</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">Request</span><span class="p">)</span><span class="w"> </span><span class="n">tag</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IllegalArgumentException</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="s">&#34;You must not call setTag() on a view Glide is targeting&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">request</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">tagId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">id</span><span class="p">.</span><span class="na">glide_custom_view_target_tag</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="nf">getTag</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">getTag</span><span class="p">(</span><span class="n">tagId</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">setRequest</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="n">request</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">setTag</span><span class="p">(</span><span class="n">request</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">setTag</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">tag</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">isTagUsedAtLeastOnce</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">view</span><span class="p">.</span><span class="na">setTag</span><span class="p">(</span><span class="n">tagId</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以看到request是塞入到view的tag上，并且该tag是绑定了一个id。接着看下requestManager.track：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">synchronized</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">track</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Target</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="n">request</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">targetTracker</span><span class="p">.</span><span class="na">track</span><span class="p">(</span><span class="n">target</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">requestTracker</span><span class="p">.</span><span class="na">runRequest</span><span class="p">(</span><span class="n">request</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>将target放到TargetTracker中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Set</span><span class="o">&lt;</span><span class="n">Target</span><span class="o">&lt;?&gt;&gt;</span><span class="w"> </span><span class="n">targets</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Collections</span><span class="p">.</span><span class="na">newSetFromMap</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">WeakHashMap</span><span class="o">&lt;</span><span class="n">Target</span><span class="o">&lt;?&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">Boolean</span><span class="o">&gt;</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">track</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Target</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">target</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">targets</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">target</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>将target只是放到set集合中，后面会用到，先不用管。重要看RequestTracker的runRequest方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Set</span><span class="o">&lt;</span><span class="n">Request</span><span class="o">&gt;</span><span class="w"> </span><span class="n">requests</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Collections</span><span class="p">.</span><span class="na">newSetFromMap</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">WeakHashMap</span><span class="o">&lt;</span><span class="n">Request</span><span class="p">,</span><span class="w"> </span><span class="n">Boolean</span><span class="o">&gt;</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">runRequest</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="n">request</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">requests</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">request</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">isPaused</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">request</span><span class="p">.</span><span class="na">begin</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">request</span><span class="p">.</span><span class="na">clear</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">pendingRequests</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">request</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>首先将request也是放到set集合中，接着判断当前是不是pause状态，默认不是pause状态，则调用request的begin方法，前面分析过该request实际是SingleRequest：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">begin</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">synchronized</span><span class="w"> </span><span class="p">(</span><span class="n">requestLock</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">experimentalNotifyRequestStarted</span><span class="p">(</span><span class="n">model</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Status</span><span class="p">.</span><span class="na">WAITING_FOR_SIZE</span><span class="p">;</span><span class="c1">//默认状态</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//如果重写了override方法来制定加载图片的大小</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Util</span><span class="p">.</span><span class="na">isValidDimensions</span><span class="p">(</span><span class="n">overrideWidth</span><span class="p">,</span><span class="w"> </span><span class="n">overrideHeight</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">onSizeReady</span><span class="p">(</span><span class="n">overrideWidth</span><span class="p">,</span><span class="w"> </span><span class="n">overrideHeight</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//如果没有制定大小走此处</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">target</span><span class="p">.</span><span class="na">getSize</span><span class="p">(</span><span class="k">this</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">status</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Status</span><span class="p">.</span><span class="na">RUNNING</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Status</span><span class="p">.</span><span class="na">WAITING_FOR_SIZE</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">canNotifyStatusChanged</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="c1">//回调start的状态</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">target</span><span class="p">.</span><span class="na">onLoadStarted</span><span class="p">(</span><span class="n">getPlaceholderDrawable</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果没有通过override方法制定加载图片的大小，则调用target.getSize方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">getSize</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">SizeReadyCallback</span><span class="w"> </span><span class="n">cb</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">sizeDeterminer</span><span class="p">.</span><span class="na">getSize</span><span class="p">(</span><span class="n">cb</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>调用了内部类SizeDeterminer的getSize方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">getSize</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">SizeReadyCallback</span><span class="w"> </span><span class="n">cb</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//获取target的宽高</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">currentWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getTargetWidth</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">currentHeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getTargetHeight</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//如果宽高校验通过则回调到SingleRequest的onSizeReady</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isViewStateAndSizeValid</span><span class="p">(</span><span class="n">currentWidth</span><span class="p">,</span><span class="w"> </span><span class="n">currentHeight</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cb</span><span class="p">.</span><span class="na">onSizeReady</span><span class="p">(</span><span class="n">currentWidth</span><span class="p">,</span><span class="w"> </span><span class="n">currentHeight</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">cbs</span><span class="p">.</span><span class="na">contains</span><span class="p">(</span><span class="n">cb</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cbs</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">cb</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">layoutListener</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ViewTreeObserver</span><span class="w"> </span><span class="n">observer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">getViewTreeObserver</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">layoutListener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SizeDeterminerLayoutListener</span><span class="p">(</span><span class="k">this</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//否则监听绘制的前置事件</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">observer</span><span class="p">.</span><span class="na">addOnPreDrawListener</span><span class="p">(</span><span class="n">layoutListener</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>获取target的宽高，如果宽高校验通过则回调到SingleRequest中，否则监听target的绘制前置事件。我们看下如何获取宽高的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getTargetWidth</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">horizontalPadding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">getPaddingLeft</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">getPaddingRight</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">LayoutParams</span><span class="w"> </span><span class="n">layoutParams</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">getLayoutParams</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">layoutParamSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">layoutParams</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">layoutParams</span><span class="p">.</span><span class="na">width</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">PENDING_SIZE</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">getTargetDimen</span><span class="p">(</span><span class="n">view</span><span class="p">.</span><span class="na">getWidth</span><span class="p">(),</span><span class="w"> </span><span class="n">layoutParamSize</span><span class="p">,</span><span class="w"> </span><span class="n">horizontalPadding</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getTargetDimen</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">viewSize</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">paramSize</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">paddingSize</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">adjustedParamSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">paramSize</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">paddingSize</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">adjustedParamSize</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">adjustedParamSize</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">waitForLayout</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">isLayoutRequested</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">PENDING_SIZE</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">adjustedViewSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewSize</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">paddingSize</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">adjustedViewSize</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">adjustedViewSize</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">view</span><span class="p">.</span><span class="na">isLayoutRequested</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">paramSize</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">LayoutParams</span><span class="p">.</span><span class="na">WRAP_CONTENT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">getMaxDisplayLength</span><span class="p">(</span><span class="n">view</span><span class="p">.</span><span class="na">getContext</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PENDING_SIZE</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>
 </section>
 
 
