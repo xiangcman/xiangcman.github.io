@@ -303,7 +303,7 @@
 
 
                 <time class="article-time--reading">
-                    9 minute read
+                    14 minute read
                 </time>
             </div>
         
@@ -1538,6 +1538,10 @@
 </span><span class="lnt">24
 </span><span class="lnt">25
 </span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getTargetWidth</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -1549,22 +1553,882 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getTargetDimen</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">viewSize</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">paramSize</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">paddingSize</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">adjustedParamSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">paramSize</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">paddingSize</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//如果layoutParams中设置了精确宽度</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">adjustedParamSize</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">adjustedParamSize</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//默认不走这里</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">waitForLayout</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">isLayoutRequested</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">PENDING_SIZE</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//默认viewSize等于0，也不走这里</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">adjustedViewSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewSize</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">paddingSize</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">adjustedViewSize</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">adjustedViewSize</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//如果imageView没有经过测量，并且宽度设置的是WRAP_CONTENT，走这里</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">view</span><span class="p">.</span><span class="na">isLayoutRequested</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">paramSize</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">LayoutParams</span><span class="p">.</span><span class="na">WRAP_CONTENT</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">getMaxDisplayLength</span><span class="p">(</span><span class="n">view</span><span class="p">.</span><span class="na">getContext</span><span class="p">());</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PENDING_SIZE</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们只分析宽度和高度为LayoutParams.WRAP_CONTENT情况，此时会调getMaxDisplayLength：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getMaxDisplayLength</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">maxDisplayLength</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">WindowManager</span><span class="w"> </span><span class="n">windowManager</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">(</span><span class="n">WindowManager</span><span class="p">)</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="na">getSystemService</span><span class="p">(</span><span class="n">Context</span><span class="p">.</span><span class="na">WINDOW_SERVICE</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Display</span><span class="w"> </span><span class="n">display</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Preconditions</span><span class="p">.</span><span class="na">checkNotNull</span><span class="p">(</span><span class="n">windowManager</span><span class="p">).</span><span class="na">getDefaultDisplay</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Point</span><span class="w"> </span><span class="n">displayDimensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Point</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">display</span><span class="p">.</span><span class="na">getSize</span><span class="p">(</span><span class="n">displayDimensions</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">maxDisplayLength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Math</span><span class="p">.</span><span class="na">max</span><span class="p">(</span><span class="n">displayDimensions</span><span class="p">.</span><span class="na">x</span><span class="p">,</span><span class="w"> </span><span class="n">displayDimensions</span><span class="p">.</span><span class="na">y</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">maxDisplayLength</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以看到获取的是屏幕的宽高，所以如果没有imageView定宽高，并且还没到测量的时候，此时设置的初始宽高是屏幕的宽高。获取到默认宽高后会回调到SingleRequest的onSizeReady：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onSizeReady</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">height</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">synchronized</span><span class="w"> </span><span class="p">(</span><span class="n">requestLock</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">Status</span><span class="p">.</span><span class="na">WAITING_FOR_SIZE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Status</span><span class="p">.</span><span class="na">RUNNING</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">loadStatus</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">engine</span><span class="p">.</span><span class="na">load</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">glideContext</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">model</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">getSignature</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="na">width</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="na">height</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">getResourceClass</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">transcodeClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">priority</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">getDiskCacheStrategy</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">getTransformations</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">isTransformationRequired</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">isScaleOnlyOrNoTransform</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">getOptions</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">isMemoryCacheable</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">getUseUnlimitedSourceGeneratorsPool</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">getUseAnimationPool</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">getOnlyRetrieveFromCache</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">this</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">Status</span><span class="p">.</span><span class="na">RUNNING</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">loadStatus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>调用了Engine的load方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">LoadStatus</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">GlideContext</span><span class="w"> </span><span class="n">glideContext</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Key</span><span class="w"> </span><span class="n">signature</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">resourceClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Class</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transcodeClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Priority</span><span class="w"> </span><span class="n">priority</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">DiskCacheStrategy</span><span class="w"> </span><span class="n">diskCacheStrategy</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Map</span><span class="o">&lt;</span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">Transformation</span><span class="o">&lt;?&gt;&gt;</span><span class="w"> </span><span class="n">transformations</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isTransformationRequired</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isScaleOnlyOrNoTransform</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Options</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isMemoryCacheable</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">useUnlimitedSourceExecutorPool</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">useAnimationPool</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">onlyRetrieveFromCache</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ResourceCallback</span><span class="w"> </span><span class="n">cb</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Executor</span><span class="w"> </span><span class="n">callbackExecutor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//构建EngineKey，由于不需要外部去控制key，所以keyFactory是一个普通的factory，不需要进行扩展</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">EngineKey</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">keyFactory</span><span class="p">.</span><span class="na">buildKey</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">model</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">signature</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">width</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">height</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">transformations</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">resourceClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">transcodeClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">options</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">memoryResource</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">synchronized</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//从内存中加载</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">memoryResource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadFromMemory</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">isMemoryCacheable</span><span class="p">,</span><span class="w"> </span><span class="n">startTime</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">memoryResource</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//如果内存中不存在，走这里</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">waitForExistingOrStartNewJob</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">glideContext</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">model</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">signature</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">width</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">height</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">resourceClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">transcodeClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">priority</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">diskCacheStrategy</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">transformations</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">isTransformationRequired</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">isScaleOnlyOrNoTransform</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">options</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">isMemoryCacheable</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">useUnlimitedSourceExecutorPool</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">useAnimationPool</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">onlyRetrieveFromCache</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">cb</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">callbackExecutor</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">key</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">startTime</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">cb</span><span class="p">.</span><span class="na">onResourceReady</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">memoryResource</span><span class="p">,</span><span class="w"> </span><span class="n">DataSource</span><span class="p">.</span><span class="na">MEMORY_CACHE</span><span class="p">,</span><span class="w"> </span><span class="cm">/* isLoadedFromAlternateCacheKey= */</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>先不用管内存加载这块，直接看waitForExistingOrStartNewJob方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">LoadStatus</span><span class="w"> </span><span class="nf">waitForExistingOrStartNewJob</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">GlideContext</span><span class="w"> </span><span class="n">glideContext</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Key</span><span class="w"> </span><span class="n">signature</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">resourceClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Class</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transcodeClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Priority</span><span class="w"> </span><span class="n">priority</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">DiskCacheStrategy</span><span class="w"> </span><span class="n">diskCacheStrategy</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Map</span><span class="o">&lt;</span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">Transformation</span><span class="o">&lt;?&gt;&gt;</span><span class="w"> </span><span class="n">transformations</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isTransformationRequired</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isScaleOnlyOrNoTransform</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Options</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isMemoryCacheable</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">useUnlimitedSourceExecutorPool</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">useAnimationPool</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">onlyRetrieveFromCache</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ResourceCallback</span><span class="w"> </span><span class="n">cb</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Executor</span><span class="w"> </span><span class="n">callbackExecutor</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">EngineKey</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="n">startTime</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//从已存在的job列表中找相同的EngineJob</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">EngineJob</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">current</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jobs</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">onlyRetrieveFromCache</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">current</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">current</span><span class="p">.</span><span class="na">addCallback</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span><span class="w"> </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">LoadStatus</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span><span class="w"> </span><span class="n">current</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//如果没有找到相同的EngineJob，则构建一个新的出来</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">EngineJob</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">engineJob</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">engineJobFactory</span><span class="p">.</span><span class="na">build</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">key</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">isMemoryCacheable</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">useUnlimitedSourceExecutorPool</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">useAnimationPool</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">onlyRetrieveFromCache</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//构建DecodeJob</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">DecodeJob</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">decodeJob</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">decodeJobFactory</span><span class="p">.</span><span class="na">build</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">glideContext</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">model</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">key</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">signature</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">width</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">height</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">resourceClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">transcodeClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">priority</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">diskCacheStrategy</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">transformations</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">isTransformationRequired</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">isScaleOnlyOrNoTransform</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">onlyRetrieveFromCache</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">options</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">engineJob</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//将构建好的EngineJob放到job列表中</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">jobs</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">engineJob</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//将cb添加到EngineJob中作为回调，这里的cb是前面的SingleRequest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">engineJob</span><span class="p">.</span><span class="na">addCallback</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span><span class="w"> </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//触发加载逻辑</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">engineJob</span><span class="p">.</span><span class="na">start</span><span class="p">(</span><span class="n">decodeJob</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">LoadStatus</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span><span class="w"> </span><span class="n">engineJob</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面创建EngineJob和DecodeJob，从名字看EngineJob是专门用来加载主逻辑的Job，DecodeJob是解码用的。先不管它们是怎么创建的，后面会讲到，直接看EngineJob的start方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">synchronized</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="n">DecodeJob</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">decodeJob</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="na">decodeJob</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">decodeJob</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">GlideExecutor</span><span class="w"> </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">decodeJob</span><span class="p">.</span><span class="na">willDecodeFromCache</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">diskCacheExecutor</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">getActiveSourceExecutor</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">executor</span><span class="p">.</span><span class="na">execute</span><span class="p">(</span><span class="n">decodeJob</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>此时将DecodeJob作为runnable放到线程池中执行，看下它的run方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">run</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">runWrapped</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>其余的代码删除掉了，只保留核心的方法调用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">runWrapped</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">runReason</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">INITIALIZE</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">stage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getNextStage</span><span class="p">(</span><span class="n">Stage</span><span class="p">.</span><span class="na">INITIALIZE</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">currentGenerator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getNextGenerator</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">runGenerators</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">SWITCH_TO_SOURCE_SERVICE</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">runGenerators</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">DECODE_DATA</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">decodeFromRetrievedData</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>runReason的默认值是INITIALIZE，然后调用getNextStage获取到当前stage，然后通过getNextGenerator获取下一个generator，然后调用runGenerators来执行generator，来看下这一段逻辑：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">Stage</span><span class="w"> </span><span class="nf">getNextStage</span><span class="p">(</span><span class="n">Stage</span><span class="w"> </span><span class="n">current</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">current</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">INITIALIZE</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">diskCacheStrategy</span><span class="p">.</span><span class="na">decodeCachedResource</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="o">?</span><span class="w"> </span><span class="n">Stage</span><span class="p">.</span><span class="na">RESOURCE_CACHE</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="p">:</span><span class="w"> </span><span class="n">getNextStage</span><span class="p">(</span><span class="n">Stage</span><span class="p">.</span><span class="na">RESOURCE_CACHE</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">RESOURCE_CACHE</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">diskCacheStrategy</span><span class="p">.</span><span class="na">decodeCachedData</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="o">?</span><span class="w"> </span><span class="n">Stage</span><span class="p">.</span><span class="na">DATA_CACHE</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="p">:</span><span class="w"> </span><span class="n">getNextStage</span><span class="p">(</span><span class="n">Stage</span><span class="p">.</span><span class="na">DATA_CACHE</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">DATA_CACHE</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">onlyRetrieveFromCache</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">Stage</span><span class="p">.</span><span class="na">FINISHED</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Stage</span><span class="p">.</span><span class="na">SOURCE</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">SOURCE</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">FINISHED</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">Stage</span><span class="p">.</span><span class="na">FINISHED</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">default</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IllegalArgumentException</span><span class="p">(</span><span class="s">&#34;Unrecognized stage: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">current</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>默认是支持decodeCachedResource的，它表示是否获取解码后的缓存资源，所以此时返回Stage.RESOURCE_CACHE，接着调用getNextGenerator方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">DataFetcherGenerator</span><span class="w"> </span><span class="nf">getNextGenerator</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">stage</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">RESOURCE_CACHE</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ResourceCacheGenerator</span><span class="p">(</span><span class="n">decodeHelper</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">DATA_CACHE</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">DataCacheGenerator</span><span class="p">(</span><span class="n">decodeHelper</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">SOURCE</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SourceGenerator</span><span class="p">(</span><span class="n">decodeHelper</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">FINISHED</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">default</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IllegalStateException</span><span class="p">(</span><span class="s">&#34;Unrecognized stage: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">stage</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>创建了ResourceCacheGenerator，然后调用runGenerators方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">runGenerators</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isStarted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//调用当前的generator，如果它的startNext方法返回false，则继续获取下一个stage，并继续调用下一个generator的startNext方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">isCancelled</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">currentGenerator</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">isStarted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">currentGenerator</span><span class="p">.</span><span class="na">startNext</span><span class="p">()))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">stage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getNextStage</span><span class="p">(</span><span class="n">stage</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">currentGenerator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getNextGenerator</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">stage</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Stage</span><span class="p">.</span><span class="na">SOURCE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">reschedule</span><span class="p">(</span><span class="n">RunReason</span><span class="p">.</span><span class="na">SWITCH_TO_SOURCE_SERVICE</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">stage</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Stage</span><span class="p">.</span><span class="na">FINISHED</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">isCancelled</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">isStarted</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">notifyFailed</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>我们直接看stage为SOURCE,generator直接是SourceGenerator时候，看下它的startNext方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">startNext</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//如果已经缓存上了，直接用缓存的数据</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dataToCache</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dataToCache</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">dataToCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isDataInCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cacheData</span><span class="p">(</span><span class="n">data</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">isDataInCache</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">IOException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//如果sourceCacheGenerator中能拿到数据直接返回</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sourceCacheGenerator</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">sourceCacheGenerator</span><span class="p">.</span><span class="na">startNext</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">sourceCacheGenerator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">loadData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="n">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//从DecodeHelper中获取loadData</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">started</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">hasNextModelLoader</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">loadData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">getLoadData</span><span class="p">().</span><span class="na">get</span><span class="p">(</span><span class="n">loadDataListIndex</span><span class="o">++</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">loadData</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">helper</span><span class="p">.</span><span class="na">getDiskCacheStrategy</span><span class="p">().</span><span class="na">isDataCacheable</span><span class="p">(</span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">.</span><span class="na">getDataSource</span><span class="p">())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="o">||</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">hasLoadPath</span><span class="p">(</span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">.</span><span class="na">getDataClass</span><span class="p">())))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//如果存在loadData则调该方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">startNextLoad</span><span class="p">(</span><span class="n">loadData</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">started</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>startNext中首先从DecodeHelper中获取到loadData，此处我们先不用管怎么获取到loadData，获取到loadData后调用startNextLoad方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">startNextLoad</span><span class="p">(</span><span class="kd">final</span><span class="w"> </span><span class="n">LoadData</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">toStart</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">.</span><span class="na">loadData</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">helper</span><span class="p">.</span><span class="na">getPriority</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">new</span><span class="w"> </span><span class="n">DataCallback</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onDataReady</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isCurrentRequest</span><span class="p">(</span><span class="n">toStart</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">onDataReadyInternal</span><span class="p">(</span><span class="n">toStart</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onLoadFailed</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isCurrentRequest</span><span class="p">(</span><span class="n">toStart</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">onLoadFailedInternal</span><span class="p">(</span><span class="n">toStart</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">});</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>此时调用loadData中的fetcher的loadData方法，此处的loadData.fetcher是谁呢？这个后面的章节再了解，先知道是HttpUrlFetcher，然后看下它的loadData方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">loadData</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Priority</span><span class="w"> </span><span class="n">priority</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">DataCallback</span><span class="o">&lt;?</span><span class="w"> </span><span class="kd">super</span><span class="w"> </span><span class="n">InputStream</span><span class="o">&gt;</span><span class="w"> </span><span class="n">callback</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">InputStream</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadDataWithRedirects</span><span class="p">(</span><span class="n">glideUrl</span><span class="p">.</span><span class="na">toURL</span><span class="p">(),</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="n">glideUrl</span><span class="p">.</span><span class="na">getHeaders</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">callback</span><span class="p">.</span><span class="na">onDataReady</span><span class="p">(</span><span class="n">result</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">IOException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">callback</span><span class="p">.</span><span class="na">onLoadFailed</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>调用了loadDataWithRedirects方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">InputStream</span><span class="w"> </span><span class="nf">loadDataWithRedirects</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">URL</span><span class="w"> </span><span class="n">url</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">redirects</span><span class="p">,</span><span class="w"> </span><span class="n">URL</span><span class="w"> </span><span class="n">lastUrl</span><span class="p">,</span><span class="w"> </span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">headers</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">HttpException</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">urlConnection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buildAndConfigureConnection</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="w"> </span><span class="n">headers</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">urlConnection</span><span class="p">.</span><span class="na">connect</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">urlConnection</span><span class="p">.</span><span class="na">getInputStream</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">IOException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">HttpException</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="s">&#34;Failed to connect or obtain data&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">getHttpStatusCodeOrInvalid</span><span class="p">(</span><span class="n">urlConnection</span><span class="p">),</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isCancelled</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">statusCode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getHttpStatusCodeOrInvalid</span><span class="p">(</span><span class="n">urlConnection</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isHttpOk</span><span class="p">(</span><span class="n">statusCode</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">getStreamForSuccessfulRequest</span><span class="p">(</span><span class="n">urlConnection</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>通过buildAndConfigureConnection创建了HttpURLConnection，接着通过code码解析对应的InputStream，结束后回调到SourceGenerator内部类DataCallback的onDataReady，然后回调到SourceGenerator的onDataReadyInternal：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">onDataReadyInternal</span><span class="p">(</span><span class="n">LoadData</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">loadData</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">DiskCacheStrategy</span><span class="w"> </span><span class="n">diskCacheStrategy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">getDiskCacheStrategy</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">diskCacheStrategy</span><span class="p">.</span><span class="na">isDataCacheable</span><span class="p">(</span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">.</span><span class="na">getDataSource</span><span class="p">()))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">dataToCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cb</span><span class="p">.</span><span class="na">reschedule</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cb</span><span class="p">.</span><span class="na">onDataFetcherReady</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">loadData</span><span class="p">.</span><span class="na">sourceKey</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">data</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">.</span><span class="na">getDataSource</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">originalKey</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>将获取到的数据给到dataToCache，并且回调到DecodeJob的reschedule方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">reschedule</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">reschedule</span><span class="p">(</span><span class="n">RunReason</span><span class="p">.</span><span class="na">SWITCH_TO_SOURCE_SERVICE</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">reschedule</span><span class="p">(</span><span class="n">RunReason</span><span class="w"> </span><span class="n">runReason</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="na">runReason</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runReason</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">callback</span><span class="p">.</span><span class="na">reschedule</span><span class="p">(</span><span class="k">this</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>此处的callback是EngineJob，继续回调到reschedule：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">reschedule</span><span class="p">(</span><span class="n">DecodeJob</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">job</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">getActiveSourceExecutor</span><span class="p">().</span><span class="na">execute</span><span class="p">(</span><span class="n">job</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>此处又是一个线程池，再次执行DecodeJob，注意了此时DecodeJob中的runReason是SWITCH_TO_SOURCE_SERVICE，又回到刚才说的runWrapped方法中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">runWrapped</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">runReason</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="n">SWITCH_TO_SOURCE_SERVICE</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">runGenerators</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>

@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-CN" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content=" Context相关源码是在android33的版本上分析的。\n类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建ContextImpl，我们可以在ActivityThread.performLaunchActivity中找到ContextImpl的创建：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 private Activity performLaunchActivity(ActivityClientRecord r, Intent customIntent) { ContextImpl appContext = createBaseContextForActivity(r); Activity activity = null; java.lang.ClassLoader cl = appContext.getClassLoader(); activity = mInstrumentation.newActivity( cl, component.getClassName(), r.intent); appContext.setOuterContext(activity); activity.attach(appContext, this, getInstrumentation(), r.token, r.ident, app, r.intent, r.activityInfo, title, r.parent, r.embeddedID, r.lastNonConfigurationInstances, config, r.referrer, r.voiceInteractor, window, r.activityConfigCallback, r.assistToken, r.shareableActivityToken); return activity; } 接着会调用contextimpl的setOuterContext，传入的是activity。\n">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content=" Context相关源码是在android33的版本上分析的。\n类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建ContextImpl，我们可以在ActivityThread.performLaunchActivity中找到ContextImpl的创建：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 private Activity performLaunchActivity(ActivityClientRecord r, Intent customIntent) { ContextImpl appContext = createBaseContextForActivity(r); Activity activity = null; java.lang.ClassLoader cl = appContext.getClassLoader(); activity = mInstrumentation.newActivity( cl, component.getClassName(), r.intent); appContext.setOuterContext(activity); activity.attach(appContext, this, getInstrumentation(), r.token, r.ident, app, r.intent, r.activityInfo, title, r.parent, r.embeddedID, r.lastNonConfigurationInstances, config, r.referrer, r.voiceInteractor, window, r.activityConfigCallback, r.assistToken, r.shareableActivityToken); return activity; } 通过createBaseContextForActivity方法创建了ContextImpl：\n">
 <title>Android context总结</title>
 
 <link rel='canonical' href='http://xiangcman.xyz/p/android-context%E6%80%BB%E7%BB%93/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Android context总结">
-<meta property='og:description' content=" Context相关源码是在android33的版本上分析的。\n类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建ContextImpl，我们可以在ActivityThread.performLaunchActivity中找到ContextImpl的创建：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 private Activity performLaunchActivity(ActivityClientRecord r, Intent customIntent) { ContextImpl appContext = createBaseContextForActivity(r); Activity activity = null; java.lang.ClassLoader cl = appContext.getClassLoader(); activity = mInstrumentation.newActivity( cl, component.getClassName(), r.intent); appContext.setOuterContext(activity); activity.attach(appContext, this, getInstrumentation(), r.token, r.ident, app, r.intent, r.activityInfo, title, r.parent, r.embeddedID, r.lastNonConfigurationInstances, config, r.referrer, r.voiceInteractor, window, r.activityConfigCallback, r.assistToken, r.shareableActivityToken); return activity; } 接着会调用contextimpl的setOuterContext，传入的是activity。\n">
+<meta property='og:description' content=" Context相关源码是在android33的版本上分析的。\n类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建ContextImpl，我们可以在ActivityThread.performLaunchActivity中找到ContextImpl的创建：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 private Activity performLaunchActivity(ActivityClientRecord r, Intent customIntent) { ContextImpl appContext = createBaseContextForActivity(r); Activity activity = null; java.lang.ClassLoader cl = appContext.getClassLoader(); activity = mInstrumentation.newActivity( cl, component.getClassName(), r.intent); appContext.setOuterContext(activity); activity.attach(appContext, this, getInstrumentation(), r.token, r.ident, app, r.intent, r.activityInfo, title, r.parent, r.embeddedID, r.lastNonConfigurationInstances, config, r.referrer, r.voiceInteractor, window, r.activityConfigCallback, r.assistToken, r.shareableActivityToken); return activity; } 通过createBaseContextForActivity方法创建了ContextImpl：\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/android-context%E6%80%BB%E7%BB%93/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-10-25T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-10-25T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="Android context总结">
-<meta name="twitter:description" content=" Context相关源码是在android33的版本上分析的。\n类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建ContextImpl，我们可以在ActivityThread.performLaunchActivity中找到ContextImpl的创建：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 private Activity performLaunchActivity(ActivityClientRecord r, Intent customIntent) { ContextImpl appContext = createBaseContextForActivity(r); Activity activity = null; java.lang.ClassLoader cl = appContext.getClassLoader(); activity = mInstrumentation.newActivity( cl, component.getClassName(), r.intent); appContext.setOuterContext(activity); activity.attach(appContext, this, getInstrumentation(), r.token, r.ident, app, r.intent, r.activityInfo, title, r.parent, r.embeddedID, r.lastNonConfigurationInstances, config, r.referrer, r.voiceInteractor, window, r.activityConfigCallback, r.assistToken, r.shareableActivityToken); return activity; } 接着会调用contextimpl的setOuterContext，传入的是activity。\n">
+<meta name="twitter:description" content=" Context相关源码是在android33的版本上分析的。\n类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建ContextImpl，我们可以在ActivityThread.performLaunchActivity中找到ContextImpl的创建：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 private Activity performLaunchActivity(ActivityClientRecord r, Intent customIntent) { ContextImpl appContext = createBaseContextForActivity(r); Activity activity = null; java.lang.ClassLoader cl = appContext.getClassLoader(); activity = mInstrumentation.newActivity( cl, component.getClassName(), r.intent); appContext.setOuterContext(activity); activity.attach(appContext, this, getInstrumentation(), r.token, r.ident, app, r.intent, r.activityInfo, title, r.parent, r.embeddedID, r.lastNonConfigurationInstances, config, r.referrer, r.voiceInteractor, window, r.activityConfigCallback, r.assistToken, r.shareableActivityToken); return activity; } 通过createBaseContextForActivity方法创建了ContextImpl：\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -237,7 +237,7 @@
         <li><a href="#layoutinflater中的context">LayoutInflater中的context</a>
           <ol>
             <li><a href="#layoutinflaterfromcontext">LayoutInflater.from(context)：</a></li>
-            <li><a href="#layoutinflaterinflate">layoutinflater.inflate:</a></li>
+            <li><a href="#layoutinflaterinflate">layoutInflater.inflate:</a></li>
           </ol>
         </li>
         <li><a href="#attr部分">Attr部分</a>
@@ -375,26 +375,27 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><img src=contextimpl创建详细过程.png width=80% />
-<p>接着会调用contextimpl的setOuterContext，传入的是activity。</p>
+</div><p>通过createBaseContextForActivity方法创建了ContextImpl：<br>
+<img src=contextimpl创建详细过程.png width=80% /></p>
+<p>接着会调用contextImpl的setOuterContext，传入的是activity。</p>
 <img src=setOuterContext.png width=60% />
 <img src=setOuterContext过程.png width=60% />
 <blockquote>
 <p>结论：contextImpl中的outerContext指向了activity。</p></blockquote>
 <h3 id="context传递">Context传递
 </h3><img src=attach调用.png width=60% />
-<p>attach调用了attachBaseContext，并把contextimpl传进去了：</p>
+<p>在activity中的attach调用了attachBaseContext，并把contextImpl传进去了：</p>
 <img src=attachBaseContext.png width=60% />
 <p>该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：</p>
 <img src=getBaseContext.png width=60% />
-<p>getBaseContext指向了刚刚attach方法传进来的contextimpl。</p>
+<p>getBaseContext指向了刚刚attach方法传进来的contextImpl。</p>
 <img src=getApplicationContext.png width=60% />
 <p>指向了mBase.getApplicationContext：</p>
 <img src=getApplicationContext详细过程.png width=60% />
-<p>mPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：</p>
+<p>mPackageInfo是在创建contextImpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：</p>
 <img src=创建application.png width=60% />
 <blockquote>
-<p>结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。</p></blockquote>
+<p>结论：getBaseContext获取的是contextImpl对象，getApplicationContext获取的是Application对象。</p></blockquote>
 <h3 id="主题设置">主题设置
 </h3><p>回到performLaunchActivity，给activity设置主题：</p>
 <img src=给activity设置主题.png width=60% />
@@ -410,20 +411,20 @@
 如果name是LAYOUT_INFLATER_SERVICE，则通过LayoutInflater.from(getBaseContext()).cloneInContext(this)来创建，上面分析过activity中的getBaseContext()是指向了contextImpl对象，所以兜兜转转，最终调用了contextImpl中的getSystemService来获取LayoutInflater对象。</p>
 <p>那如果from传进来的不是Activity，而是application会怎么样呢？application它是继承自ContextWrapper：</p>
 <img src=getSystemService详细过程.png width=60% />
-<p>base是contextimpl，最终调用的是contextimpl的getSystemService，activity亦是如此：</p>
+<p>base是contextImpl，最终调用的是contextImpl的getSystemService，activity亦是如此：</p>
 <img src=context的getSystemservice.png width=60% />
 <img src=从服务中心中获取对应的service.png width=60% />
 <p>从SYSTEM_SERVICE_FETCHERS中获取：</p>
 <img src=从SYSTEM_SERVICE_FETCHERS中获取.png width=60% />
-<p>最终是在此处添加了一个PhoneLayoutInflater对象，并把contextimpl.getOuterContext传进去了，此处传进去的是Activity或者是application对象。</br>
+<p>最终是在此处添加了一个PhoneLayoutInflater对象，并把contextImpl.getOuterContext传进去了，此处传进去的是Activity或者是application对象。</br>
 如果from中传入的是activity，在contextThemeWrapper的getSystemService方法中获取到PhoneLayoutInflater后，又调用了cloneInContext，将当前的context传入其中：
 <img src=cloneInContext详细过程.png width=60% /></p>
 <p>此处为什么要通过cloneInContext构造一个新的PhoneLayoutInflater呢？</br>
-因为layoutinflater解析xml是强依赖于context，所以为了确保当前activity创建的layoutinflater使用的是当前context，所以将当前的context传入其中构造一个新的layoutinflater。比如在from的时候传入的是view的context，而view的context是有可能不是activity类型的context，比如是一个contextThemewrapper类型的，那么是有可能PhoneLayoutInflater的origin context是一个activity，而newContext传入的是contextThemeWrapper。所以此处用cloneInContext是为了保证当前的context是即将要展示的theme样式。关于分析可以看下面的layoutinflater.inflate。</p>
-<h4 id="layoutinflaterinflate">layoutinflater.inflate:
+在上面分析PhoneLayoutInflater创建的时候，是通过SystemServiceRegistry的SYSTEM_SERVICE_FETCHERS中map获取的，而在传入PhoneLayoutInflater的context是通过ContextImpl的getOuterContext方法来获取的，上面分析过ContextImpl的outerContext可能是Activity，也可能是Application，比如在A这个Activity中创建了PhoneLayoutInflater，而在B这个Activity中获取PhoneLayoutInflater的时候，如果没有cloneInContext，那么获取还是A这个activity中的PhoneLayoutInflater，而layoutinflater解析xml是强依赖于context，所以为了确保当前activity创建的layoutinflater使用的是当前context，所以将当前的context传入其中构造一个新的layoutinflater。</p>
+<h4 id="layoutinflaterinflate">layoutInflater.inflate:
 </h4><p>此过程调用createViewFromTag来创建view：</p>
 <img src=createViewFromTag.png width=60% />
-<p>此处看view有没有theme属性，有的话，则构造一个contextthemeWrapper出来，举个例子：</p>
+<p>此处看view有没有theme属性，有的话，则构造一个contextThemeWrapper出来，举个例子：</p>
 <img src=布局例子.png width=60% />
 <p>此处定义了一个theme属性，那么给该view的构造器传入的context就是一个contextThemeWrapper对象。所以view的context不一定是activity的context，如果设置了theme属性，那么就是一个contextThemeWrapper的context。</p>
 <p>再来看一个例子，创建创建layoutinflater的时候指定contextThemeWrapper对象：
@@ -452,7 +453,7 @@ attrs表示的是要从哪个属性集中取到属性。
 <img src=declare-styleable.png width=30% />
 <p>并且会在R$attr.class下面也会生成一个两个int值：</p>
 <img src=attr中的属性值.png width=30% />
-<p>可以看出来生出来一个R.styleable.TestView的数组和两个int值，分别是R.styleable.TestView_attr1和R.styleable.TestView_attr2，它两分别代表TestView数组的索引，而对应的值是定义在resource.arsc文件中：</p>
+<p>生成了一个R$styleable.TestView的数组和两个int值，分别是R$styleable.TestView_attr1和R$styleable.TestView_attr2，它两分别代表TestView数组的索引，而对应的值是定义在resource.arsc文件中：</p>
 <img src=resource.arsc结果.png width=60% />
 <blockquote>
 <p>所以最终得出结论是：通过context.obtainStyledAttributes传入attrbuteset和attrs数组，得到了typearray，然后通过typearray的索引得到所有的属性：</p></blockquote>
@@ -462,7 +463,7 @@ attrs表示的是要从哪个属性集中取到属性。
 <img src=属性集定义.png width=60% /> 
 <p>新增一个不在declare-styleable数组中的attr11，见R文件：</p>
 <img src=属性值如下.png width=60% /> 
-<p>在R.styleable类中没有attr11的定义，它在R.attr类中定义了：</p>
+<p>在R$styleable类中没有attr11的定义，它在R$attr类中定义了：</p>
 <img src=attr中所有属性.png width=60% /> 
 <p>在上面属性中attr7和attr11是引用类型的，他们可以指向另外一个引用。</p>
 <div class="highlight"><div class="chroma">

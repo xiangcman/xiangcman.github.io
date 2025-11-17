@@ -2797,26 +2797,27 @@ layout过程只走了dispatchLayout2，在里面走到了linearlayoutManager.onL
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;img src=contextimpl创建详细过程.png width=80% /&gt;
-&lt;p&gt;接着会调用contextimpl的setOuterContext，传入的是activity。&lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;通过createBaseContextForActivity方法创建了ContextImpl：&lt;br&gt;
+&lt;img src=contextimpl创建详细过程.png width=80% /&gt;&lt;/p&gt;
+&lt;p&gt;接着会调用contextImpl的setOuterContext，传入的是activity。&lt;/p&gt;
 &lt;img src=setOuterContext.png width=60% /&gt;
 &lt;img src=setOuterContext过程.png width=60% /&gt;
 &lt;blockquote&gt;
 &lt;p&gt;结论：contextImpl中的outerContext指向了activity。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h3 id=&#34;context传递&#34;&gt;Context传递
 &lt;/h3&gt;&lt;img src=attach调用.png width=60% /&gt;
-&lt;p&gt;attach调用了attachBaseContext，并把contextimpl传进去了：&lt;/p&gt;
+&lt;p&gt;在activity中的attach调用了attachBaseContext，并把contextImpl传进去了：&lt;/p&gt;
 &lt;img src=attachBaseContext.png width=60% /&gt;
 &lt;p&gt;该方法是ContextWrapper中的方法，并指向了mBase变量。Activity中getBaseContext和getApplicationContext区别：&lt;/p&gt;
 &lt;img src=getBaseContext.png width=60% /&gt;
-&lt;p&gt;getBaseContext指向了刚刚attach方法传进来的contextimpl。&lt;/p&gt;
+&lt;p&gt;getBaseContext指向了刚刚attach方法传进来的contextImpl。&lt;/p&gt;
 &lt;img src=getApplicationContext.png width=60% /&gt;
 &lt;p&gt;指向了mBase.getApplicationContext：&lt;/p&gt;
 &lt;img src=getApplicationContext详细过程.png width=60% /&gt;
-&lt;p&gt;mPackageInfo是在创建contextimpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：&lt;/p&gt;
+&lt;p&gt;mPackageInfo是在创建contextImpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：&lt;/p&gt;
 &lt;img src=创建application.png width=60% /&gt;
 &lt;blockquote&gt;
-&lt;p&gt;结论：getBaseContext获取的是contextimpl对象，getApplicationContext获取的是Application对象。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;结论：getBaseContext获取的是contextImpl对象，getApplicationContext获取的是Application对象。&lt;/p&gt;&lt;/blockquote&gt;
 &lt;h3 id=&#34;主题设置&#34;&gt;主题设置
 &lt;/h3&gt;&lt;p&gt;回到performLaunchActivity，给activity设置主题：&lt;/p&gt;
 &lt;img src=给activity设置主题.png width=60% /&gt;
@@ -2832,20 +2833,20 @@ layout过程只走了dispatchLayout2，在里面走到了linearlayoutManager.onL
 如果name是LAYOUT_INFLATER_SERVICE，则通过LayoutInflater.from(getBaseContext()).cloneInContext(this)来创建，上面分析过activity中的getBaseContext()是指向了contextImpl对象，所以兜兜转转，最终调用了contextImpl中的getSystemService来获取LayoutInflater对象。&lt;/p&gt;
 &lt;p&gt;那如果from传进来的不是Activity，而是application会怎么样呢？application它是继承自ContextWrapper：&lt;/p&gt;
 &lt;img src=getSystemService详细过程.png width=60% /&gt;
-&lt;p&gt;base是contextimpl，最终调用的是contextimpl的getSystemService，activity亦是如此：&lt;/p&gt;
+&lt;p&gt;base是contextImpl，最终调用的是contextImpl的getSystemService，activity亦是如此：&lt;/p&gt;
 &lt;img src=context的getSystemservice.png width=60% /&gt;
 &lt;img src=从服务中心中获取对应的service.png width=60% /&gt;
 &lt;p&gt;从SYSTEM_SERVICE_FETCHERS中获取：&lt;/p&gt;
 &lt;img src=从SYSTEM_SERVICE_FETCHERS中获取.png width=60% /&gt;
-&lt;p&gt;最终是在此处添加了一个PhoneLayoutInflater对象，并把contextimpl.getOuterContext传进去了，此处传进去的是Activity或者是application对象。&lt;/br&gt;
+&lt;p&gt;最终是在此处添加了一个PhoneLayoutInflater对象，并把contextImpl.getOuterContext传进去了，此处传进去的是Activity或者是application对象。&lt;/br&gt;
 如果from中传入的是activity，在contextThemeWrapper的getSystemService方法中获取到PhoneLayoutInflater后，又调用了cloneInContext，将当前的context传入其中：
 &lt;img src=cloneInContext详细过程.png width=60% /&gt;&lt;/p&gt;
 &lt;p&gt;此处为什么要通过cloneInContext构造一个新的PhoneLayoutInflater呢？&lt;/br&gt;
-因为layoutinflater解析xml是强依赖于context，所以为了确保当前activity创建的layoutinflater使用的是当前context，所以将当前的context传入其中构造一个新的layoutinflater。比如在from的时候传入的是view的context，而view的context是有可能不是activity类型的context，比如是一个contextThemewrapper类型的，那么是有可能PhoneLayoutInflater的origin context是一个activity，而newContext传入的是contextThemeWrapper。所以此处用cloneInContext是为了保证当前的context是即将要展示的theme样式。关于分析可以看下面的layoutinflater.inflate。&lt;/p&gt;
-&lt;h4 id=&#34;layoutinflaterinflate&#34;&gt;layoutinflater.inflate:
+在上面分析PhoneLayoutInflater创建的时候，是通过SystemServiceRegistry的SYSTEM_SERVICE_FETCHERS中map获取的，而在传入PhoneLayoutInflater的context是通过ContextImpl的getOuterContext方法来获取的，上面分析过ContextImpl的outerContext可能是Activity，也可能是Application，比如在A这个Activity中创建了PhoneLayoutInflater，而在B这个Activity中获取PhoneLayoutInflater的时候，如果没有cloneInContext，那么获取还是A这个activity中的PhoneLayoutInflater，而layoutinflater解析xml是强依赖于context，所以为了确保当前activity创建的layoutinflater使用的是当前context，所以将当前的context传入其中构造一个新的layoutinflater。&lt;/p&gt;
+&lt;h4 id=&#34;layoutinflaterinflate&#34;&gt;layoutInflater.inflate:
 &lt;/h4&gt;&lt;p&gt;此过程调用createViewFromTag来创建view：&lt;/p&gt;
 &lt;img src=createViewFromTag.png width=60% /&gt;
-&lt;p&gt;此处看view有没有theme属性，有的话，则构造一个contextthemeWrapper出来，举个例子：&lt;/p&gt;
+&lt;p&gt;此处看view有没有theme属性，有的话，则构造一个contextThemeWrapper出来，举个例子：&lt;/p&gt;
 &lt;img src=布局例子.png width=60% /&gt;
 &lt;p&gt;此处定义了一个theme属性，那么给该view的构造器传入的context就是一个contextThemeWrapper对象。所以view的context不一定是activity的context，如果设置了theme属性，那么就是一个contextThemeWrapper的context。&lt;/p&gt;
 &lt;p&gt;再来看一个例子，创建创建layoutinflater的时候指定contextThemeWrapper对象：
@@ -2874,7 +2875,7 @@ attrs表示的是要从哪个属性集中取到属性。
 &lt;img src=declare-styleable.png width=30% /&gt;
 &lt;p&gt;并且会在R$attr.class下面也会生成一个两个int值：&lt;/p&gt;
 &lt;img src=attr中的属性值.png width=30% /&gt;
-&lt;p&gt;可以看出来生出来一个R.styleable.TestView的数组和两个int值，分别是R.styleable.TestView_attr1和R.styleable.TestView_attr2，它两分别代表TestView数组的索引，而对应的值是定义在resource.arsc文件中：&lt;/p&gt;
+&lt;p&gt;生成了一个R$styleable.TestView的数组和两个int值，分别是R$styleable.TestView_attr1和R$styleable.TestView_attr2，它两分别代表TestView数组的索引，而对应的值是定义在resource.arsc文件中：&lt;/p&gt;
 &lt;img src=resource.arsc结果.png width=60% /&gt;
 &lt;blockquote&gt;
 &lt;p&gt;所以最终得出结论是：通过context.obtainStyledAttributes传入attrbuteset和attrs数组，得到了typearray，然后通过typearray的索引得到所有的属性：&lt;/p&gt;&lt;/blockquote&gt;
@@ -2884,7 +2885,7 @@ attrs表示的是要从哪个属性集中取到属性。
 &lt;img src=属性集定义.png width=60% /&gt; 
 &lt;p&gt;新增一个不在declare-styleable数组中的attr11，见R文件：&lt;/p&gt;
 &lt;img src=属性值如下.png width=60% /&gt; 
-&lt;p&gt;在R.styleable类中没有attr11的定义，它在R.attr类中定义了：&lt;/p&gt;
+&lt;p&gt;在R$styleable类中没有attr11的定义，它在R$attr类中定义了：&lt;/p&gt;
 &lt;img src=attr中所有属性.png width=60% /&gt; 
 &lt;p&gt;在上面属性中attr7和attr11是引用类型的，他们可以指向另外一个引用。&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
