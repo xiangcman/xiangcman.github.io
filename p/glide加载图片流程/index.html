@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-CN" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nGlide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：\n">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接 glide.with(activity).load(url).into(imageview) 加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nGlide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法：\n">
 <title>Glide加载图片流程</title>
 
 <link rel='canonical' href='http://xiangcman.xyz/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/'>
 
 <link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Glide加载图片流程">
-<meta property='og:description' content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nGlide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：\n">
+<meta property='og:description' content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接 glide.with(activity).load(url).into(imageview) 加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nGlide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法：\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-05-22T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-05-22T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="Glide加载图片流程">
-<meta name="twitter:description" content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接glide.with(activity).load(url).into(imageview)加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nGlide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法： 此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：\n">
+<meta name="twitter:description" content="glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。\nglide源码是在4.16.0的版本上分析的。 平常我们使用glide时候直接 glide.with(activity).load(url).into(imageview) 加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。\nGlide.with 我们是基于参数是activity的重载方法：\n1 2 3 public static RequestManager with(@NonNull Activity activity) { return getRetriever(activity).get(activity); } 先获取RequestManagerRetriever，然后再获取RequestManager：\n1 2 3 private static RequestManagerRetriever getRetriever(@Nullable Context context) { return Glide.get(context).getRequestManagerRetriever(); } 首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：\n1 2 3 4 5 6 7 8 9 10 public static Glide get(@NonNull Context context) { if (glide == null) { synchronized (Glide.class) { if (glide == null) { checkAndInitializeGlide(context); } } } return glide; } 可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法：\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -320,13 +320,15 @@
     
     <p>glide源码精髓是能学习到很多设计模式，以及对图片的各种处理，首先以源码通读的方式进入到今天的文章。</p>
 <style>
+
     .red_font {
     color: #ff0000;
     font-weight: bold;
     }
+
 </style>
 <p><span class = "red_font">glide源码是在4.16.0的版本上分析的。</span>
-平常我们使用glide时候直接<code>glide.with(activity).load(url).into(imageview)</code>加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。</p>
+平常我们使用glide时候直接 <code>glide.with(activity).load(url).into(imageview)</code> 加载图片，基于此，我们顺藤摸瓜看下底层是怎么加载图片的。</p>
 <h3 id="glidewith">Glide.with
 </h3><p>我们是基于参数是activity的重载方法：</p>
 <div class="highlight"><div class="chroma">
@@ -381,8 +383,8 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法：
-<img src="/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/%E5%88%9B%E5%BB%BAglide%E5%AE%9E%E4%BE%8B%E7%9A%84%E6%96%B9%E6%B3%95.png"
+</div><p>可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法：</p>
+<p><img src="/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/%E5%88%9B%E5%BB%BAglide%E5%AE%9E%E4%BE%8B%E7%9A%84%E6%96%B9%E6%B3%95.png"
 	width="1754"
 	height="626"
 	srcset="/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/%E5%88%9B%E5%BB%BAglide%E5%AE%9E%E4%BE%8B%E7%9A%84%E6%96%B9%E6%B3%95_hu_d34d2da22efe8389.png 480w, /p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/%E5%88%9B%E5%BB%BAglide%E5%AE%9E%E4%BE%8B%E7%9A%84%E6%96%B9%E6%B3%95_hu_73245705d261ba8c.png 1024w"
@@ -395,8 +397,8 @@
 		data-flex-grow="280"
 		data-flex-basis="672px"
 	
-><br>
-此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：</p>
+></p>
+<p>此处不允许多次初始化glide对象，通过一个布尔值控制，并且该布尔值是一个volatile类型的，在多线程中访问是安全的。接着调用了initializeGlide方法：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -438,7 +440,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>此处省略了通过注解来生成各种配置，其中注解是<code>GlideModule</code>的注解，它是一个编译时注解，通过编译时扫描到该注解，然后生成GeneratedAppGlideModuleImpl类，initializeGlide是通过反射执行GeneratedAppGlideModuleImpl类。最终通过GlideBuilder.build方法来生成glide对象：</p>
+</div><p>此处省略了通过注解来生成各种配置，其中注解是 <code>GlideModule</code> 的注解，它是一个编译时注解，通过编译时扫描到该注解，然后生成GeneratedAppGlideModuleImpl类，initializeGlide是通过反射执行GeneratedAppGlideModuleImpl类。最终通过GlideBuilder.build方法来生成glide对象：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1578,7 +1580,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>我们只分析宽度和高度为LayoutParams.WRAP_CONTENT情况，此时会调getMaxDisplayLength：</p>
+</div><p>我们只分析宽度和高度为LayoutParams. WRAP_CONTENT情况，此时会调getMaxDisplayLength：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -2070,7 +2072,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>默认是支持decodeCachedResource的，它表示是否获取解码后的缓存资源，所以此时返回Stage.RESOURCE_CACHE，接着调用getNextGenerator方法：</p>
+</div><p>默认是支持decodeCachedResource的，它表示是否获取解码后的缓存资源，所以此时返回Stage. RESOURCE_CACHE，接着调用getNextGenerator方法：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -2146,7 +2148,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>我们直接看stage为SOURCE,generator直接是SourceGenerator时候，看下它的startNext方法：</p>
+</div><p>我们直接看stage为SOURCE, generator直接是SourceGenerator时候，看下它的startNext方法：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -2576,7 +2578,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>此处的loadData.fetcher是一个ByteBufferFileLoader，后面再分析怎么得到该fetcher，会执行到它的loadData：</p>
+</div><p>此处的loadData.fetcher是一个ByteBufferFetcher，后面再分析怎么得到该fetcher，会执行到它的loadData：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -3008,8 +3010,8 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>最终将图片展示到imageView上。</p>
-<p>最终的简图：<br>
-<img src="/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/%E6%B5%81%E7%A8%8B%E5%9B%BE.svg"
+<p>最终的简图：<br></p>
+<p><img src="/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/%E6%B5%81%E7%A8%8B%E5%9B%BE.svg"
 	
 	
 	
