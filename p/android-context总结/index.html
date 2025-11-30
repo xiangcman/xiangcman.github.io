@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='http://xiangcman.xyz/p/android-context%E6%80%BB%E7%BB%93/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Android context总结">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Android context总结">
 <meta property='og:description' content=" Context相关源码是在android33的版本上分析的。\n类图 Context创建 Activity继承自ContextThemeWrapper，ContextThemeWrapper继承自ContextWrapper，当activity创建的之前，会先创建ContextImpl，我们可以在ActivityThread.performLaunchActivity中找到ContextImpl的创建：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 private Activity performLaunchActivity(ActivityClientRecord r, Intent customIntent) { ContextImpl appContext = createBaseContextForActivity(r); Activity activity = null; java.lang.ClassLoader cl = appContext.getClassLoader(); activity = mInstrumentation.newActivity( cl, component.getClassName(), r.intent); appContext.setOuterContext(activity); activity.attach(appContext, this, getInstrumentation(), r.token, r.ident, app, r.intent, r.activityInfo, title, r.parent, r.embeddedID, r.lastNonConfigurationInstances, config, r.referrer, r.voiceInteractor, window, r.activityConfigCallback, r.assistToken, r.shareableActivityToken); return activity; } 通过createBaseContextForActivity方法创建了ContextImpl：\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/android-context%E6%80%BB%E7%BB%93/'>
 <meta property='og:site_name' content='xiangcman'>
@@ -381,7 +381,8 @@
 <img src=setOuterContext.png width=60% />
 <img src=setOuterContext过程.png width=60% />
 <blockquote>
-<p>结论：contextImpl中的outerContext指向了activity。</p></blockquote>
+<p>结论：contextImpl中的outerContext指向了activity。</p>
+</blockquote>
 <h3 id="context传递">Context传递
 </h3><img src=attach调用.png width=60% />
 <p>在activity中的attach调用了attachBaseContext，并把contextImpl传进去了：</p>
@@ -395,7 +396,8 @@
 <p>mPackageInfo是在创建contextImpl的时候传入的，它是loadedApk对象，它的getApplication方法是获取应用的Application对象：</p>
 <img src=创建application.png width=60% />
 <blockquote>
-<p>结论：getBaseContext获取的是contextImpl对象，getApplicationContext获取的是Application对象。</p></blockquote>
+<p>结论：getBaseContext获取的是contextImpl对象，getApplicationContext获取的是Application对象。</p>
+</blockquote>
 <h3 id="主题设置">主题设置
 </h3><p>回到performLaunchActivity，给activity设置主题：</p>
 <img src=给activity设置主题.png width=60% />
@@ -433,7 +435,8 @@
 <img src=cloneInContext.png width=60% />
 <img src=cloneInContext详细过程.png width=60% />
 <blockquote>
-<p>所以此种情况下，最终给view传的context也是一个contextthemewrapper的context。</p></blockquote>
+<p>所以此种情况下，最终给view传的context也是一个contextthemewrapper的context。</p>
+</blockquote>
 <h3 id="attr部分">Attr部分
 </h3><p>从主题中获取属性：</p>
 <img src=主题属性.png width=60% />
@@ -456,7 +459,8 @@ attrs表示的是要从哪个属性集中取到属性。
 <p>生成了一个R$styleable.TestView的数组和两个int值，分别是R$styleable.TestView_attr1和R$styleable.TestView_attr2，它两分别代表TestView数组的索引，而对应的值是定义在resource.arsc文件中：</p>
 <img src=resource.arsc结果.png width=60% />
 <blockquote>
-<p>所以最终得出结论是：通过context.obtainStyledAttributes传入attrbuteset和attrs数组，得到了typearray，然后通过typearray的索引得到所有的属性：</p></blockquote>
+<p>所以最终得出结论是：通过context.obtainStyledAttributes传入attrbuteset和attrs数组，得到了typearray，然后通过typearray的索引得到所有的属性：</p>
+</blockquote>
 <img src=取出attr中的属性.png width=60% /> 
 <h4 id="defstyleattrdefstyleres">defStyleAttr、defStyleRes
 </h4><img src=view构造器.png width=60% /> 

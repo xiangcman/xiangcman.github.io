@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='http://xiangcman.xyz/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="笔记整理">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="笔记整理">
 <meta property='og:description' content="kotlin中inline，noinline，crossinline区别？ 默认函数中如果没加inline，那就是非内联函数，此时lambda会生成一个新的类，该类是继承自Lambda抽象类，并实现了Function接口，其中invoke方法就是Function接口的方法，invoke中的方法就是lambda代码块的代码。 内联函数(加inline关键字)的lambda如果没加noinline或crossinline，默认会把lambda的代码块给平铺到调用处，所以此时如果在lambda中加return的话，会直接不执行外层函数后续代码。如果是非内联函数的话，由于它是生成一个单独的类，不存在平铺代码，所以return是编译不过去的。 noinline和inline是对立关系，它是将lambda不内联处理，如果你需要对该lambda作为对象来使用的时候，此时需要用到noinline，如果一个内联函数都是noinline的lambda表达式，那么此时as会提示你此处可以去掉inline关键字了，当做普通的高阶函数来处理就行。 默认内联函数是能添加return来作为局部返回，由于存在平铺代码的特性，所以它能阻止调用lambda的外层函数的执行，那如果lambda作为间接调用的时候，此时添加return语句会编译失败，因为间接调用（比如匿名内部类或回调）不能阻止外层函数的调用，是为了避免多线程或回调中意外终止外层函数，所以kotlin编译器此时需要你添加crossinline，举个例子就清楚了： 此处的run闭包，它的调用是在runnable接口中的，此时编译器提示 it may contain non-local returns ，意思是此时存在间接调用，在间接调用lambda的时候，不允许在lambda中添加return来阻止外层的外层函数的执行。所以此处通过添加crossinline来阻止lambda中添加return\n疑惑：crossinline添加后，内联效果还在吗？还是以上面的例子来说明： 假如上面的hello方法我就作为普通的方法，如下：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 object TestInline1 { @JvmStatic fun main(args: Array&lt;String&gt;) { hello { println(&#34;hello的闭包&#34;) } } fun hello(run: () -&gt; Unit) { val runnable = Runnable { println(&#34;runnable run&#34;) run() } runnable.run() } } 对应的字节码如下：\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/'>
 <meta property='og:site_name' content='xiangcman'>
@@ -528,11 +528,13 @@ remove：移除头部节点，如果没有头部节点则抛异常，有的话�
 push：给链表头部插入元素，没有返回值</br>
 pop：和remove一样的，都是移除头部节点，如果没有头部节点则抛异常，有的话，则返回</br></p>
 <blockquote>
-<p>如果想实现队列的话，则使用offer和poll这一对方法；如果想实现栈的话，可以通过offerLast和pollLast来实现，或者通过offerFirst和pollFirst来实现。</p></blockquote>
+<p>如果想实现队列的话，则使用offer和poll这一对方法；如果想实现栈的话，可以通过offerLast和pollLast来实现，或者通过offerFirst和pollFirst来实现。</p>
+</blockquote>
 <h3 id="arraydeque特性">ArrayDeque特性
 </h3><p>它也是继承自Deque，和LinkedList的特性一样的，只不过ArrayDeque是通过数组实现的双端队列，内部用一个数组来放所有的节点，并且有两个int值用来存放头结点和尾结点的索引。并且ArrayDeque内部的默认节点容量是16个，也可以初始化容量大小。</p>
 <blockquote>
-<p>区别：如果频繁要插入和删除操作，那么使用LinkedList，如果是查询情况比较多，可以优先使用ArrayDeque。</p></blockquote>
+<p>区别：如果频繁要插入和删除操作，那么使用LinkedList，如果是查询情况比较多，可以优先使用ArrayDeque。</p>
+</blockquote>
 <h3 id="pools-pool">Pools. Pool
 </h3><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">

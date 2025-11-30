@@ -244,7 +244,8 @@ detach过程调用的是scrap的缓存，并且此时不会回调ondetachfromwin
         <guid>http://xiangcman.xyz/p/recyclerview%E7%9A%84%E9%A2%84%E5%8A%A0%E8%BD%BD%E5%AE%9E%E7%8E%B0/</guid>
         <description>&lt;blockquote&gt;
 &lt;p&gt;说起预加载，其实之前面试的时候被问到的，然后最近看到一篇关于预加载的文章，然后颇有感受，因此才有该篇文章。&lt;/br&gt;
-在recyclerview的onAttachedToWindow有这么一句：&lt;/p&gt;&lt;/blockquote&gt;
+在recyclerview的onAttachedToWindow有这么一句：&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
@@ -1151,7 +1152,8 @@ position：预加载表项的位置
         
         <guid>http://xiangcman.xyz/p/recyclerview%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/</guid>
         <description>&lt;blockquote&gt;
-&lt;p&gt;关于RecyclerView的优化，其实无非两点，尽可能的最大化使用viewholder的缓存，如果不能使用缓存，将构建和绑定viewholder的过程耗时降低到最低。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;关于RecyclerView的优化，其实无非两点，尽可能的最大化使用viewholder的缓存，如果不能使用缓存，将构建和绑定viewholder的过程耗时降低到最低。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;缓存&#34;&gt;缓存
 &lt;/h3&gt;&lt;p&gt;这里再总结下RecyclerView的缓存知识：&lt;/p&gt;
 &lt;h4 id=&#34;分类&#34;&gt;分类
@@ -1230,7 +1232,8 @@ position：预加载表项的位置
 &lt;blockquote&gt;
 &lt;p&gt;更新表项:&lt;br&gt;
 页面上有表项0到9，总共有10个表项，然后更新表项0，在dispatchLayout1阶段（pre-layout），先把页面上的表项0到9存到scrap缓存中，由于表项0是更新的所以会把表项0放到changeScrap缓存中，把表项1到9存到attachScrap缓存中。同时会把这10个表项从页面上分离（child的parent置空，并把viewgroup中对应的child给置空），接着从scrap缓存中取出viewholder，由于存在更新表项，所以会去创建表项10的viewholder到recyclerview上。此时recyclerview中有11个表项了，同时把他们从scrap缓存中移除。
-在dispatchLayout2阶段（post-layout），会把这11个表项加入到scrap缓存中，表项0还是放到changeScrap中，表项1到10加入到attachScrap缓存中。接着把他们从页面上分离。然后在fill中，从scrap缓存中获取viewholder，由于changeScrap不会在dispatchLayout2阶段生效，所以会创建了表项0，其余的表项正常从attachScrap缓存中获取。接着把所有的表项添加到recyclerview中，并把scrap中的viewholder缓存移除掉。但是表项10不会添加到recyclerview中，因为到表项9的时候，剩余空间就不够了，所以recyclerview中只有0到9的表项。注意：此时还有表项0和表项10分别存在于changeScrap和attachScrap中。&lt;/p&gt;&lt;/blockquote&gt;
+在dispatchLayout2阶段（post-layout），会把这11个表项加入到scrap缓存中，表项0还是放到changeScrap中，表项1到10加入到attachScrap缓存中。接着把他们从页面上分离。然后在fill中，从scrap缓存中获取viewholder，由于changeScrap不会在dispatchLayout2阶段生效，所以会创建了表项0，其余的表项正常从attachScrap缓存中获取。接着把所有的表项添加到recyclerview中，并把scrap中的viewholder缓存移除掉。但是表项10不会添加到recyclerview中，因为到表项9的时候，剩余空间就不够了，所以recyclerview中只有0到9的表项。注意：此时还有表项0和表项10分别存在于changeScrap和attachScrap中。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;上面更新表项经历了两次的布局，分别是dispatchLayout1和dispatchLayout2，在这两个步骤中，先加入到scrap缓存中，然后再从scrap缓存中移除。从现象来看，dispatchLayout1中会生成11个表项，分别是0到10，然后在dispatchLayout2先移除所有的表项，然后添加0到9的表项，而在dispatchLayout2中表项0是重新生成的，因为它要实现更新。而调用两次的布局是为了实现动画而这么做，先生成11个表项，来把他们的位置都记录下来，然后第二次布局的时候把10个表项的位置也记录下来，然后最后根据存储的位置信息做动画。下面来分析下动画如何实现的：&lt;/p&gt;
 &lt;p&gt;在dispatchLayoutStep1将页面上可见的表项加入到ViewInfoStore中：
 &lt;img src=&#34;http://xiangcman.xyz/p/recyclerview%E5%8A%A8%E7%94%BB%E5%8E%9F%E7%90%86/dispatchLayoutStep1%E8%B0%83%E7%94%A8addToPreLayout.png&#34;
@@ -1810,7 +1813,8 @@ draw里面基本没干什么，还是沿用了viewgroup的drawchild方法，绿�
 &lt;p&gt;总结：
 初始化分为onmeasure阶段：如果recyclerview设置了固定宽高，则直接跳过测量，调用到mLayout中，如果不是固定宽高，则会走dispatchLayoutStep1，dispatchLayoutStep2。其中dispatchLayoutStep1是预布局处理，如果有动画要处理才会在该阶段调用到layout的onLayoutChildren。在dispatchLayoutStep2中处理表项的测量。
 在onlayout阶段：会判断step还是不是start状态，如果是的话，则再次执行dispatchLayoutStep1和dispatchLayoutStep2。最后调用dispatchLayoutStep3用来做动画执行并释放相关资源。
-在draw阶段基本什么都没做，dispatchDraw本身会调用到drawChild，recyclerview只是重写了该方法。&lt;/p&gt;&lt;/blockquote&gt;
+在draw阶段基本什么都没做，dispatchDraw本身会调用到drawChild，recyclerview只是重写了该方法。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;滑动过程&#34;&gt;滑动过程
 &lt;/h3&gt;&lt;p&gt;滑动过程中会调用到scrollByInternal-&amp;gt;layoutmanager.scrollBy-&amp;gt;fill-&amp;gt;layoutchunck。&lt;/br&gt;
 layoutchunck里面会从缓存中取数据，如果有则命中，没有则走create和bind，接着划出屏幕的表项会先加入到cache缓存中，如果cache缓存满了，则重置该表项，加入到recyclerpool中，下次所以取的时候从recyclerpool根据viewtype取需要重新bind，不需要create，所以在滑动过程中create的次数是cache的大小次数，等到recyclerpool中有缓存的时候就不需要create了。&lt;/p&gt;
@@ -2082,7 +2086,8 @@ scrap缓存分两种，attachScrap和changeScrap。不是update的会放到attac
 从这里看第0个表项在detach的时候会加入到changeScrap中。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;blockquote&gt;
-&lt;p&gt;结论：在dispatchLayout1中，先将页面上可见的viewholder从页面上分离，然后将update的viewholder放入到changeScrap中，把非update的viewholder放入到attachScrap中。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;结论：在dispatchLayout1中，先将页面上可见的viewholder从页面上分离，然后将update的viewholder放入到changeScrap中，把非update的viewholder放入到attachScrap中。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;ul&gt;
 &lt;li&gt;fill
 &lt;img src=&#34;http://xiangcman.xyz/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/fill%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE.png&#34;
@@ -2148,7 +2153,8 @@ layoutChunk中判断viewholder如果是remove或者是change时候，才会忽�
 &lt;/ul&gt;
 &lt;blockquote&gt;
 &lt;p&gt;结论：
-dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了attacheScrap中，并且创建了索引为10的viewhodler。&lt;/p&gt;&lt;/blockquote&gt;
+dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了attacheScrap中，并且创建了索引为10的viewhodler。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;注意：
 在dispatchLayout1过程中，如果viewholder经过了addView之后，则会把它从changescrap或者是attachscrap缓存中移除，所以在dispatchlayout2过程中change和attach的缓存为空的。
 &lt;img src=&#34;http://xiangcman.xyz/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%BB%8Escrap%E7%BC%93%E5%AD%98%E4%B8%AD%E7%A7%BB%E9%99%A4%E7%9A%84%E9%80%BB%E8%BE%91.png&#34;
@@ -2259,7 +2265,8 @@ dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了at
 更新表项的时候，会经历dispatchLayout1，dispatchLayout2，其中在dispatchLayout1（pre-layout阶段）会先把可见的表项给回收到scrap缓存中，回收后，会把可见的表项从recyclerview中分离，其中需要变化的表项会加入到
 changeScrap中（第1个表项），不变化的加入到attachScrap中（第2个到第10个表项）。接着在fill阶段会从scrap缓存中取表项，由于有表项更新，所以此时会去创建不可见的表项（第11个表项），最后会添加到recyclerview上。
 在dispatchLayout2（post-layout阶段）同样会把dispatchLayout1添加进来的表项给添加到changeScrap（第1个表项）和attachScrap（第2个到第11个表项）缓存中，注意此时的表项会是11个表项。在fill阶段会去创建表项0，
-因为post-layout阶段不会去取changeScrap中的viewholder，所以表项0会经历创建。并且此时不会添加第11个表项，因为在fill完第10个表项的时候，其实rv的可用空间已经不够了。上面提到表项添加到rv后，会将viewholder从scrap缓存中移除掉，而由于原来的表项0和表项10没有被添加到rv上。所以还在scrap缓存中，这两个scrap缓存是在dispatchLayout3中被移除的。&lt;/p&gt;&lt;/blockquote&gt;
+因为post-layout阶段不会去取changeScrap中的viewholder，所以表项0会经历创建。并且此时不会添加第11个表项，因为在fill完第10个表项的时候，其实rv的可用空间已经不够了。上面提到表项添加到rv后，会将viewholder从scrap缓存中移除掉，而由于原来的表项0和表项10没有被添加到rv上。所以还在scrap缓存中，这两个scrap缓存是在dispatchLayout3中被移除的。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;删除表项&#34;&gt;删除表项
 &lt;/h3&gt;&lt;p&gt;notifyItemRemove(0)&lt;/p&gt;
 &lt;h4 id=&#34;dispatchlayout1&#34;&gt;dispatchLayout1
@@ -2584,7 +2591,8 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 	
 &gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;结论：正常情况下adapterPostion和layoutPosition是相等的，当有add、remove、move的时候两者是不一样的。adapterPostion会算上要改变的表项，比如上面我要删除第一个表项，那么拿到的表项就是第二个。而layoutPostion是页面最终呈现的表项，上面例子中等到post完后，才会真正的删除掉。所以post（绘制后）后layoutposition获取到的是原来的第二个表项。&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;结论：正常情况下adapterPostion和layoutPosition是相等的，当有add、remove、move的时候两者是不一样的。adapterPostion会算上要改变的表项，比如上面我要删除第一个表项，那么拿到的表项就是第二个。而layoutPostion是页面最终呈现的表项，上面例子中等到post完后，才会真正的删除掉。所以post（绘制后）后layoutposition获取到的是原来的第二个表项。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;notifydatasetchange问题&#34;&gt;notifydatasetChange问题
 &lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;http://xiangcman.xyz/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%B0%83%E7%94%A8notifydatasetChange%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97.png&#34;
 	width=&#34;2574&#34;

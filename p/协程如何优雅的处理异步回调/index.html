@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程如何优雅的处理异步回调">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="协程如何优雅的处理异步回调">
 <meta property='og:description' content="suspendCoroutine 在android中无处不在获取view的宽高，而获取宽高是需要在view绘制完后才能获取，所以这是一个时机问题，通常通过view.post来获取，那么用协程如何形如同步获取宽高呢？下面来试试：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 GlobalScope.launch { val wh = getViewWh(view) Log.d(TAG, &#34;width:${wh.first}&#34;) Log.d(TAG, &#34;height:${wh.second}&#34;) } Log.d(TAG, &#34;outer coroutine&#34;) private suspend fun getViewWh(view: View) = suspendCoroutine&lt;Pair&lt;Int, Int&gt;&gt; { continuation -&gt; view.post { val width = view.width val height = view.height continuation.resume(Pair(width, height)) } } 日志如下：\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/'>
 <meta property='og:site_name' content='xiangcman'>

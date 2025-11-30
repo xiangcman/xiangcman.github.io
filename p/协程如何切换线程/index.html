@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程如何切换线程">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="协程如何切换线程">
 <meta property='og:description' content="在讲解如何切换线程之前，有必要先了解下CoroutineScope。协程作用域，它里面持有CoroutineContext，用来管理它的作用域范围内的所有协程。\nCoroutineScope(协程作用域) CoroutineScope组成 可见它只是一个接口，里面定义了一个coroutineContext。前面介绍过coroutineContext是协程的上下文，它里面是由Element拼接而成的，而Element主要分为如下几种：\nCoroutineDispatcher：它是线程分发器。其中Dispatcher.IO和Dispatcher.Main、Dispatchers.Main.immediate都是继承自于它 Job：它是用来取消协程、父协程与子协程取得联系的桥梁。常见的有SupervisorJob CoroutineName：用来给协程起名字的作用 CoroutineExceptionHandler：它是用来捕捉协程异常的回调器 所以完整的CoroutineContext组成部分如下： job+dispatchers+CoroutineName+CoroutineExceptionHandler\nCoroutineScope分类 目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别\nGlobalScope 上面用到的GlobalScope就是一个协程作用域： 可以看出来它是一个单例的scope，生命周期和app保持一致，并且它的context是一个EmptyCoroutineContext。平时开发时候不会去用它\nrunBlocking 是一个阻塞式的协程作用域，会阻塞协程外面的线程，内部是通过java的LockSupport.park阻塞住线程来实现的。 MainScope 它是一个指定协程分发在主线程中，并且使用到的Job是SupervisorJob，它的作用是当子协程出错的时候，不影响到父协程中的其他子协程 它是一个ContextScope，继承自CoroutineScope，并且它的context是由SupervisorJob()和Dispatchers.Main组成的一个context。我们一般自定义CoroutineScope的时候也是定义一个ContextScope，他的构造方法需要传入一个CoroutineContext。 CoroutineScope顶级方法 它也是一个ContextScope，它的上下文先看传进来的context中的job是否为空，如果为空，则初始化一个job。如果不为空，则使用传进来的context。\ncoroutineScope顶级方法 它是一个suspend方法，它是通过闭包的形式返回一个CoroutineScope，对应的字节码如下： 会将ScopeCoroutine给到block，也就是闭包中的CoroutineScope，接着会调用UndispatchedKt.startUndispatchedOrReturn: 最终调用了block.invoke方法，写个demo看下效果： 日志如下： 从日志可以看出来，它是先等到coroutineScope里面delay执行完了，才执行外面的逻辑。在字节码层面，它会把coroutineScope外面的代码编译成SuspendLambda，它也是个Continuation，等到执行完了coroutineScope内部的代码，才会回调到coroutineScope外面的SuspendLambda中来： 上面分析过UndispatchedKt.startUndispatchedOrReturn中调用了block的invoke方法，此处的block正对应了CoroutineDispatchersActivity$demo7$1这个SuspendLambda对象： 在demo7中将CoroutineDispatchersActivity$demo7$1这个continuation传递到coroutineScope中，而它的invoke方法如下： 创建了CoroutineDispatchersActivity$demo7$1后，继而调用了invokeSuspend方法，而invokeSuspend里面是要等到coroutineScope闭包中的delay挂起结束后，才会再次回到invokeSuspend方法，最后才会输出「demo7: coroutineScope outside」的日志，这也是协程挂起的调用顺序。\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/'>
 <meta property='og:site_name' content='xiangcman'>
@@ -360,7 +360,8 @@
 </ul>
 <blockquote>
 <p>所以完整的CoroutineContext组成部分如下：</br>
-job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p></blockquote>
+job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p>
+</blockquote>
 <h3 id="coroutinescope分类">CoroutineScope分类
 </h3><p>目前kotlin已经内置了各种CoroutineScope，下面来说下他们的区别</p>
 <h4 id="globalscope">GlobalScope
@@ -680,7 +681,8 @@ job+dispatchers+CoroutineName+CoroutineExceptionHandler</br></p></blockquote>
 <blockquote>
 <p>Dispatchers.Main.immediate：指定的主线程会最先执行<br/>
 Dispatchers.Main：指定的主线程会晚于协程外面的主线程<br/>
-Dispatchers.IO和Dispatchers.Default：指定的线程没有先后之分<br/></p></blockquote>
+Dispatchers.IO和Dispatchers.Default：指定的线程没有先后之分<br/></p>
+</blockquote>
 <h2 id="coroutinescopelanuch">CoroutineScope.lanuch
 </h2><p>lanuch方法是协程作用域的扩展方法，比如上面例子中的GlobalScope它就是继承自CoroutineScope:</p>
 <div class="highlight"><div class="chroma">
@@ -736,7 +738,8 @@ Dispatchers.IO和Dispatchers.Default：指定的线程没有先后之分<br/></p
 <li>默认是DEFAULT模式，所以会初始化一个StandaloneCoroutine，会把newContext作为自己的parentContext，它既是一个Continuation，也是一个CoroutineScope<br/></li>
 <li>调用StandaloneCoroutine的start方法，并把启动模式，StandaloneCoroutine，协程挂起函数传进去了<br/></li>
 <li>StandaloneCoroutine作为lauch的返回值<br/></li>
-</ol></blockquote>
+</ol>
+</blockquote>
 <p>StandaloneCoroutine它是一个Job类型，也是继承自AbstractCoroutine，看下它的start方法：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/AbstractCoroutine%E7%9A%84start%E6%96%B9%E6%B3%95.png"
 	width="1602"
@@ -1005,7 +1008,8 @@ AbstractCoroutine的afterCompletion：
 此处将receiver传到create中没有用到，所以其实跟单参没有什么区别啊。</p>
 <h2 id="总结">总结
 </h2><blockquote>
-<p>结论：协程在启动过程中会取CoroutineContext中的ContinuationInterceptor，然后执行interceptContinuation。而此时如果是一个Dispatchers.IO，它又是继承自CoroutineDispatcher，所以会执行到了CoroutineDispatcher的interceptContinuation。此时得到的是一个DispatchedContinuation对象，并把当前的CoroutineDispatcher和协程启动过程中创建的StandaloneCoroutine传给了DispatchedContinuation。接着会执行DispatchedContinuation的resumeCancellableWith方法，在该方法里面会判断CoroutineDispatcher.isDispatchNeeded，如果是的话，会调用CoroutineDispatcher的dispatch方法，最终会通过线程池会执行到DispatchedContinuation的run方法，因为它是一个Runnable对象。在run方法里面，会执行continuation的resume方法，而此处的continuation是编译器给我们创建的SuspendLambda的子类，最终会执行它的invokeSuspend方法。执行完后会执行协程启动过程中的StandaloneCoroutine的resumeWith方法。</br></p></blockquote>
+<p>结论：协程在启动过程中会取CoroutineContext中的ContinuationInterceptor，然后执行interceptContinuation。而此时如果是一个Dispatchers.IO，它又是继承自CoroutineDispatcher，所以会执行到了CoroutineDispatcher的interceptContinuation。此时得到的是一个DispatchedContinuation对象，并把当前的CoroutineDispatcher和协程启动过程中创建的StandaloneCoroutine传给了DispatchedContinuation。接着会执行DispatchedContinuation的resumeCancellableWith方法，在该方法里面会判断CoroutineDispatcher.isDispatchNeeded，如果是的话，会调用CoroutineDispatcher的dispatch方法，最终会通过线程池会执行到DispatchedContinuation的run方法，因为它是一个Runnable对象。在run方法里面，会执行continuation的resume方法，而此处的continuation是编译器给我们创建的SuspendLambda的子类，最终会执行它的invokeSuspend方法。执行完后会执行协程启动过程中的StandaloneCoroutine的resumeWith方法。</br></p>
+</blockquote>
 <p>时序图:
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B/%E5%8D%8F%E7%A8%8B%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6%E6%97%B6%E5%BA%8F%E5%9B%BE.png"
 	width="1862"

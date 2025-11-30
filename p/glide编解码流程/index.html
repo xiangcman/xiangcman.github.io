@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='http://xiangcman.xyz/p/glide%E7%BC%96%E8%A7%A3%E7%A0%81%E6%B5%81%E7%A8%8B/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Glide编解码流程">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Glide编解码流程">
 <meta property='og:description' content="LoadData相关讲解 glide编码流程主要是通过ModelLoader、LoadData等类进行完成的，下面先介绍这几个类的类图关系：\nModelLoader 是用来构建LoadData，而LoadData中对应了不同的DataFetcher，DataFetcher是最终加载数据层。\n在上一节中介绍过SourceGenerator在startNext方法中fetcher是HttpUrlFetcher，以及在获取到数据后，进行保存到磁盘，然后调用了DataCacheGenerator的startNext方法，然后在里面用到了ByteBufferFetcher，它们都是怎么来的呢？下面通过源码分析如何获取的：\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 class SourceGenerator{ public void startNext(){ loadData = null; boolean started = false; while (!started &amp;&amp; hasNextModelLoader()) { loadData = helper.getLoadData().get(loadDataListIndex++); if (loadData != null &amp;&amp; (helper.getDiskCacheStrategy().isDataCacheable(loadData.fetcher.getDataSource()) || helper.hasLoadPath(loadData.fetcher.getDataClass()))) { started = true; startNextLoad(loadData); } } } } 在SourceGenerator的startNext方法中有上面代码，首先通过hasNextModelLoader方法判断有没有合适的LoadData：\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/glide%E7%BC%96%E8%A7%A3%E7%A0%81%E6%B5%81%E7%A8%8B/'>
 <meta property='og:site_name' content='xiangcman'>
@@ -533,9 +533,17 @@
 </span><span class="lnt">11
 </span><span class="lnt">12
 </span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">static</span><span class="w"> </span><span class="n">Registry</span><span class="w"> </span><span class="nf">createAndInitRegistry</span><span class="p">(</span><span class="w">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">static</span><span class="w"> </span><span class="n">GlideSupplier</span><span class="o">&lt;</span><span class="n">Registry</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">lazilyCreateAndInitializeRegistry</span><span class="p">(){</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">createAndInitRegistry</span><span class="p">(</span><span class="n">glide</span><span class="p">,</span><span class="w"> </span><span class="n">manifestModules</span><span class="p">,</span><span class="w"> </span><span class="n">annotationGeneratedModule</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">static</span><span class="w"> </span><span class="n">Registry</span><span class="w"> </span><span class="nf">createAndInitRegistry</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Glide</span><span class="w"> </span><span class="n">glide</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">List</span><span class="o">&lt;</span><span class="n">GlideModule</span><span class="o">&gt;</span><span class="w"> </span><span class="n">manifestModules</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">AppGlideModule</span><span class="w"> </span><span class="n">annotationGeneratedModule</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -624,7 +632,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>在getModelLoaders通过model的Class类型，调用了getModelLoadersForClass方法，在该方法里面从cache里面取拿ModelLoader集合，它是包装map的ModelLoaderCache类，首次为空，接着调用了multiModelLoaderFactory.build(modelClass)把loaders放到cache中。看下该方法怎么获取loaders的：</p>
+</div><p>在getModelLoaders通过model的Class类型，调用了getModelLoadersForClass方法，在该方法里面从cache里面取拿ModelLoader集合，它是包装map的ModelLoaderCache类，首次为空，接着调用了multiModelLoaderFactory.build(modelClass)把loaders放到cache中。<font style="font-weight:bold; color:red; font-size:16px; ">注意下，该方法中使用Collections.unmodifiableList包装了一层集合，该集合不允许进行添加元素，主要是为了不让后续添加新的ModelLoader，防止在边遍历的时候会有其他地方添加元素而产生ConcurrentModificationException异常。并且此处使用了cache缓存，下次直接从该map中取该model下的ModelLoader集合，无需再次进行构建</font>。看下该方法怎么获取loaders的：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -669,7 +677,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>entries是Entry对象的集合，Entry对象里面存储了modelClass、dataClass、modelLoaderFactory：</p>
+</div><p>entries是Entry对象的集合，<font style="font-weight:bold; color:red; font-size:16px; ">注意了上面使用了alreadyUsedEntries集合标记Entry有没有被构建，比如在构建a这个modelLoader中又去构建b这个modelLoader，而在b中又去构建a，这就导致循环构建，此时通过该集合能解决这个循环依赖问题</font>。Entry对象里面存储了modelClass、dataClass、modelLoaderFactory：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1

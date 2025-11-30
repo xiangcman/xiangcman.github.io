@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='http://xiangcman.xyz/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="RecyclerView源码走读">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="RecyclerView源码走读">
 <meta property='og:description' content="初始化过程 当我们app收到choregrapher的vsync信号的时候，choregrapher中会给主线程的messageQueue发送一条消息， 告诉app需要绘制了，而此时发送是通过给主线程的messageQueue设置一个callback（runnable），所以会触发handler的dispatchMessage-&gt;handleCallback，接着就是触发FrameDisplayEventReceiver（runnable）的doFrame方法，该方法会计算丢帧数，以及执行callbackQueue数组中的callbackQueue，也就执行到了我们的performTraversal方法，该方法里面会执行到measure，最后执行到recyclerview的onMeasure，recyclerview的onMeasure中会判断自己的测量模式，如果是精确的模式，则不测量子item。\ntrace图如下： 接着走到recyclerview的onlayout，在onlayout里面触发dispatchlayout，该方法里面会判断state的step，默认是STEP_START，因此会触发dispatchLayoutStep1和dispatchLayoutStep2，在dispatchLayoutStep1中如果有动画要处理，则会触发layoutManager的onlayoutChildren\n有动画的条件是： 有表项新增或移除、有更改的时候。默认是没有动画要处理，紧接着来到了dispatchLayout2，该方法主要是触发了layoutManager.onLayoutChildren。 调用链如下： linearlayoutmanager.fill-&gt;layoutmanager.layoutChunk-&gt;layoutstate.next-&gt;recycler.getviewforposition-&gt;recycler.tryGetViewHolderForPostionByDeadline-&gt;adapter.createViewHolder-&gt;adapter.bindViewHolder到这里一个holder的创建和bind过程就结束了，紧接着在layoutchunk中触发layoutmanager.addView和layoutmanager.measureChildWithMargin，到这里表项才会被加入到recyclerview中，但是此时不会刷新recyclerview。 上面说到的layoutchunk会在一个while循环中多次执行，直到recyclerview的空间没有了才不会执行，而layoutchunk又会走recycler.next去从缓存中拿viewholder，而此时缓存中没有viewholder，因此会走createviewholder和bindviewholder，所以一开始create和bind次数是一屏能展示多少个表项的次数。 接着在dispatchlayout中会调用dispatchlayoutstep3，该方法里面主要是执行scrap缓存的释放，以及动画的执行\n到这里，测量和layout已经梳理完了，最后就剩draw了： draw里面基本没干什么，还是沿用了viewgroup的drawchild方法，绿色表示非系统方法，因此可以看出来recyclerview是重写了该方法： 总结： 初始化分为onmeasure阶段：如果recyclerview设置了固定宽高，则直接跳过测量，调用到mLayout中，如果不是固定宽高，则会走dispatchLayoutStep1，dispatchLayoutStep2。其中dispatchLayoutStep1是预布局处理，如果有动画要处理才会在该阶段调用到layout的onLayoutChildren。在dispatchLayoutStep2中处理表项的测量。 在onlayout阶段：会判断step还是不是start状态，如果是的话，则再次执行dispatchLayoutStep1和dispatchLayoutStep2。最后调用dispatchLayoutStep3用来做动画执行并释放相关资源。 在draw阶段基本什么都没做，dispatchDraw本身会调用到drawChild，recyclerview只是重写了该方法。\n滑动过程 滑动过程中会调用到scrollByInternal-&gt;layoutmanager.scrollBy-&gt;fill-&gt;layoutchunck。 layoutchunck里面会从缓存中取数据，如果有则命中，没有则走create和bind，接着划出屏幕的表项会先加入到cache缓存中，如果cache缓存满了，则重置该表项，加入到recyclerpool中，下次所以取的时候从recyclerpool根据viewtype取需要重新bind，不需要create，所以在滑动过程中create的次数是cache的大小次数，等到recyclerpool中有缓存的时候就不需要create了。\n在fill过程中，会找到划出屏幕的表项，然后先调用recycleByLayoutState，接着调用到了Linearlayoutmanager.recycleChildren，接着会触发recyclerview.removeAndRecycleViewAt方法，接着就触发了adapter.onViewDetachedFromWindow(viewHolder)，接着就把viewholder缓存到cache和recyclerpool中，对应的方法是recycler.recycleView-&gt;recycleViewHolderInternal,其中cache缓存中默认是2个，如果大于2的话，会把最前面的那个给放到recyclerpool中，接着再把新的viewholder放进来。\n在fiil过程中，会通过LayoutState.next从缓存中获取viewholder，获取的时候会先判断是不是preLayout状态，如果是则从changeScrap缓存中获取，从changeScrap中获取缓存先通过position获取，如果用position获取不到，则再用id去获取（必须adapter设置setHasStableIds为true，并且adapter重写了getItemId）。如果没获取到则从attacheScrap和cache中获取，如果从attach和cache中找不到，则继续通过id从attachScrap中获取，如果还没获取到则从viewcacheExtension中去获取，如果还获取不到则再从recyclerpool中去获取，如果还获取不到则通过create来创建viewholder，接着走bind逻辑。\n所以整个缓存获取顺序： changeScrap(preLayout状态，先通过position获取，没获取到再通过id获取)-&gt;attacheScrap-&gt;cache-&gt;attachScrap(id方式获取)-&gt;viewcacheExtension-&gt;recyclerpool-&gt;createholder-&gt;bindholder 这就是layoutstate.next获取viewholder整个逻辑，上面哪些会触发createholder和bindholder 如果从几个缓存中都拿不到viewholder，则会走createholder的逻辑。\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/'>
 <meta property='og:site_name' content='xiangcman'>
@@ -427,7 +427,8 @@ draw里面基本没干什么，还是沿用了viewgroup的drawchild方法，绿�
 <p>总结：
 初始化分为onmeasure阶段：如果recyclerview设置了固定宽高，则直接跳过测量，调用到mLayout中，如果不是固定宽高，则会走dispatchLayoutStep1，dispatchLayoutStep2。其中dispatchLayoutStep1是预布局处理，如果有动画要处理才会在该阶段调用到layout的onLayoutChildren。在dispatchLayoutStep2中处理表项的测量。
 在onlayout阶段：会判断step还是不是start状态，如果是的话，则再次执行dispatchLayoutStep1和dispatchLayoutStep2。最后调用dispatchLayoutStep3用来做动画执行并释放相关资源。
-在draw阶段基本什么都没做，dispatchDraw本身会调用到drawChild，recyclerview只是重写了该方法。</p></blockquote>
+在draw阶段基本什么都没做，dispatchDraw本身会调用到drawChild，recyclerview只是重写了该方法。</p>
+</blockquote>
 <h3 id="滑动过程">滑动过程
 </h3><p>滑动过程中会调用到scrollByInternal-&gt;layoutmanager.scrollBy-&gt;fill-&gt;layoutchunck。</br>
 layoutchunck里面会从缓存中取数据，如果有则命中，没有则走create和bind，接着划出屏幕的表项会先加入到cache缓存中，如果cache缓存满了，则重置该表项，加入到recyclerpool中，下次所以取的时候从recyclerpool根据viewtype取需要重新bind，不需要create，所以在滑动过程中create的次数是cache的大小次数，等到recyclerpool中有缓存的时候就不需要create了。</p>
@@ -699,7 +700,8 @@ scrap缓存分两种，attachScrap和changeScrap。不是update的会放到attac
 从这里看第0个表项在detach的时候会加入到changeScrap中。</li>
 </ul>
 <blockquote>
-<p>结论：在dispatchLayout1中，先将页面上可见的viewholder从页面上分离，然后将update的viewholder放入到changeScrap中，把非update的viewholder放入到attachScrap中。</p></blockquote>
+<p>结论：在dispatchLayout1中，先将页面上可见的viewholder从页面上分离，然后将update的viewholder放入到changeScrap中，把非update的viewholder放入到attachScrap中。</p>
+</blockquote>
 <ul>
 <li>fill
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/fill%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE.png"
@@ -765,7 +767,8 @@ layoutChunk中判断viewholder如果是remove或者是change时候，才会忽�
 </ul>
 <blockquote>
 <p>结论：
-dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了attacheScrap中，并且创建了索引为10的viewhodler。</p></blockquote>
+dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了attacheScrap中，并且创建了索引为10的viewhodler。</p>
+</blockquote>
 <p>注意：
 在dispatchLayout1过程中，如果viewholder经过了addView之后，则会把它从changescrap或者是attachscrap缓存中移除，所以在dispatchlayout2过程中change和attach的缓存为空的。
 <img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E4%BB%8Escrap%E7%BC%93%E5%AD%98%E4%B8%AD%E7%A7%BB%E9%99%A4%E7%9A%84%E9%80%BB%E8%BE%91.png"
@@ -876,7 +879,8 @@ dispatchLayout1过程中，将第0个放入到changeScrap中，1-9放入到了at
 更新表项的时候，会经历dispatchLayout1，dispatchLayout2，其中在dispatchLayout1（pre-layout阶段）会先把可见的表项给回收到scrap缓存中，回收后，会把可见的表项从recyclerview中分离，其中需要变化的表项会加入到
 changeScrap中（第1个表项），不变化的加入到attachScrap中（第2个到第10个表项）。接着在fill阶段会从scrap缓存中取表项，由于有表项更新，所以此时会去创建不可见的表项（第11个表项），最后会添加到recyclerview上。
 在dispatchLayout2（post-layout阶段）同样会把dispatchLayout1添加进来的表项给添加到changeScrap（第1个表项）和attachScrap（第2个到第11个表项）缓存中，注意此时的表项会是11个表项。在fill阶段会去创建表项0，
-因为post-layout阶段不会去取changeScrap中的viewholder，所以表项0会经历创建。并且此时不会添加第11个表项，因为在fill完第10个表项的时候，其实rv的可用空间已经不够了。上面提到表项添加到rv后，会将viewholder从scrap缓存中移除掉，而由于原来的表项0和表项10没有被添加到rv上。所以还在scrap缓存中，这两个scrap缓存是在dispatchLayout3中被移除的。</p></blockquote>
+因为post-layout阶段不会去取changeScrap中的viewholder，所以表项0会经历创建。并且此时不会添加第11个表项，因为在fill完第10个表项的时候，其实rv的可用空间已经不够了。上面提到表项添加到rv后，会将viewholder从scrap缓存中移除掉，而由于原来的表项0和表项10没有被添加到rv上。所以还在scrap缓存中，这两个scrap缓存是在dispatchLayout3中被移除的。</p>
+</blockquote>
 <h3 id="删除表项">删除表项
 </h3><p>notifyItemRemove(0)</p>
 <h4 id="dispatchlayout1">dispatchLayout1
@@ -1201,7 +1205,8 @@ scrap缓存分两种，一种是attach、另外一种是change，如果viewholde
 	
 ></p>
 <blockquote>
-<p>结论：正常情况下adapterPostion和layoutPosition是相等的，当有add、remove、move的时候两者是不一样的。adapterPostion会算上要改变的表项，比如上面我要删除第一个表项，那么拿到的表项就是第二个。而layoutPostion是页面最终呈现的表项，上面例子中等到post完后，才会真正的删除掉。所以post（绘制后）后layoutposition获取到的是原来的第二个表项。</p></blockquote>
+<p>结论：正常情况下adapterPostion和layoutPosition是相等的，当有add、remove、move的时候两者是不一样的。adapterPostion会算上要改变的表项，比如上面我要删除第一个表项，那么拿到的表项就是第二个。而layoutPostion是页面最终呈现的表项，上面例子中等到post完后，才会真正的删除掉。所以post（绘制后）后layoutposition获取到的是原来的第二个表项。</p>
+</blockquote>
 <h3 id="notifydatasetchange问题">notifydatasetChange问题
 </h3><p><img src="/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/%E8%B0%83%E7%94%A8notifydatasetChange%E5%90%8E%E7%9A%84%E6%97%A5%E5%BF%97.png"
 	width="2574"

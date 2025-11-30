@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='http://xiangcman.xyz/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Android上启动perfetto跟踪">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Android上启动perfetto跟踪">
 <meta property='og:description' content="目的 该篇主要介绍如果在Android下面启动perfetto的跟踪，方便后面能快速使用perfetto工具。\n启动跟踪服务 启动跟踪服务在Android11(R)之后是默认开启的，在Android9(P)和Android10(Q)上，需要执行以下操作，确保已启用跟踪服务：\n1 2 # Needed only on Android 9 (P) and 10 (Q) on non-Pixel phones. adb shell setprop persist.traced.enable 1 如果是在Android9之前的版本，能通过Perfetto 脚本捕获跟踪记录record_android_trace。\n记录跟踪 命令行跟踪 record_android_trace脚本跟踪 首先将record_android_trace脚本下载下来： 1 2 3 4 //下载脚本 curl -O https://raw.githubusercontent.com/google/perfetto/main/tools/record_android_trace //给脚本分配执行权限 chmod u+x record_android_trace 开始跟踪 1 2 ./record_android_trace -o trace_file.perfetto-trace -t 30s -b 64mb \\ sched freq idle am wm gfx view binder_driver hal dalvik camera input res memory 命令解释： 上面的脚本中是通过record_android_trace这个脚本收集，接着-o后面跟的是输出的perfetto能识别的文件，-t是跟踪多久的时间，-b后面是最大的文件大小，最后是一堆的category分类。收集完后，它会自动在ui.perfetto.dev上打开该trace文件。上面拼接的分类有如下解释： sched：进程调度(Scheduler) freq：CPU 频率变化(CPU Frequency) idle：CPU 空闲状态(CPU Idle) am：应用生命周期、进程调度等(Activity Manager) wm：窗口管理、Activity 启动等(Window Manager) gfx:图形渲染、SurfaceFlinger、GPU 活动等(Graphics) view:视图绘制、布局、测量等(View System) binder_driver：进程间通信（Binder IPC） hal：硬件抽象层（Hardware Abstraction Layer） dalvik：ART 运行时、GC、JNI 调用等（ART Runtime） camera：摄像头操作（Camera） input：输入事件处理（Input） res：资源加载（Resource） memory：内存分配和使用（Memory） 想获取更多的类别，可以通过如下的指令获取：\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/android%E4%B8%8A%E5%90%AF%E5%8A%A8perfetto%E8%B7%9F%E8%B8%AA/'>
 <meta property='og:site_name' content='xiangcman'>
@@ -419,7 +419,8 @@
 </div>
 </div><blockquote>
 <p>atrace &ndash;list_categories 列出的主要是 Atrace 类别。这些类别是 Perfetto 中最常用的类别之一。<br>
-一些厂商可能会添加自己的自定义类别，这些也会在这里列出。</p></blockquote>
+一些厂商可能会添加自己的自定义类别，这些也会在这里列出。</p>
+</blockquote>
 <h5 id="使用设备上的-systembinperfetto-命令">使用设备上的 /system/bin/perfetto 命令
 </h5><p>首先我得设备是Android13的，所以具备通过adb的命令来抓取跟踪文件，需要在<strong>开发者选项中选择调试应用为你要调试的应用</strong>。</p>
 <img src="选择调试的应用.png" width ="300"/>  

@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='http://xiangcman.xyz/p/recyclerview%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="RecyclerView优化实践">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="RecyclerView优化实践">
 <meta property='og:description' content="上一篇(RecyclerView性能优化)理论知识讲过recyclerview有哪些优化点，该篇主要结合理论知识来实践下优化手段。\nxml布局替换为动态创建 一个简单的textview先通过xml创建，通过traceview观察耗时 这次三次创建viewholder的耗时，其中第一次由于需要类加载到jvm中，所以会耗时长一些，后面的话，基本在5ms左右。 通过new的形式创建viewholder： 第一次耗时在6ms，第二次耗时在4ms，基本比xml的形式要少个1ms 注意：这里演示的只是一个简单的textview，如果平时开发的布局是比较复杂，并且嵌套层级比较深的话，这种差距会更加明显。 通过perfetto观察create过程： 基本数据和traceview保持一致。 recyclerview.setHasFixSize(true) 用了sethasfixsize(true)的时候，会通过consumePendingUpdateOperations触发recyclerview的layout过程，没有走从根view到recyclerview的measure、layout过程，实际sethasfixsize(true)会给choreographer发送一条callback_animal的消息： 其实我们的属性动画也是这么做的，给choreographer发送一条animal的消息。sethasfixsize(true)在表项尺寸不发生变化的时候使用，减少不必要的measure过程。\nsethasstableids(true)和重写getItemId： 调用notifydatasetChange后，不会走oncreateviewholder： 从trace分析： detach过程调用的是scrap的缓存，并且此时不会回调ondetachfromwindow过程，并且都加入到了attach的scrap缓存中，在fill阶段通过重写的getItemId拿到了viewholder： 至于为什么会onbind，是因为notify过后的item的状态变成了invalid状态，所以会重新走onbind过程。\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/recyclerview%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5/'>
 <meta property='og:site_name' content='xiangcman'>

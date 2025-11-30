@@ -847,7 +847,8 @@ ByteArrayInputStream：&lt;/p&gt;
 &lt;p&gt;BoosterTransformInvocation中全量编译过程就不分析了，和增量编译大差不差。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;小结：
-booster中修改字节码过程是在BoosterTransformInvocation中，它将具体的修改交给了Transformer的子类，其中修改步骤是先遍历TransformInput中JarInput和directoryInput的class文件，然后获取到class的byteArray，然后经过Transformer子类的transform方法修改byteArray，修改完后，再回写到原始class对应的目录中，这样就达到了修改并覆盖class的目的。&lt;/p&gt;&lt;/blockquote&gt;
+booster中修改字节码过程是在BoosterTransformInvocation中，它将具体的修改交给了Transformer的子类，其中修改步骤是先遍历TransformInput中JarInput和directoryInput的class文件，然后获取到class的byteArray，然后经过Transformer子类的transform方法修改byteArray，修改完后，再回写到原始class对应的目录中，这样就达到了修改并覆盖class的目的。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;booster-transform-asm&#34;&gt;booster-transform-asm
 &lt;/h3&gt;&lt;p&gt;前面分析了boosterPlugin中会遍历Transform的子类然后执行它的transform方法，其中AsmTransformer是实现了Transformer接口：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
@@ -963,7 +964,8 @@ booster中修改字节码过程是在BoosterTransformInvocation中，它将具�
 &lt;/div&gt;
 &lt;/div&gt;&lt;blockquote&gt;
 &lt;p&gt;小结:
-可以发现asm字节码操作，基本都是模版代码，首先通过classReader读取到byteArray（在前面学习asm的时候，是通过FileInputStream来读取的），然后把class信息映射到classNode对象上。然后遍历字节码操作类，将要修改的classNode给到操作类，修改完后，将classNode同步到classWriter上，最后把修改后的byteArray回写到上层中。&lt;/p&gt;&lt;/blockquote&gt;
+可以发现asm字节码操作，基本都是模版代码，首先通过classReader读取到byteArray（在前面学习asm的时候，是通过FileInputStream来读取的），然后把class信息映射到classNode对象上。然后遍历字节码操作类，将要修改的classNode给到操作类，修改完后，将classNode同步到classWriter上，最后把修改后的byteArray回写到上层中。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;booster-transform-toast&#34;&gt;booster-transform-toast
 &lt;/h3&gt;&lt;p&gt;上面分析过会通过ClassTransformer的子类来修改字节码，toast字节码的修改是在ToastTransformer这个子类中，主要来看下它的transform方法：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;

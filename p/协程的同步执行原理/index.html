@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%90%8C%E6%AD%A5%E6%89%A7%E8%A1%8C%E5%8E%9F%E7%90%86/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程的同步执行原理">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="协程的同步执行原理">
 <meta property='og:description' content="首先看一个例子： 日志如下： 和withContext的区别是launch后面的代码无需等到async执行完才执行。 字节码如下： launch部分启动的协程的invokeSuspend逻辑里面，只有label0的逻辑，和withContext不同的是会有挂起部分的判断，所以是同步执行的。\nasync的异步执行： 日志如下： 可以看到async2是先执行的，因为它没有进行delay，等到两个async执行完了后，才会执行launch里面的代码。 字节码如下： 编译后的代码： label=0的时候，通过async启动了两个协程，我们这里叫async1和async2，并且在里面通过await挂起了launch启动的协程。 分析：async1调用await后，由于状态是COROUTINE_SUSPENDED，所以第一次invokeSuspend方法结束，此时label=1。等到await逻辑执行完后，又会第二次执行invokeSuspend方法，此时由于lable=1，会执行async2的await方法，此时返回COROUTINE_SUSPENDED，所以invokeSuspend第二次结束，此时label=2。等到async2的await执行完后，第三次执行invokeSuspend方法，由于此时label=2，所以此时切回到自己的线程，执行launch部分的代码逻辑。\n总结： async的同步执行是因为没有挂起SuspendLambda的invokeSuspend方法，所以父协程不会挂起，而await方法是挂起函数，默认是返回COROUTINE_SUSPENDED，所以父协程挂起，当子协程逻辑执行完后，会回调父协程的invokeSuspend，当再次执行invokeSuspend的时候，label值发生了变化，因此会执行launch部分的逻辑。\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%90%8C%E6%AD%A5%E6%89%A7%E8%A1%8C%E5%8E%9F%E7%90%86/'>
 <meta property='og:site_name' content='xiangcman'>
@@ -332,7 +332,8 @@
 	
 ></p>
 <blockquote>
-<p>launch部分启动的协程的invokeSuspend逻辑里面，只有label0的逻辑，和withContext不同的是会有挂起部分的判断，所以是同步执行的。</p></blockquote>
+<p>launch部分启动的协程的invokeSuspend逻辑里面，只有label0的逻辑，和withContext不同的是会有挂起部分的判断，所以是同步执行的。</p>
+</blockquote>
 <p>async的异步执行：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%90%8C%E6%AD%A5%E6%89%A7%E8%A1%8C%E5%8E%9F%E7%90%86/async%E5%BC%82%E6%AD%A5%E6%89%A7%E8%A1%8C%E7%9A%84%E4%BE%8B%E5%AD%90.png"
 	width="1480"

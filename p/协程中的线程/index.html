@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程中的线程">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="协程中的线程">
 <meta property='og:description' content="在上一节介绍过Dispatchers.IO，它是一个CoroutineDispatcher对象，CoroutineDispatcher的执行是在DispatchedContinuation中的resumeCancellableWith方法，如果CoroutineDispatcher的isDispatchNeeded返回true，则会执行CoroutineDispatcher的dispatch方法。否则直接执行该runnable。\nDispatchers.Main 在安卓平台下，它其实是一个HandlerContext对象： 看下它的isDispatchNeeded和dispatch方法： 此时invokeImmediately默认是false，因此isDispatchNeeded返回true。所以会执行它的dispatch方法。在dispatch方法中将runnable给到了主线程的消息队列中，然后等主线程从消息队列中取该runnable。所以在上一节例子中它是晚于onCreate方法执行的。\nDispatchers.Main.immediate 它是HandlerContext中的immediate变量: 可以看到它是新创建了一个HandlerContext，并且invokeImmediately是true。在上一节的例子中，它的isDispatchNeeded返回false。所以它是直接执行SuspendLambda的resumeWith方法，因此上一节例子中它是要早于Dispatchs.Main执行的。\nDispatchers.IO 看下它的CoroutineDispatcher，对应的子类是DefaultIoScheduler，CoroutineDispatcher的isDispatchNeeded方法默认返回true，所以会执行它的dispatch方法： 在dispatch方法中调用了default的dispatch方法，default实际是一个LimitedDispatcher对象，看下它的dispatch方法： 在上面2处，判断当前runningWokers的数量，如果大于parallelism的时候，则不创建Worker，此处的parallelism的大小是64。从此处也能看出来Dispatchers.IO的线程数量不会超过64个。 最终该方法里面会通过DefaultScheduler.dispatchWithContext来创建CoroutineScheduler，来看下创建线程池的几个参数： 核心线程数： 最小2个，最大是cpu的核数。 最大线程数： 最大线程数取值(1 shl BLOCKING_SHIFT) - 2：最终得到的值是2^21-2 = 2097150。 非核心线程空闲时间是60s。\n结论：Dispatchers.IO指定的线程池最少线程数是cpu的核数，最大线程数是64个。\nDispatchers.Default 它是由DefaultScheduler构建的线程池，它所创建的最大的线程个数为:Math.max(2,cpu核数)。 上面两者在源码中主要体现在通过CoroutineScheduler的corePoolSize来控制最大线程数，而上面的Dispatchers.IO的最大64个线程其实在LimitedDispatcher中通过runningWorkers的原子类来控制着最大的任务数，当超过64个任务的时候，就不允许往里面添加了。它是通过把任务添加到queue中，如果当前正在执行的任务数小于64个的时候，才会从queue取走最前面的task，如果当前大于正在执行大于64个，则不会从queue中取最前面的task。\nDispatchers.IO和Dispatchers.Default都是由DefaultScheduler构建的，而DefaultScheduler其实是一个单例，因此不难看出它两是共用一个线程池的，只不过当Dispatchers.IO时候，最大线程个数控制在Math.min(64,cpu核数)，最多不会超过64个，Dispatchers.Default控制在cpu核数个数上。Dispatchers.Default常用作cpu密集型的任务，比如图片模糊处理、繁杂的计算型可以用这种类型的线程池。Dispatchers.IO由于它的线程数量多，并且它不能消耗cpu资源，因此常用作io处理，文件读写等操作上。 关于这点，可以看这篇文章：dispatcher拆解\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B/'>
 <meta property='og:site_name' content='xiangcman'>
@@ -463,14 +463,16 @@
 最大线程数取值(1 shl BLOCKING_SHIFT) - 2：最终得到的值是2^21-2 = 2097150。
 非核心线程空闲时间是60s。</p>
 <blockquote>
-<p>结论：Dispatchers.IO指定的线程池最少线程数是cpu的核数，最大线程数是64个。</p></blockquote>
+<p>结论：Dispatchers.IO指定的线程池最少线程数是cpu的核数，最大线程数是64个。</p>
+</blockquote>
 <h2 id="dispatchersdefault">Dispatchers.Default
 </h2><p>它是由DefaultScheduler构建的线程池，它所创建的最大的线程个数为:Math.max(2,cpu核数)。
 上面两者在源码中主要体现在通过CoroutineScheduler的corePoolSize来控制最大线程数，而上面的Dispatchers.IO的最大64个线程其实在LimitedDispatcher中通过runningWorkers的原子类来控制着最大的任务数，当超过64个任务的时候，就不允许往里面添加了。它是通过把任务添加到queue中，如果当前正在执行的任务数小于64个的时候，才会从queue取走最前面的task，如果当前大于正在执行大于64个，则不会从queue中取最前面的task。</p>
 <blockquote>
 <p>Dispatchers.IO和Dispatchers.Default都是由DefaultScheduler构建的，而DefaultScheduler其实是一个单例，因此不难看出它两是共用一个线程池的，只不过当Dispatchers.IO时候，最大线程个数控制在Math.min(64,cpu核数)，最多不会超过64个，Dispatchers.Default控制在cpu核数个数上。Dispatchers.Default常用作cpu密集型的任务，比如图片模糊处理、繁杂的计算型可以用这种类型的线程池。Dispatchers.IO由于它的线程数量多，并且它不能消耗cpu资源，因此常用作io处理，文件读写等操作上。
 关于这点，可以看这篇文章：<a class="link" href="https://ntutn.top/posts/dispatcher%E6%8B%86%E8%A7%A3/"  target="_blank" rel="noopener"
-    >dispatcher拆解</a></p></blockquote>
+    >dispatcher拆解</a></p>
+</blockquote>
 
 </section>
 

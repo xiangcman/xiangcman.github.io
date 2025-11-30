@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="协程的异常处理">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="协程的异常处理">
 <meta property='og:description' content="invokeOnCompletion监听协程状态 在了解协程的异常处理之前，先来熟悉下协程之间job是如何绑定关系，还是通过一个例子来熟悉他们之间的关系：\n1 2 3 4 5 6 7 8 private fun demo(){ val job = GlobalScope.launch { Log.d(TAG, &#34;demo: launch代码&#34;) } job.invokeOnCompletion { Log.d(TAG, &#34;demo: invokeOnCompletion&#34;) } } 执行结果：\n1 2 CoroutineJobActivity com.example.coroutinescopedemo D demo: launch代码 CoroutineJobActivity com.example.coroutinescopedemo D demo: invokeOnCompletion 可以看出来invokeOnCompletion是job执行完毕的回调。\n通过launch创建协程内部会构造一个StandaloneCoroutine，它就是一个job，并且launch返回的就是该job： StandaloneCoroutine继承自AbstractCoroutine： 因此parentHandle为NonDisposableHandle，然后方法结束。 此时执行完launch后，继续执行了job的invokeOnCompletion方法，它是一个抽象方法，实现方法在jobSupport类： ">
 <meta property='og:url' content='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/'>
 <meta property='og:site_name' content='xiangcman'>
@@ -359,7 +359,8 @@
 </span></span></code></pre></td></tr></table>
 </div>
 </div><blockquote>
-<p>可以看出来invokeOnCompletion是job执行完毕的回调。</p></blockquote>
+<p>可以看出来invokeOnCompletion是job执行完毕的回调。</p>
+</blockquote>
 <p>通过launch创建协程内部会构造一个StandaloneCoroutine，它就是一个job，并且launch返回的就是该job：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E7%9A%84%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/launch%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81.png"
 	width="1338"
@@ -509,11 +510,13 @@ StandaloneCoroutine继承自AbstractCoroutine：
 </div><p>它也是实现了CompletionHandler接口，CompletionHandler是一个闭包，从上面继承以及JobNode实现来看，在它的invoke实现里面，会触发传进来的CompletionHandler的invoke实现，从实现来看其实这就是个静态代理的模式。</p>
 <blockquote>
 <p>结论：
-makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节点。</br></p></blockquote>
+makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节点。</br></p>
+</blockquote>
 <p>回到上面的invokeOnComletion的实现，创建了InvokeOnCompletion后，会走到loopOnState的函数，它是遍历state，它的初始状态是一个Empty状态，并且state.isActive=true。所以最终把刚才创建的InvokeOnCompletion设置到了state上，并且返回了该InvokeOnCompletion。</p>
 <blockquote>
 <p>结论：
-当调用了job的invokeOnCompletion方法后，会把外界创建好的CompletionHandler传给了InvokeCompletion，InvokeCompletion是一个JobNode，在它的invoke实现中，会回调到外界的CompletionHandler中。并且把创建的InvokeCompletion设置到当前job的state上了。</p></blockquote>
+当调用了job的invokeOnCompletion方法后，会把外界创建好的CompletionHandler传给了InvokeCompletion，InvokeCompletion是一个JobNode，在它的invoke实现中，会回调到外界的CompletionHandler中。并且把创建的InvokeCompletion设置到当前job的state上了。</p>
+</blockquote>
 <p>协程体执行完job的执行：
 在之前分析协程体其实是一个SuspendLambda，在它的invokeSuspend调用完后，会执行它的continuation的resumeWith方法，在上面例子中其实是StandaloneCoroutine，它是一个job，所以看下它的resumeWith实现：</p>
 <div class="highlight"><div class="chroma">
@@ -765,7 +768,8 @@ makeNode内部会返回一个InvokeOnCompletion对象，它是一个JobNode节�
 ></p>
 <blockquote>
 <p>如果context中CoroutineExceptionHandler不为空，则异常不会往上抛了，所以此例中定义了context的CoroutineExceptionHandler程序不会崩溃。
-回到上面再来看invokeOnCompletion的CompletionHandler触发时机，它是在finalizeFinishingState中触发，接着会调用到completeStateFinalization，最终在里面触发了invokeOnCompletion传进来的CompletionHandler。</p></blockquote>
+回到上面再来看invokeOnCompletion的CompletionHandler触发时机，它是在finalizeFinishingState中触发，接着会调用到completeStateFinalization，最终在里面触发了invokeOnCompletion传进来的CompletionHandler。</p>
+</blockquote>
 <p>协程异常try住：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">

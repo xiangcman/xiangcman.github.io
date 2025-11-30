@@ -6,7 +6,7 @@
 
 <link rel='canonical' href='http://xiangcman.xyz/p/gradle%E5%BF%85%E5%A4%87/'>
 
-<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="Gradle必备">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Gradle必备">
 <meta property='og:description' content="Gradle基础 gradle是一个脚本框架，用来构建android程序的一个脚本，在认识前，我们先以最基础的方式来认识它。\ngradle配置 首先在官网下载对应的版本，这里我选择6.6.1-all的版本，下载完后，放到指定的目录，然后配置gradle的环境变量:\nopen -e .bash_profile 打开配置文件 添加 GRADLE_HOME、PATH 1 2 3 4 5 6 7 export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=${PATH}:/Users/xiangcheng/gradle/gradle-6.6.1/bin ----------------官方写法如下-------------------------------- export GRADLE_HOME=/Users/xiangcheng/gradle/gradle-6.6.1 export PATH=$PATH:$GRADLE_HOME/bin source .bash_profile 重置配置文件，以便新 path 生效 open -e ~/.zshrc 打开另一个配置 在最后一行添加 source ~/.bash_profile source ~/.zshrc 重置配置文件 配置 zshrc 是因为有的机器 bash_profile 配置不管用，添加这个就行了\n运行 gradle &ndash;version，出现版本号则 Gradle 配置成功 注意：gradle版本和jdk版本需要有对应关系： 这里我安装的是gradle-6.6.1的版本，因此我需要设置JDK8，如果本地安装的jdk版本多个的话，mac会使用最高的版本，先查看本地安装了哪些jdk版本 1 /usr/libexec/java_home -V 输出如下：\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/gradle%E5%BF%85%E5%A4%87/'>
 <meta property='og:site_name' content='xiangcman'>
@@ -333,7 +333,8 @@
     
     <h3 id="gradle基础">Gradle基础
 </h3><blockquote>
-<p>gradle是一个脚本框架，用来构建android程序的一个脚本，在认识前，我们先以最基础的方式来认识它。</p></blockquote>
+<p>gradle是一个脚本框架，用来构建android程序的一个脚本，在认识前，我们先以最基础的方式来认识它。</p>
+</blockquote>
 <h4 id="gradle配置">gradle配置
 </h4><p>首先在<a class="link" href="https://services.gradle.org/distributions/"  target="_blank" rel="noopener"
     >官网</a>下载对应的版本，这里我选择6.6.1-all的版本，下载完后，放到指定的目录，然后配置gradle的环境变量:</p>
