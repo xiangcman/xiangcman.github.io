@@ -884,7 +884,37 @@ app打包过程中，总会用先依赖的module中定义的资源，即使该mo
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">21</span><span class="w"> </span><span class="k">return</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>在12行，通过getstatic来获取com/xc/lib/R$color.black_bg，返回类型是I，表示整形。所以上面①-④的操作就是在获取该指令，在⑤处获取该资源类型，上面TestView中是获取color类型的资源，在⑥处表示在该获取变量的指令前插入一条LdcInsnNode的常量指令，在⑦处移除当前获取变量的指令。在⑧处如果是int数组类型的指令直接把owner替换成app目录的包名。
+</div><p>在12行，通过getstatic来获取com/xc/lib/R$color.black_bg，返回类型是I，表示整形。所以上面①-④的操作就是在获取该指令，在⑤处获取该资源类型，上面TestView中是获取color类型的资源，加3是为了要获取在/R$后面的字符的开始位置，⑥处表示在该获取变量的指令前插入一条LdcInsnNode的常量指令，在⑦处移除当前获取变量的指令。在⑧处如果是int数组类型的指令直接把owner替换成app目录的包名。
+其实还有个工具可以查看上面FieldInsnNode的owner、des、name信息，比如getstatic #5 &lt;com/xc/lib/R$color.black_bg : I&gt;这条指令在jclasslib bytecode viewer，比如上面的属性信息展示如下：
+<img src="/p/booster%E5%8C%85%E4%BD%93%E7%A7%AF%E4%BC%98%E5%8C%96%E4%B9%8Br%E5%86%85%E8%81%94/FieldInsnNode%E6%8C%87%E4%BB%A4.png"
+	width="1728"
+	height="530"
+	srcset="/p/booster%E5%8C%85%E4%BD%93%E7%A7%AF%E4%BC%98%E5%8C%96%E4%B9%8Br%E5%86%85%E8%81%94/FieldInsnNode%E6%8C%87%E4%BB%A4_hu_f075ca729d0bd3cd.png 480w, /p/booster%E5%8C%85%E4%BD%93%E7%A7%AF%E4%BC%98%E5%8C%96%E4%B9%8Br%E5%86%85%E8%81%94/FieldInsnNode%E6%8C%87%E4%BB%A4_hu_907321cd70eda037.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="326"
+		data-flex-basis="782px"
+	
+>
+<img src="/p/booster%E5%8C%85%E4%BD%93%E7%A7%AF%E4%BC%98%E5%8C%96%E4%B9%8Br%E5%86%85%E8%81%94/FieldInsnNode%E6%8C%87%E4%BB%A4%E7%9A%84%E8%AF%A6%E7%BB%86%E4%BF%A1%E6%81%AF.png"
+	width="1602"
+	height="342"
+	srcset="/p/booster%E5%8C%85%E4%BD%93%E7%A7%AF%E4%BC%98%E5%8C%96%E4%B9%8Br%E5%86%85%E8%81%94/FieldInsnNode%E6%8C%87%E4%BB%A4%E7%9A%84%E8%AF%A6%E7%BB%86%E4%BF%A1%E6%81%AF_hu_beac27a06e661a44.png 480w, /p/booster%E5%8C%85%E4%BD%93%E7%A7%AF%E4%BC%98%E5%8C%96%E4%B9%8Br%E5%86%85%E8%81%94/FieldInsnNode%E6%8C%87%E4%BB%A4%E7%9A%84%E8%AF%A6%E7%BB%86%E4%BF%A1%E6%81%AF_hu_50b16d9724b062e3.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="468"
+		data-flex-basis="1124px"
+	
+>
+上面属性是一个常量，所以它是在常量池中，需要是05，类名对应了owner，也就是说该属性是属于哪个类下的，名字是black_bg，对应了name，I是返回值，int类型，对应了des。
 结合修改后的字节码，查看TestView修改后的字节码，通过BytecodeViewer来查看编译后的class：
 <img src="/p/booster%E5%8C%85%E4%BD%93%E7%A7%AF%E4%BC%98%E5%8C%96%E4%B9%8Br%E5%86%85%E8%81%94/%E4%BF%AE%E6%94%B9%E5%90%8E%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81.png"
 	width="3016"
@@ -917,7 +947,7 @@ app打包过程中，总会用先依赖的module中定义的资源，即使该mo
 ></br>
 可以看到该内部类所有的属性被置为空了，包括主module下的R$color.class下的属性也是清空了。所以booster的方案是不区分主module还是lib的module。</p>
 <blockquote>
-<p>为什么R$styleable中的静态变量不会被移除？并且主module是原封不动，lib的module是只保留了数组类型的变量，并且是在static代码块中定义数组，并且数组的定于缺少<code>public static final</code>关键字：</p>
+<p>为什么R$styleable中的静态变量不会被移除？并且主module是原封不动，lib的module是只保留了数组类型的变量，并且是在static代码块中定义数组，并且数组的定义缺少<code>public static final</code>关键字：</p>
 </blockquote>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">

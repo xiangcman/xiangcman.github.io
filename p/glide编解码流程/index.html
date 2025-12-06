@@ -310,7 +310,7 @@
 
 
                 <time class="article-time--reading">
-                    26 minute read
+                    27 minute read
                 </time>
             </div>
         
@@ -677,7 +677,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>entries是Entry对象的集合，<font style="font-weight:bold; color:red; font-size:16px; ">注意了上面使用了alreadyUsedEntries集合标记Entry有没有被构建，比如在构建a这个modelLoader中又去构建b这个modelLoader，而在b中又去构建a，这就导致循环构建，此时通过该集合能解决这个循环依赖问题</font>。Entry对象里面存储了modelClass、dataClass、modelLoaderFactory：</p>
+</div><p>entries是Entry对象的集合，<font style="font-weight:bold; color:red; font-size:16px; ">注意了上面使用了alreadyUsedEntries集合标记Entry有没有被构建，比如在构建a这个modelLoader中又去构建b这个modelLoader，而在b中又去构建a，这就导致循环构建，此时通过该集合能解决这个循环依赖问题，以及解决重复构建的问题，比如在a中需要构建b，那下次构建b的时候就无需再次构建了</font>。Entry对象里面存储了modelClass、dataClass、modelLoaderFactory：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -815,7 +815,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>首先将model转化成uri，然后调用uriLoader.handles(uri)过滤，在StringLoader中的uriLoader是一个MultiModelLoader，它是在创建StringLoader的时候传进来的，比如第一个StringLoader创建如下：</p>
+</div><p>首先将model转化成uri，然后调用uriLoader.handles(uri)过滤，在StringLoader中的uriLoader是一个MultiModelLoader<font style="font-weight:bold; color:red; font-size:16px; ">(继承自ModelLoader，这其实就是个代理模式，将创建LoadData交给了外界传来的ModelLoader)</font>，它是在创建StringLoader的时候传进来的，比如第一个StringLoader创建如下：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -928,20 +928,25 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><ol>
-<li>
-<p>StringLoader:uriLoader = MultiModelLoader(modelLoaders=MultiModelLoader
-[DataUrlLoader, AssetUriLoader, MediaStoreImageThumbLoader, MediaStoreVideoThumbLoader, QMediaStoreUriLoader, UriLoader, UrlUriLoader, UrlUriLoader])</p>
-</li>
-<li>
-<p>StringLoader:uriLoader = MultiModelLoader(modelLoaders=MultiModelLoader
-[QMediaStoreUriLoader, UriLoader])</p>
-</li>
-<li>
-<p>StringLoader:uriLoader = MultiModelLoader(modelLoaders=MultiModelLoader
-[ResourceUriLoader, AssetUriLoader, UriLoader])</p>
-</li>
+</div><p>上面MultiModelLoaderFactory的build两参(modelClass和dataClass)和前面介绍的单参build方法其实类似，只不过这里可能会创建一个MultiModelLoader，其实这里就是ModelLoader的依赖构建。直接看三个StringLoader的构建结果：</p>
+<blockquote>
+<ol>
+<li>StringLoader:uriLoader = MultiModelLoader(modelLoaders=
+[DataUrlLoader, AssetUriLoader, MediaStoreImageThumbLoader, MediaStoreVideoThumbLoader, QMediaStoreUriLoader, UriLoader, UrlUriLoader, UrlUriLoader])</li>
 </ol>
+</blockquote>
+<blockquote>
+<ol start="2">
+<li>StringLoader:uriLoader = MultiModelLoader(modelLoaders=
+[QMediaStoreUriLoader, UriLoader])</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="3">
+<li>StringLoader:uriLoader = MultiModelLoader(modelLoaders=
+[ResourceUriLoader, AssetUriLoader, UriLoader])</li>
+</ol>
+</blockquote>
 <p>所以经过StringLoader的uriLoader(MultiModelLoader)的handles方法过滤：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -1085,7 +1090,11 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>所以最终的LoadData是此处创建的，fetcher是HttpUrlFetcher。</p>
+</div><p>所以最终的LoadData是此处创建的，fetcher是HttpUrlFetcher。<br></p>
+<blockquote>
+<p>为什么Glide在创建ModelLoader的时候不直接在registry阶段不直接把对应的ModelLoader组装成Entry，而要通过ModelLoaderFactory来创建ModelLoader？
+上面说过ModelLoader的创建可能依赖其它的ModelLoader，如果把ModelLoader直接创建出来，相当于把依赖的ModelLoader也创建出来了，这样会把一些不使用的ModelLoader也创建出来了，结果就是创建一些无用的ModelLoader出来，那样内存也会增加很大，而用ModelLoaderFactory的形式注册，只需要注册一个空的ModelLoaderFactory就行，内存上得到控制。</p>
+</blockquote>
 <h3 id="inputstream到文件">InputStream到文件
 </h3><p>在前面分析加载流程的时候，讲过SourceGenerator获取到InputStream后，将该InputStream保存到本地文件中，这个过程涉及到一次编码，然后将文件转成byteBuffer后，完成bitmap的解码，最后将bitmap又进行一次编码，这一次是对缩放后的图片进行编码。我们先看下SourceGenerator中如何将InputStream保存到本地文件，首先看下SourceGenerator的startNext方法：</p>
 <div class="highlight"><div class="chroma">
@@ -1278,7 +1287,18 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在初始化InputStreamRewinder时候，将传进来的InputStream包装成RecyclableBufferedInputStream，相较于java中的BufferedInputStream，它是一个从byteArrayPool中申请byte[]数组的流，并且申请的默认byte[]数组大小是64KB，每次在扩容的时候，不是通过new byte[]的形式申请内存，而是通过byteArrayPool获取，申请到新的内存后会将旧的内存放到byteArrayPool中。基于以上特性能看出来，RecyclableBufferedInputStream是一个内存能循环利用的字节输入流，减少了GC。<br>
-接着通过DecodeHelper的getSourceEncoder方法获取到Encoder，跟上面获取DataRewinder是一样的，它是通过Registry到EncoderRegistry，然后也是比较传进来的class类型是不是注册的class子类型：</p>
+DataRewinder类图：</p>
+<p><img src="/p/glide%E7%BC%96%E8%A7%A3%E7%A0%81%E6%B5%81%E7%A8%8B/DataRewinder%E7%B1%BB%E5%9B%BE.svg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+></p>
+<p>接着通过DecodeHelper的getSourceEncoder方法获取到Encoder，跟上面获取DataRewinder是一样的，它是通过Registry到EncoderRegistry，然后也是比较传进来的class类型是不是注册的class子类型：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1309,9 +1329,25 @@
 </span><span class="lnt">26
 </span><span class="lnt">27
 </span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">EncoderRegistry</span><span class="w"> </span><span class="p">{</span><span class="w">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">Registry</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">X</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Encoder</span><span class="o">&lt;</span><span class="n">X</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">getSourceEncoder</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Encoder</span><span class="o">&lt;</span><span class="n">X</span><span class="o">&gt;</span><span class="w"> </span><span class="n">encoder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">encoderRegistry</span><span class="p">.</span><span class="na">getEncoder</span><span class="p">((</span><span class="n">Class</span><span class="o">&lt;</span><span class="n">X</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="na">getClass</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">encoder</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">encoder</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">EncoderRegistry</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Entry</span><span class="o">&lt;?&gt;&gt;</span><span class="w"> </span><span class="n">encoders</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;&gt;</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@SuppressWarnings</span><span class="p">(</span><span class="s">&#34;unchecked&#34;</span><span class="p">)</span><span class="w">
@@ -1600,7 +1636,20 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>这就是编码的核心了，通过从字节池子中获取一个临时的byte数组，每次从输入流中读取，读取后通过输出流将buffer数组写到文件中，写完后，并回收该byte数组。</p>
+</div><p>这就是编码的核心了，通过从字节池子中获取一个临时的byte数组，每次从输入流中读取，读取后通过输出流将buffer数组写到文件中，写完后，并回收该byte数组。<br>
+DiskCache类图:<t></p>
+<p><img src="/p/glide%E7%BC%96%E8%A7%A3%E7%A0%81%E6%B5%81%E7%A8%8B/DiskCache%E7%B1%BB%E5%9B%BE.svg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+></p>
+<br>
+在上面类图中DiskLruCacheFactory专门用来创建DiskLruCacheWrapper的，它是实现了DiskCache接口，实际上保存数据是DiskLruCache类，DiskLruCacheFactory需要CacheDirectoryGetter接口获取保存的目录，所以InternalCacheDiskCacheFactory实现类中传给DiskLruCacheFactory一个CacheDirectoryGetter的匿名内部类，将内存存储的路径传给父类。
 <h3 id="解码过程">解码过程
 </h3><h4 id="解码前获取bytebufferfetcher">解码前：获取ByteBufferFetcher
 </h4><p>保存原始图片到本地后，就是bitmap编码了，在之前的glide加载流程介绍过，回到SourceGenerator的startNext方法，调完cacheData后，就会调用DataCacheGenerator的startNext方法：</p>
@@ -1645,16 +1694,18 @@
 </span><span class="lnt">37
 </span><span class="lnt">38
 </span><span class="lnt">39
+</span><span class="lnt">40
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">startNext</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="c1">//SourceGenerator的startNext方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">startNext</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dataToCache</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sourceCacheGenerator</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">sourceCacheGenerator</span><span class="p">.</span><span class="na">startNext</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//DataCacheGenerator的startNext方法</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">startNext</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">modelLoaders</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">hasNextModelLoader</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">sourceIdIndex</span><span class="o">++</span><span class="p">;</span><span class="w">
