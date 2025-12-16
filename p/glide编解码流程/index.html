@@ -1652,7 +1652,7 @@ DiskCache类图:<t></p>
 在上面类图中DiskLruCacheFactory专门用来创建DiskLruCacheWrapper的，它是实现了DiskCache接口，实际上保存数据是DiskLruCache类，DiskLruCacheFactory需要CacheDirectoryGetter接口获取保存的目录，所以InternalCacheDiskCacheFactory实现类中传给DiskLruCacheFactory一个CacheDirectoryGetter的匿名内部类，将内存存储的路径传给父类。
 <h3 id="解码过程">解码过程
 </h3><h4 id="解码前获取bytebufferfetcher">解码前：获取ByteBufferFetcher
-</h4><p>保存原始图片到本地后，就是bitmap编码了，在之前的glide加载流程介绍过，回到SourceGenerator的startNext方法，调完cacheData后，就会调用DataCacheGenerator的startNext方法：</p>
+</h4><p>保存原始图片到本地后，就是bitmap解码了，在之前的glide加载流程介绍过，回到SourceGenerator的startNext方法，调完cacheData后，就会调用DataCacheGenerator的startNext方法：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1

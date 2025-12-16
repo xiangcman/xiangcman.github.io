@@ -232,6 +232,11 @@
       <ol>
         <li><a href="#一级缓存">一级缓存</a></li>
         <li><a href="#二级缓存">二级缓存</a></li>
+        <li><a href="#三级缓存">三级缓存</a></li>
+        <li><a href="#四级缓存">四级缓存</a></li>
+        <li><a href="#一级缓存的存储">一级缓存的存储</a></li>
+        <li><a href="#二级缓存的存储">二级缓存的存储</a></li>
+        <li><a href="#总结">总结</a></li>
       </ol>
     </li>
   </ol>
@@ -302,7 +307,7 @@
 
 
                 <time class="article-time--reading">
-                    3 minute read
+                    7 minute read
                 </time>
             </div>
         
@@ -638,8 +643,48 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><h3 id="二级缓存">二级缓存
-</h3><p>它表示当前图片正在使用的次数，后面会用到，知道当前给acquired累加次数就行。接着回到上面Engine的loadFromMemory方法，如果在一级缓存中找不到，接着调用了loadFromCache方法：</p>
+</div><p>它表示当前图片正在使用的次数，后面会用到，知道当前给acquired累加次数就行。在一级缓存中，可以看到弱引用使用了引用队列，它是用来检测我们弱引用对象是否被回收的标志，在ActiveResources的cleanReferenceQueue方法中判断队列中是否存在弱引用对象：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">cleanReferenceQueue</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">isShutdown</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">ResourceWeakReference</span><span class="w"> </span><span class="n">ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">ResourceWeakReference</span><span class="p">)</span><span class="w"> </span><span class="n">resourceReferenceQueue</span><span class="p">.</span><span class="na">remove</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">cleanupActiveReference</span><span class="p">(</span><span class="n">ref</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">// This section for testing only.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">DequeuedResourceCallback</span><span class="w"> </span><span class="n">current</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cb</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">current</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">current</span><span class="p">.</span><span class="na">onResourceDequeued</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">// End for testing only.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">InterruptedException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Thread</span><span class="p">.</span><span class="na">currentThread</span><span class="p">().</span><span class="na">interrupt</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>该方法是一个while循环，只要没有isShutdown就一直从引用队列中检索弱引用对象，从引用队列中获取到弱引用对象之后，接着也是调用了cleanupActiveReference方法，这个在上面get方法中有讲到过。它是从map中移除ResourceWeakReference。注意了cleanReferenceQueue方法是在外界传进来的线程池（Executors.newSingleThreadExecutor）中执行的。它是在ActiveResources构造方法中初始化的。</p>
+<h3 id="二级缓存">二级缓存
+</h3><p>接着回到上面Engine的loadFromMemory方法，如果在一级缓存中找不到，接着调用了loadFromCache方法：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -669,6 +714,7 @@ GC 动作：
 </span><span class="lnt">25
 </span><span class="lnt">26
 </span><span class="lnt">27
+</span><span class="lnt">28
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">loadFromCache</span><span class="p">(</span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -679,6 +725,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">cached</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">MemoryCache</span><span class="w"> </span><span class="n">cache</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">getEngineResourceFromCache</span><span class="p">(</span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Resource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cache</span><span class="p">.</span><span class="na">remove</span><span class="p">(</span><span class="n">key</span><span class="p">);</span><span class="w">
@@ -700,7 +747,523 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>此处从cache中取Resource，如果取到了返回EngineResource，此处的cache是LruResourceCache对象，它是LruCache实现的。可以看到它是获取的时候直接remove掉了，紧接着调用acquire，并把缓存放到一级缓存中(activeResources.activate)。</p>
+</div><p>此处从cache中取Resource，如果取到了返回EngineResource，此处的cache是LruResourceCache对象，它是LruCache实现的。可以看到它是获取的时候直接remove掉了，紧接着调用acquire，并把缓存放到一级缓存中(activeResources.activate)。也就是说如果二级缓存中有数据，获取到后从二级缓存中移除掉并放到一级缓存中，然后将acquired变量+1。上面会涉及到二级缓存的最大缓存的内存计算，这个在后面讲内存的时候再说。</p>
+<h3 id="三级缓存">三级缓存
+</h3><p>如果一级和二级都没有找到，则会在Engine的load方法中调用waitForExistingOrStartNewJob，在主流程加载图片中讲过ResourceCacheGenerator和DataCacheGenerator的区别，ResourceCacheGenerator是获取本地磁盘编码后的缓存，DataCacheGenerator中是获取本地磁盘原始图片的缓存，接着又讲到了SourceGenerator中通过HttpUrlFetcher获取网络图片资源。当第一次加载完图片后，会保存原始图片到磁盘中，这个在SourceGenerator的cacheData中有讲过。解码完后，也会将bitmap进行保存到本地磁盘中，这个在DecodeJob中的notifyEncodeAndRelease方法有讲解。所以当第二次获取图片的时候有了原始图片和解码后的图片缓存了，看下ResourceCacheGenerator中如何获取解码后的缓存：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">ResourceCacheGenerator</span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">startNext</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">currentKey</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="n">ResourceCacheKey</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">helper</span><span class="p">.</span><span class="na">getArrayPool</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">sourceId</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">helper</span><span class="p">.</span><span class="na">getSignature</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">helper</span><span class="p">.</span><span class="na">getWidth</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">helper</span><span class="p">.</span><span class="na">getHeight</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">transformation</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">resourceClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">helper</span><span class="p">.</span><span class="na">getOptions</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cacheFile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">getDiskCache</span><span class="p">().</span><span class="na">get</span><span class="p">(</span><span class="n">currentKey</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cacheFile</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">sourceKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sourceId</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">modelLoaders</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">getModelLoaders</span><span class="p">(</span><span class="n">cacheFile</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">modelLoaderIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">started</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">hasNextModelLoader</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">ModelLoader</span><span class="o">&lt;</span><span class="n">File</span><span class="p">,</span><span class="w"> </span><span class="o">?&gt;</span><span class="w"> </span><span class="n">modelLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">modelLoaders</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">modelLoaderIndex</span><span class="o">++</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">loadData</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">modelLoader</span><span class="p">.</span><span class="na">buildLoadData</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="n">cacheFile</span><span class="p">,</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">getWidth</span><span class="p">(),</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">getHeight</span><span class="p">(),</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">getOptions</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">loadData</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">hasLoadPath</span><span class="p">(</span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">.</span><span class="na">getDataClass</span><span class="p">()))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">.</span><span class="na">loadData</span><span class="p">(</span><span class="n">helper</span><span class="p">.</span><span class="na">getPriority</span><span class="p">(),</span><span class="w"> </span><span class="k">this</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>先创建了ResourceCacheKey的key，这个和前面在解码完回调中，也就是DecodeJob的onResourceDecoded中也是创建了ResourceCacheKey：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">DecodeJob</span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">onResourceDecoded</span><span class="p">(</span><span class="n">DataSource</span><span class="w"> </span><span class="n">dataSource</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">decoded</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ResourceCacheKey</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">decodeHelper</span><span class="p">.</span><span class="na">getArrayPool</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">currentSourceKey</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">signature</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">width</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">height</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">appliedTransformation</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">resourceSubClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">options</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">deferredEncodeManager</span><span class="p">.</span><span class="na">init</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">encoder</span><span class="p">,</span><span class="w"> </span><span class="n">lockedResult</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>创建完ResourceCacheKey后，继续调用了helper.getDiskCache().get(currentKey)获取缓存的file文件，此处的diskCache和前面介绍的解码完成后，进行编码保存bitmap所使用的DiskLruCacheWrapper是一致的。获取到file文件后，通过file获取到modelLoaders集合。这个其实跟前面介绍sourceGenerator获取到网络数据后，调用了DataCacheGenerator的startNext方法，在该方法里面也是通过file获取到ByteBufferFetcher将File转化成ByteBuffer。转化完后回调到ResourceCacheGenerator的onDataReady方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">ResourceCacheGenerator</span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onDataReady</span><span class="p">(</span><span class="n">Object</span><span class="w"> </span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cb</span><span class="p">.</span><span class="na">onDataFetcherReady</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">sourceKey</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">,</span><span class="w"> </span><span class="n">DataSource</span><span class="p">.</span><span class="na">RESOURCE_DISK_CACHE</span><span class="p">,</span><span class="w"> </span><span class="n">currentKey</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后继续回调到DecodeJob的onDataFetcherReady方法，注意了此处的dataSource回传的是DataSource.RESOURCE_DISK_CACHE，在前面下载完网络资源后，将File转化成ByteBuffer，也是回调给DecodeJob的onDataFetcherReady方法，只不过那个dataSource回传的是DataSource.DATA_DISK_CACHE。也就是说DataSource.RESOURCE_DISK_CACHE表示获取到相同尺寸的bitmap缓存，而DataSource.DATA_DISK_CACHE表示获取到原始尺寸的bitmap缓存。回到DecodeJob的onDataFetcherReady后，就回到了解码流程，获取到相同尺寸的图片后，为什么还要进行解码呢？因为目前拿到的还是byteBuffer的数据，需要将它包装成流，然后解码成bitmap数据，只不过在解码的时候，图片的采样率=1，inTargetDensity和inDensity的比例等于1，所以只不过是将流转化成bitmap而已。解码完后回到了DecodeJob的onResourceDecoded方法，在该方法里面梳理过：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">DecodeJob</span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">onResourceDecoded</span><span class="p">(</span><span class="n">DataSource</span><span class="w"> </span><span class="n">dataSource</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">decoded</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@SuppressWarnings</span><span class="p">(</span><span class="s">&#34;unchecked&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Class</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">resourceSubClass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">Class</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="n">decoded</span><span class="p">.</span><span class="na">get</span><span class="p">().</span><span class="na">getClass</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Transformation</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">appliedTransformation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transformed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">decoded</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//如果dataSource是RESOURCE_DISK_CACHE就不进行transformation处理</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dataSource</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">DataSource</span><span class="p">.</span><span class="na">RESOURCE_DISK_CACHE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">appliedTransformation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">decodeHelper</span><span class="p">.</span><span class="na">getTransformation</span><span class="p">(</span><span class="n">resourceSubClass</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">transformed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">appliedTransformation</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">glideContext</span><span class="p">,</span><span class="w"> </span><span class="n">decoded</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">decoded</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">transformed</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">decoded</span><span class="p">.</span><span class="na">recycle</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">EncodeStrategy</span><span class="w"> </span><span class="n">encodeStrategy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">encoder</span><span class="p">.</span><span class="na">getEncodeStrategy</span><span class="p">(</span><span class="n">options</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">ResourceEncoder</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">encoder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">decodeHelper</span><span class="p">.</span><span class="na">getResultEncoder</span><span class="p">(</span><span class="n">transformed</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">transformed</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isFromAlternateCacheKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="n">decodeHelper</span><span class="p">.</span><span class="na">isSourceKey</span><span class="p">(</span><span class="n">currentSourceKey</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//如果dataSource是RESOURCE_DISK_CACHE就不进行编码的参数初始化</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">diskCacheStrategy</span><span class="p">.</span><span class="na">isResourceCacheable</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">isFromAlternateCacheKey</span><span class="p">,</span><span class="w"> </span><span class="n">dataSource</span><span class="p">,</span><span class="w"> </span><span class="n">encodeStrategy</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">encoder</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Registry</span><span class="p">.</span><span class="na">NoResultEncoderAvailableException</span><span class="p">(</span><span class="n">transformed</span><span class="p">.</span><span class="na">get</span><span class="p">().</span><span class="na">getClass</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="kd">final</span><span class="w"> </span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">encodeStrategy</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="n">SOURCE</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">DataCacheKey</span><span class="p">(</span><span class="n">currentSourceKey</span><span class="p">,</span><span class="w"> </span><span class="n">signature</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="n">TRANSFORMED</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="k">new</span><span class="w"> </span><span class="n">ResourceCacheKey</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="n">decodeHelper</span><span class="p">.</span><span class="na">getArrayPool</span><span class="p">(),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="n">currentSourceKey</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="n">signature</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="n">width</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="n">height</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="n">appliedTransformation</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="n">resourceSubClass</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                  </span><span class="n">options</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">default</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IllegalArgumentException</span><span class="p">(</span><span class="s">&#34;Unknown strategy: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">encodeStrategy</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">LockedResource</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lockedResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LockedResource</span><span class="p">.</span><span class="na">obtain</span><span class="p">(</span><span class="n">transformed</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">deferredEncodeManager</span><span class="p">.</span><span class="na">init</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">encoder</span><span class="p">,</span><span class="w"> </span><span class="n">lockedResult</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lockedResult</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在onResourceDecoded方法中，如果dataSource是RESOURCE_DISK_CACHE就不进入到transformation的逻辑，并且也不进行编码的参数初始化，所以在DecodeJob的notifyEncodeAndRelease方法中不进行编码了，因为磁盘中已经存在该缓存。</p>
+<h3 id="四级缓存">四级缓存
+</h3><p>四级缓存在glide中是存储原始文件，在上一篇节中讲过SourceGenerator通过HttpUrlFetcher下载完网络资源后，会保存原始文件，这个在startNext中调用cacheData方法实现的。而获取原始文件的缓存是在DataCacheGenerator的startNext实现的。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">DataCacheGenerator</span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">startNext</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">modelLoaders</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">hasNextModelLoader</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">sourceIdIndex</span><span class="o">++</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sourceIdIndex</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">cacheKeys</span><span class="p">.</span><span class="na">size</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Key</span><span class="w"> </span><span class="n">sourceId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cacheKeys</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">sourceIdIndex</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Key</span><span class="w"> </span><span class="n">originalKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">DataCacheKey</span><span class="p">(</span><span class="n">sourceId</span><span class="p">,</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">getSignature</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">cacheFile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">getDiskCache</span><span class="p">().</span><span class="na">get</span><span class="p">(</span><span class="n">originalKey</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cacheFile</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">sourceKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sourceId</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">modelLoaders</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">getModelLoaders</span><span class="p">(</span><span class="n">cacheFile</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">modelLoaderIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">loadData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">started</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">hasNextModelLoader</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">ModelLoader</span><span class="o">&lt;</span><span class="n">File</span><span class="p">,</span><span class="w"> </span><span class="o">?&gt;</span><span class="w"> </span><span class="n">modelLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">modelLoaders</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">modelLoaderIndex</span><span class="o">++</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">loadData</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">modelLoader</span><span class="p">.</span><span class="na">buildLoadData</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">              </span><span class="n">cacheFile</span><span class="p">,</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">getWidth</span><span class="p">(),</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">getHeight</span><span class="p">(),</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">getOptions</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">loadData</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">helper</span><span class="p">.</span><span class="na">hasLoadPath</span><span class="p">(</span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">.</span><span class="na">getDataClass</span><span class="p">()))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">started</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">.</span><span class="na">loadData</span><span class="p">(</span><span class="n">helper</span><span class="p">.</span><span class="na">getPriority</span><span class="p">(),</span><span class="w"> </span><span class="k">this</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">started</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>和前面介绍的cacheData保存原始文件是相呼应的，首先创建了DataCacheKey，然后通过DiskLruCacheWrapper获取到cacheFile文件，然后和上面获取解码后的图片通过ByteBufferFetcher转化成byteBuffer一样的，转化完byteBuffer后，回调到DataCacheGenerator的onDataReady方法，继而回调到DecodeJob的onDataFetcherReady方法，回调的dataSource是DataSource.DATA_DISK_CACHE，表示原始图片的缓存。最后经过解码，解码完成后会进行transformation操作，最后完成bitmap的编码操作。</p>
+<h3 id="一级缓存的存储">一级缓存的存储
+</h3><p>在前面的章节中都讲过三级缓存和四级缓存是在什么时候存储的，那一级缓存是在什么时候存储的呢？在DecodeJob中编码前会调用notifyComplete方法，在该方法回调到EngineJob的onResourceReady方法，然后会调用到notifyCallbacksOfResult，接着会回调到Engine的onEngineJobComplete方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">Engine</span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kd">synchronized</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onEngineJobComplete</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">EngineJob</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">engineJob</span><span class="p">,</span><span class="w"> </span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">resource</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">resource</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">resource</span><span class="p">.</span><span class="na">isMemoryCacheable</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">activeResources</span><span class="p">.</span><span class="na">activate</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">resource</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果memory缓存可用，则调用ActiveResources的activate方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">synchronized</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">activate</span><span class="p">(</span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">resource</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">ResourceWeakReference</span><span class="w"> </span><span class="n">toPut</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">new</span><span class="w"> </span><span class="n">ResourceWeakReference</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="n">resourceReferenceQueue</span><span class="p">,</span><span class="w"> </span><span class="n">isActiveResourceRetentionAllowed</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">ResourceWeakReference</span><span class="w"> </span><span class="n">removed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">activeEngineResources</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">toPut</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">removed</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">removed</span><span class="p">.</span><span class="na">reset</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>创建了弱引用，然后把弱引用指向的强引用对象包装起来，最后放到一级缓存的map中，put完后会把老的弱引用对象给重置掉。其实activate方法在前面介绍从二级缓存中获取到后，会从二级缓存中移除掉并加入到一级缓存中也是调用该方法。</p>
+<h3 id="二级缓存的存储">二级缓存的存储
+</h3><p>二级缓存是LRU算法的内存缓存，它的存储时机是在什么时候呢？我们可以通过反查代码来实现二级缓存在哪些场景被存储：</p>
+<ul>
+<li>一级缓存被检测到被GC回收，然后会被加入到二级缓存中。</li>
+<li>当检测到图片资源没有被使用到，也就是前面讲到的acquired变量为0的时候也会加入到二级缓存中。
+下面根据这两种情况从源码角度分下下。</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">Engine</span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">MemoryCache</span><span class="w"> </span><span class="n">cache</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onResourceReleased</span><span class="p">(</span><span class="n">Key</span><span class="w"> </span><span class="n">cacheKey</span><span class="p">,</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">resource</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cache</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">cacheKey</span><span class="p">,</span><span class="w"> </span><span class="n">resource</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>其中onResourceReleased是由两处调用，一处是ActiveResources在cleanupActiveReference中调用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">ActiveResources</span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">cleanupActiveReference</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ResourceWeakReference</span><span class="w"> </span><span class="n">ref</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">synchronized</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">activeEngineResources</span><span class="p">.</span><span class="na">remove</span><span class="p">(</span><span class="n">ref</span><span class="p">.</span><span class="na">key</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">ref</span><span class="p">.</span><span class="na">isCacheable</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">ref</span><span class="p">.</span><span class="na">resource</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">newResource</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">ref</span><span class="p">.</span><span class="na">resource</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="cm">/* isMemoryCacheable= */</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="cm">/* isRecyclable= */</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">ref</span><span class="p">.</span><span class="na">key</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">listener</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">listener</span><span class="p">.</span><span class="na">onResourceReleased</span><span class="p">(</span><span class="n">ref</span><span class="p">.</span><span class="na">key</span><span class="p">,</span><span class="w"> </span><span class="n">newResource</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>该方法在获取一级缓存的时候，如果发现弱引用包装的强引用为空，或者在检测到弱引用队列中存在弱引用的时候，就会调用cleanupActiveReference方法，也就是发生GC的时候，发现外界强引用不再被使用的时候调用该方法。<br>
+另外一处是由EngineResource的release方法调用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">release</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="n">release</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">synchronized</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">acquired</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IllegalStateException</span><span class="p">(</span><span class="s">&#34;Cannot release a recycled or not yet acquired resource&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">--</span><span class="n">acquired</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">release</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">release</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">listener</span><span class="p">.</span><span class="na">onResourceReleased</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以看到当发现acquired等于0的时候，就可以将缓存存到二级缓存中。而release方法调用用很多，一处是由Engine的release方法调用，一处是由Engine的decrementPendingCallbacks方法调用。也就是说当前图片资源如果没有被其他地方使用也会被加入到二级缓存中。<br>
+整体流程图如下：
+<img src="/%e7%ac%94%e8%ae%b0%e6%95%b4%e7%90%86/glide%e7%bc%93%e5%ad%98%e8%8e%b7%e5%8f%96.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+></p>
+<h3 id="总结">总结
+</h3><ul>
+<li>glide缓存分为内存和硬盘两类，其中内存缓存又分为活跃缓存和LRU缓存，硬盘缓存分为解码后按照view尺寸展示的bitmap缓存，另外一部分是原始图片的缓存。</li>
+<li>活跃缓存：它的结构是一个hashmap，其中key是按照url、尺寸等信息拼成的，value是一个弱引用对象，其中弱引用中放的才是图片缓存对象，特点如下：
+<ul>
+<li>存储正在使用的图片资源</li>
+<li>使用弱引用（WeakReference）</li>
+<li>通过引用计数管理生命周期</li>
+<li>不会被LRU算法回收</li>
+</ul>
+</li>
+<li>LRU缓存：它底层是一个LRU策略的缓存，key也是和上面活跃缓存用的是同一个。value存的是解码后的图片缓存。特点如下：
+<ul>
+<li>存储最近使用过但当前未使用的图片</li>
+<li>使用强引用</li>
+<li>LRU淘汰策略（最近最少使用原则）</li>
+<li>有大小限制</li>
+</ul>
+</li>
+<li>解码后的硬盘缓存：也是使用的LRU策略的缓存，其中key是按照指定尺寸来构建的，然后从DiskLruCache中获取缓存。</li>
+<li>原始图片的硬盘缓存：也是使用的LRU策略的缓存，其中key不是通过指定尺寸来构建的，然后也是从DiskLruCache中获取缓存。<br></li>
+<li>LRU的内存缓存是在什么存储的？
+<ul>
+<li>从上面流程图来看每次从非活跃缓存中获取到图片缓存后，都会放入到活跃缓存中，那什么时候会放到内存的LRU缓存中呢？当view触发onViewDetachedFromWindow的时候，也就是当前view销毁后，会查看当前view绑定的图片被正在使用标记的次数，如果次数为0了，则将当前图片加入到LRU的内存缓存中。</li>
+</ul>
+</li>
+<li>glide为什么要设计两层的内存缓存？
+<ul>
+<li>内存缓存分为活跃的缓存，它是一个map数据结构，value存储的是弱引用包装了缓存数据，另外一层是LRU级别的缓存。活跃数据指的是当前正在使用的资源，比如正在显示的图片，这部分用弱引用来保存，这样当图片不再被使用时，垃圾回收器可以自动回收，避免内存泄漏。而LRU缓存则是最近最少使用的缓存，使用强引用，当内存不足时，会移除最久未使用的资源。</li>
+<li>如果只有LRU缓存的时候，正在使用的图片可能是长时间没有被访问的图片，而此时如果只有LRU缓存的时候，可能会把正在使用的图片缓存给移除掉了，这样的话，当前正在显示的图片会出现空白，并且当再使用该图片的时候，会从磁盘中去获取该图片，这样增大了获取图片的时间。如果只有弱引用缓存的时候，此时图片不被使用了，被GC给回收了，那此时也只能从磁盘中获取，增大了获取图片的时间。如果此时有LRU缓存，能在内存中保留一段时间，降低从磁盘中读取的可能。</li>
+</ul>
+</li>
+</ul>
 
 </section>
 

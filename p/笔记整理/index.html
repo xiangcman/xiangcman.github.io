@@ -238,6 +238,8 @@
         <li><a href="#arraydeque特性">ArrayDeque特性</a></li>
         <li><a href="#pools-pool">Pools. Pool</a></li>
         <li><a href="#java中类加载机制">java中类加载机制</a></li>
+        <li><a href="#android中类加载机制">android中类加载机制</a></li>
+        <li><a href="#android中choreographer工作内容android-29">android中Choreographer工作内容（android 29）</a></li>
         <li><a href="#vsync信号的作用">vsync信号的作用</a></li>
         <li><a href="#消息队列中的消息屏障">消息队列中的消息屏障</a></li>
         <li><a href="#android中异常处理">android中异常处理</a></li>
@@ -245,6 +247,8 @@
         <li><a href="#kotlin中--和--区别">kotlin中 <code>==</code> 和 <code>===</code> 区别</a></li>
         <li><a href="#kotlin中lazy的原理">kotlin中lazy的原理</a></li>
         <li><a href="#kotlin委托模式">kotlin委托模式</a></li>
+        <li><a href="#为什么reified必须和inline一起使用">为什么reified必须和inline一起使用？</a></li>
+        <li><a href="#关于viewmodel的一些思考">关于viewModel的一些思考</a></li>
         <li><a href="#livedata的一些思考">LiveData的一些思考</a></li>
         <li><a href="#glide缓存">glide缓存</a></li>
         <li><a href="#kotlin中sequence和普通集合的区别">kotlin中Sequence和普通集合的区别</a></li>
@@ -258,6 +262,7 @@
         <li><a href="#classisassignablefrom">Class.isAssignableFrom()</a></li>
         <li><a href="#url转uri">url转uri</a></li>
         <li><a href="#math相关方法">Math相关方法</a></li>
+        <li><a href="#plantuml中class关系说明">plantUml中class关系说明</a></li>
       </ol>
     </li>
   </ol>
@@ -740,395 +745,380 @@ pop：和remove一样的，都是移除头部节点，如果没有头部节点�
 </ol>
 </li>
 <li>类加载器采用双亲委托模式来加载class，主要是为了系统的class的安全，优先使用系统的class来加载。</li>
-<li>双清委托模式的核心代码：</li>
+<li>双清委托模式的核心代码：
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">protected</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">loadClass</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">resolve</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">throws</span><span class="w"> </span><span class="n">ClassNotFoundException</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">synchronized</span><span class="w"> </span><span class="p">(</span><span class="n">getClassLoadingLock</span><span class="p">(</span><span class="n">name</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// First, check if the class has already been loaded</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">findLoadedClass</span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kt">long</span><span class="w"> </span><span class="n">t0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">nanoTime</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">parent</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parent</span><span class="p">.</span><span class="na">loadClass</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">findBootstrapClassOrNull</span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">ClassNotFoundException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">// ClassNotFoundException thrown if class not found</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">// from the non-null parent class loader</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">// If still not found, then invoke findClass in order</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">// to find the class.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="kt">long</span><span class="w"> </span><span class="n">t1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">nanoTime</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">findClass</span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">// this is the defining class loader; record the stats</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">sun</span><span class="p">.</span><span class="na">misc</span><span class="p">.</span><span class="na">PerfCounter</span><span class="p">.</span><span class="na">getParentDelegationTime</span><span class="p">().</span><span class="na">addTime</span><span class="p">(</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">sun</span><span class="p">.</span><span class="na">misc</span><span class="p">.</span><span class="na">PerfCounter</span><span class="p">.</span><span class="na">getFindClassTime</span><span class="p">().</span><span class="na">addElapsedTimeFrom</span><span class="p">(</span><span class="n">t1</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">sun</span><span class="p">.</span><span class="na">misc</span><span class="p">.</span><span class="na">PerfCounter</span><span class="p">.</span><span class="na">getFindClasses</span><span class="p">().</span><span class="na">increment</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">resolve</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">resolveClass</span><span class="p">(</span><span class="n">c</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">c</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ol>
+<h3 id="android中类加载机制">android中类加载机制
+</h3><ol>
+<li>android类加载机制也是按照双亲委托模型，但是可以通过自定义类加载器绕过双亲委派，实现类的隔离或复用</li>
+<li>类加载器分类：
+<ol>
+<li>
+<p>BootClassLoader：系统类加载器，加载框架层的核心类（如 android.<em>、java.</em> 等系统类）</p>
+</li>
+<li>
+<p>PathClassLoader：应用类加载器，加载已安装 APK 中的类（即应用自身的类和 classes.dex），它的父类加载器是BootClassLoader，继承自BaseDexClassLoader，用于加载 /data/app/<package>/base.apk 中的代码，无法加载外部存储的dex、jar文件</p>
+</li>
+<li>
+<p>DexClassLoader：动态加载器，动态加载外部存储的 DEX/JAR 文件或 APK（如插件化、热修复场景），父加载器通常是PathClassLoader，也是继承自BaseDexClassLoader</p>
+</li>
+<li>
+<p>上面提到android类加载也是通过双亲委托模式来加载类，但是安卓加载类是通过解析dex文件来加载的，所以对于PathClassLoader和DexClassLoader都是通过dex来加载class的，对于BootClassLoader，它仍然通过加载系统核心的DEX文件来实现类的加载，只不过这个过程是由虚拟机在底层直接处理的，不需要通过BaseDexClassLoader的DexPathList和DexFile机制。这种设计可能是为了优化系统启动速度和核心类的访问效率。</p>
+</li>
+<li>
+<p>BaseDexClassLoader完成了整个dex转换成class的过程，首先理解几个概念， <code>DexPathList</code> ， <code>DexFile</code> ， <code>Element</code> :</p>
+<ol>
+<li>DexPathList：被BaseDexClassLoader持有</li>
+<li>Element：被DexPathList持有，内部持有一个Element的数组</li>
+<li>DexFile：被Element持有</li>
+<li>DexPathList通过传入的dexPath，然后通过<code>;</code>或<code>:</code>进行split，得到List<File>：</li>
 </ol>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">  1
-</span><span class="lnt">  2
-</span><span class="lnt">  3
-</span><span class="lnt">  4
-</span><span class="lnt">  5
-</span><span class="lnt">  6
-</span><span class="lnt">  7
-</span><span class="lnt">  8
-</span><span class="lnt">  9
-</span><span class="lnt"> 10
-</span><span class="lnt"> 11
-</span><span class="lnt"> 12
-</span><span class="lnt"> 13
-</span><span class="lnt"> 14
-</span><span class="lnt"> 15
-</span><span class="lnt"> 16
-</span><span class="lnt"> 17
-</span><span class="lnt"> 18
-</span><span class="lnt"> 19
-</span><span class="lnt"> 20
-</span><span class="lnt"> 21
-</span><span class="lnt"> 22
-</span><span class="lnt"> 23
-</span><span class="lnt"> 24
-</span><span class="lnt"> 25
-</span><span class="lnt"> 26
-</span><span class="lnt"> 27
-</span><span class="lnt"> 28
-</span><span class="lnt"> 29
-</span><span class="lnt"> 30
-</span><span class="lnt"> 31
-</span><span class="lnt"> 32
-</span><span class="lnt"> 33
-</span><span class="lnt"> 34
-</span><span class="lnt"> 35
-</span><span class="lnt"> 36
-</span><span class="lnt"> 37
-</span><span class="lnt"> 38
-</span><span class="lnt"> 39
-</span><span class="lnt"> 40
-</span><span class="lnt"> 41
-</span><span class="lnt"> 42
-</span><span class="lnt"> 43
-</span><span class="lnt"> 44
-</span><span class="lnt"> 45
-</span><span class="lnt"> 46
-</span><span class="lnt"> 47
-</span><span class="lnt"> 48
-</span><span class="lnt"> 49
-</span><span class="lnt"> 50
-</span><span class="lnt"> 51
-</span><span class="lnt"> 52
-</span><span class="lnt"> 53
-</span><span class="lnt"> 54
-</span><span class="lnt"> 55
-</span><span class="lnt"> 56
-</span><span class="lnt"> 57
-</span><span class="lnt"> 58
-</span><span class="lnt"> 59
-</span><span class="lnt"> 60
-</span><span class="lnt"> 61
-</span><span class="lnt"> 62
-</span><span class="lnt"> 63
-</span><span class="lnt"> 64
-</span><span class="lnt"> 65
-</span><span class="lnt"> 66
-</span><span class="lnt"> 67
-</span><span class="lnt"> 68
-</span><span class="lnt"> 69
-</span><span class="lnt"> 70
-</span><span class="lnt"> 71
-</span><span class="lnt"> 72
-</span><span class="lnt"> 73
-</span><span class="lnt"> 74
-</span><span class="lnt"> 75
-</span><span class="lnt"> 76
-</span><span class="lnt"> 77
-</span><span class="lnt"> 78
-</span><span class="lnt"> 79
-</span><span class="lnt"> 80
-</span><span class="lnt"> 81
-</span><span class="lnt"> 82
-</span><span class="lnt"> 83
-</span><span class="lnt"> 84
-</span><span class="lnt"> 85
-</span><span class="lnt"> 86
-</span><span class="lnt"> 87
-</span><span class="lnt"> 88
-</span><span class="lnt"> 89
-</span><span class="lnt"> 90
-</span><span class="lnt"> 91
-</span><span class="lnt"> 92
-</span><span class="lnt"> 93
-</span><span class="lnt"> 94
-</span><span class="lnt"> 95
-</span><span class="lnt"> 96
-</span><span class="lnt"> 97
-</span><span class="lnt"> 98
-</span><span class="lnt"> 99
-</span><span class="lnt">100
-</span><span class="lnt">101
-</span><span class="lnt">102
-</span><span class="lnt">103
-</span><span class="lnt">104
-</span><span class="lnt">105
-</span><span class="lnt">106
-</span><span class="lnt">107
-</span><span class="lnt">108
-</span><span class="lnt">109
-</span><span class="lnt">110
-</span><span class="lnt">111
-</span><span class="lnt">112
-</span><span class="lnt">113
-</span><span class="lnt">114
-</span><span class="lnt">115
-</span><span class="lnt">116
-</span><span class="lnt">117
-</span><span class="lnt">118
-</span><span class="lnt">119
-</span><span class="lnt">120
-</span><span class="lnt">121
-</span><span class="lnt">122
-</span><span class="lnt">123
-</span><span class="lnt">124
-</span><span class="lnt">125
-</span><span class="lnt">126
-</span><span class="lnt">127
-</span><span class="lnt">128
-</span><span class="lnt">129
-</span><span class="lnt">130
-</span><span class="lnt">131
-</span><span class="lnt">132
-</span><span class="lnt">133
-</span><span class="lnt">134
-</span><span class="lnt">135
-</span><span class="lnt">136
-</span><span class="lnt">137
-</span><span class="lnt">138
-</span><span class="lnt">139
-</span><span class="lnt">140
-</span><span class="lnt">141
-</span><span class="lnt">142
-</span><span class="lnt">143
-</span><span class="lnt">144
-</span><span class="lnt">145
-</span><span class="lnt">146
-</span><span class="lnt">147
-</span><span class="lnt">148
-</span><span class="lnt">149
-</span><span class="lnt">150
-</span><span class="lnt">151
-</span><span class="lnt">152
-</span><span class="lnt">153
-</span><span class="lnt">154
-</span><span class="lnt">155
-</span><span class="lnt">156
-</span><span class="lnt">157
-</span><span class="lnt">158
-</span><span class="lnt">159
-</span><span class="lnt">160
-</span><span class="lnt">161
-</span><span class="lnt">162
-</span><span class="lnt">163
-</span><span class="lnt">164
-</span><span class="lnt">165
-</span><span class="lnt">166
-</span><span class="lnt">167
-</span><span class="lnt">168
-</span><span class="lnt">169
-</span><span class="lnt">170
-</span><span class="lnt">171
-</span><span class="lnt">172
-</span><span class="lnt">173
-</span><span class="lnt">174
-</span><span class="lnt">175
-</span><span class="lnt">176
-</span><span class="lnt">177
-</span><span class="lnt">178
-</span><span class="lnt">179
-</span><span class="lnt">180
-</span><span class="lnt">181
-</span><span class="lnt">182
-</span><span class="lnt">183
-</span><span class="lnt">184
-</span><span class="lnt">185
-</span><span class="lnt">186
-</span><span class="lnt">187
-</span><span class="lnt">188
-</span><span class="lnt">189
-</span><span class="lnt">190
-</span><span class="lnt">191
-</span><span class="lnt">192
-</span><span class="lnt">193
-</span><span class="lnt">194
-</span><span class="lnt">195
-</span><span class="lnt">196
-</span><span class="lnt">197
-</span><span class="lnt">198
-</span><span class="lnt">199
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="w">    </span><span class="kd">protected</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">loadClass</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">resolve</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">throws</span><span class="w"> </span><span class="n">ClassNotFoundException</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">synchronized</span><span class="w"> </span><span class="p">(</span><span class="n">getClassLoadingLock</span><span class="p">(</span><span class="n">name</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// First, check if the class has already been loaded</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">findLoadedClass</span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="kt">long</span><span class="w"> </span><span class="n">t0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">nanoTime</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">parent</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parent</span><span class="p">.</span><span class="na">loadClass</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">findBootstrapClassOrNull</span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">ClassNotFoundException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">// ClassNotFoundException thrown if class not found</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">// from the non-null parent class loader</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">// If still not found, then invoke findClass in order</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">// to find the class.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="kt">long</span><span class="w"> </span><span class="n">t1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">nanoTime</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">findClass</span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">// this is the defining class loader; record the stats</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">sun</span><span class="p">.</span><span class="na">misc</span><span class="p">.</span><span class="na">PerfCounter</span><span class="p">.</span><span class="na">getParentDelegationTime</span><span class="p">().</span><span class="na">addTime</span><span class="p">(</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">sun</span><span class="p">.</span><span class="na">misc</span><span class="p">.</span><span class="na">PerfCounter</span><span class="p">.</span><span class="na">getFindClassTime</span><span class="p">().</span><span class="na">addElapsedTimeFrom</span><span class="p">(</span><span class="n">t1</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">sun</span><span class="p">.</span><span class="na">misc</span><span class="p">.</span><span class="na">PerfCounter</span><span class="p">.</span><span class="na">getFindClasses</span><span class="p">().</span><span class="na">increment</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">resolve</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">resolveClass</span><span class="p">(</span><span class="n">c</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">c</span><span class="p">;</span><span class="w">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">//DexPathList.splitPaths</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">File</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">splitPaths</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">searchPath</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">directoriesOnly</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">List</span><span class="o">&lt;</span><span class="n">File</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;&gt;</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">searchPath</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">searchPath</span><span class="p">.</span><span class="na">split</span><span class="p">(</span><span class="n">File</span><span class="p">.</span><span class="na">pathSeparator</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">//省略代码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">result</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">File</span><span class="p">(</span><span class="n">path</span><span class="p">));</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">```</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">###</span><span class="w"> </span><span class="n">android中类加载机制</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//DexPathList.makeDexElements</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">Element</span><span class="o">[]</span><span class="w"> </span><span class="nf">makeDexElements</span><span class="p">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">File</span><span class="o">&gt;</span><span class="w"> </span><span class="n">files</span><span class="p">,</span><span class="w"> </span><span class="n">File</span><span class="w"> </span><span class="n">optimizedDirectory</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">List</span><span class="o">&lt;</span><span class="n">IOException</span><span class="o">&gt;</span><span class="w"> </span><span class="n">suppressedExceptions</span><span class="p">,</span><span class="w"> </span><span class="n">ClassLoader</span><span class="w"> </span><span class="n">loader</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Element</span><span class="o">[]</span><span class="w"> </span><span class="n">elements</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Element</span><span class="o">[</span><span class="n">files</span><span class="p">.</span><span class="na">size</span><span class="p">()</span><span class="o">]</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">elementsPos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">File</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">files</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">isDirectory</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">elements</span><span class="o">[</span><span class="n">elementsPos</span><span class="o">++]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Element</span><span class="p">(</span><span class="n">file</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">isFile</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="na">getName</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">1</span><span class="p">.</span><span class="w"> </span><span class="n">android类加载机制也是按照双亲委托模型</span><span class="err">，</span><span class="n">但是可以通过自定义类加载器绕过双亲委派</span><span class="err">，</span><span class="n">实现类的隔离或复用</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">2</span><span class="p">.</span><span class="w"> </span><span class="n">类加载器分类</span><span class="err">：</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="n">1</span><span class="p">.</span><span class="w"> </span><span class="n">BootClassLoader</span><span class="err">：</span><span class="n">系统类加载器</span><span class="err">，</span><span class="n">加载框架层的核心类</span><span class="err">（</span><span class="n">如</span><span class="w"> </span><span class="n">android</span><span class="p">.</span><span class="o">*</span><span class="err">、</span><span class="n">java</span><span class="p">.</span><span class="o">*</span><span class="w"> </span><span class="n">等系统类</span><span class="err">）</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="n">2</span><span class="p">.</span><span class="w"> </span><span class="n">PathClassLoader</span><span class="err">：</span><span class="n">应用类加载器</span><span class="err">，</span><span class="n">加载已安装</span><span class="w"> </span><span class="n">APK</span><span class="w"> </span><span class="n">中的类</span><span class="err">（</span><span class="n">即应用自身的类和</span><span class="w"> </span><span class="n">classes</span><span class="p">.</span><span class="na">dex</span><span class="err">），</span><span class="n">它的父类加载器是BootClassLoader</span><span class="err">，</span><span class="n">继承自BaseDexClassLoader</span><span class="err">，</span><span class="n">用于加载</span><span class="w"> </span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">app</span><span class="o">/&lt;</span><span class="n">package</span><span class="o">&gt;/</span><span class="n">base</span><span class="p">.</span><span class="na">apk</span><span class="w"> </span><span class="n">中的代码</span><span class="err">，</span><span class="n">无法加载外部存储的dex</span><span class="err">、</span><span class="n">jar文件</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="n">3</span><span class="p">.</span><span class="w"> </span><span class="n">DexClassLoader</span><span class="err">：</span><span class="n">动态加载器</span><span class="err">，</span><span class="n">动态加载外部存储的</span><span class="w"> </span><span class="n">DEX</span><span class="o">/</span><span class="n">JAR</span><span class="w"> </span><span class="n">文件或</span><span class="w"> </span><span class="n">APK</span><span class="err">（</span><span class="n">如插件化</span><span class="err">、</span><span class="n">热修复场景</span><span class="err">），</span><span class="n">父加载器通常是PathClassLoader</span><span class="err">，</span><span class="n">也是继承自BaseDexClassLoader</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="n">4</span><span class="p">.</span><span class="w"> </span><span class="n">上面提到android类加载也是通过双亲委托模式来加载类</span><span class="err">，</span><span class="n">但是安卓加载类是通过解析dex文件来加载的</span><span class="err">，</span><span class="n">所以对于PathClassLoader和DexClassLoader都是通过dex来加载class的</span><span class="err">，</span><span class="n">对于BootClassLoader</span><span class="err">，</span><span class="n">它仍然通过加载系统核心的DEX文件来实现类的加载</span><span class="err">，</span><span class="n">只不过这个过程是由虚拟机在底层直接处理的</span><span class="err">，</span><span class="n">不需要通过BaseDexClassLoader的DexPathList和DexFile机制</span><span class="err">。</span><span class="n">这种设计可能是为了优化系统启动速度和核心类的访问效率</span><span class="err">。</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">   </span><span class="n">5</span><span class="p">.</span><span class="w"> </span><span class="n">BaseDexClassLoader完成了整个dex转换成class的过程</span><span class="err">，</span><span class="n">首先理解几个概念</span><span class="err">，</span><span class="w"> </span><span class="err">`</span><span class="n">DexPathList</span><span class="err">`</span><span class="w"> </span><span class="err">，</span><span class="w"> </span><span class="err">`</span><span class="n">DexFile</span><span class="err">`</span><span class="w"> </span><span class="err">，</span><span class="w"> </span><span class="err">`</span><span class="n">Element</span><span class="err">`</span><span class="w"> </span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">1</span><span class="p">.</span><span class="w"> </span><span class="n">DexPathList</span><span class="err">：</span><span class="n">被BaseDexClassLoader持有</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">2</span><span class="p">.</span><span class="w"> </span><span class="n">Element</span><span class="err">：</span><span class="n">被DexPathList持有</span><span class="err">，</span><span class="n">内部持有一个Element的数组</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">3</span><span class="p">.</span><span class="w"> </span><span class="n">DexFile</span><span class="err">：</span><span class="n">被Element持有</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">4</span><span class="p">.</span><span class="w"> </span><span class="n">DexPathList通过传入的dexPath</span><span class="err">，</span><span class="n">然后通过</span><span class="err">`</span><span class="p">;</span><span class="err">`</span><span class="n">或</span><span class="err">`</span><span class="p">:</span><span class="err">`</span><span class="n">进行split</span><span class="err">，</span><span class="n">得到List</span><span class="o">&lt;</span><span class="n">File</span><span class="o">&gt;</span><span class="err">：</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">```</span><span class="n">java</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//DexPathList.splitPaths</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">File</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">splitPaths</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">searchPath</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">directoriesOnly</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">List</span><span class="o">&lt;</span><span class="n">File</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;&gt;</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">searchPath</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">searchPath</span><span class="p">.</span><span class="na">split</span><span class="p">(</span><span class="n">File</span><span class="p">.</span><span class="na">pathSeparator</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="c1">//省略代码</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">result</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">File</span><span class="p">(</span><span class="n">path</span><span class="p">));</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//DexPathList.makeDexElements</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">Element</span><span class="o">[]</span><span class="w"> </span><span class="nf">makeDexElements</span><span class="p">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">File</span><span class="o">&gt;</span><span class="w"> </span><span class="n">files</span><span class="p">,</span><span class="w"> </span><span class="n">File</span><span class="w"> </span><span class="n">optimizedDirectory</span><span class="p">,</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">List</span><span class="o">&lt;</span><span class="n">IOException</span><span class="o">&gt;</span><span class="w"> </span><span class="n">suppressedExceptions</span><span class="p">,</span><span class="w"> </span><span class="n">ClassLoader</span><span class="w"> </span><span class="n">loader</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Element</span><span class="o">[]</span><span class="w"> </span><span class="n">elements</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Element</span><span class="o">[</span><span class="n">files</span><span class="p">.</span><span class="na">size</span><span class="p">()</span><span class="o">]</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">elementsPos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">File</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">files</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">isDirectory</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">elements</span><span class="o">[</span><span class="n">elementsPos</span><span class="o">++]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Element</span><span class="p">(</span><span class="n">file</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">isFile</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="na">getName</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="p">.</span><span class="na">endsWith</span><span class="p">(</span><span class="n">DEX_SUFFIX</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">DexFile</span><span class="w"> </span><span class="n">dex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadDexFile</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">optimizedDirectory</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">elements</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                                </span><span class="n">elements</span><span class="o">[</span><span class="n">elementsPos</span><span class="o">++]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Element</span><span class="p">(</span><span class="n">dex</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">DexFile</span><span class="w"> </span><span class="n">dex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadDexFile</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">optimizedDirectory</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">elements</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dex</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="n">elements</span><span class="o">[</span><span class="n">elementsPos</span><span class="o">++]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Element</span><span class="p">(</span><span class="n">file</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                            </span><span class="n">elements</span><span class="o">[</span><span class="n">elementsPos</span><span class="o">++]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Element</span><span class="p">(</span><span class="n">dex</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">System</span><span class="p">.</span><span class="na">logW</span><span class="p">(</span><span class="s">&#34;ClassLoader referenced unknown path: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">file</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">elementsPos</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">elements</span><span class="p">.</span><span class="na">length</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">elements</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arrays</span><span class="p">.</span><span class="na">copyOf</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span><span class="w"> </span><span class="n">elementsPos</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">elements</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//DexPathList.loadDexFile</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">DexFile</span><span class="w"> </span><span class="nf">loadDexFile</span><span class="p">(</span><span class="n">File</span><span class="w"> </span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">File</span><span class="w"> </span><span class="n">optimizedDirectory</span><span class="p">,</span><span class="w"> </span><span class="n">ClassLoader</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="n">Element</span><span class="o">[]</span><span class="w"> </span><span class="n">elements</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kd">throws</span><span class="w"> </span><span class="n">IOException</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">optimizedDirectory</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">DexFile</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">elements</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="p">.</span><span class="na">endsWith</span><span class="p">(</span><span class="n">DEX_SUFFIX</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">DexFile</span><span class="w"> </span><span class="n">dex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadDexFile</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">optimizedDirectory</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">elements</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="n">elements</span><span class="o">[</span><span class="n">elementsPos</span><span class="o">++]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Element</span><span class="p">(</span><span class="n">dex</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">String</span><span class="w"> </span><span class="n">optimizedPath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">optimizedPathFor</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">optimizedDirectory</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">DexFile</span><span class="p">.</span><span class="na">loadDex</span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">getPath</span><span class="p">(),</span><span class="w"> </span><span class="n">optimizedPath</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">elements</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="err">```</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">从上面可以看出来</span><span class="err">，</span><span class="n">DexPathList里面会先split出dexPath</span><span class="err">，</span><span class="n">然后通过路径生成optimizedPath的路径</span><span class="err">，</span><span class="n">通过该路径生成DexFile对象</span><span class="err">，</span><span class="n">它就是表示一个dex文件</span><span class="err">。</span><span class="n">然后把DexFile塞入到Element数组中</span><span class="err">，</span><span class="n">最后该Element数组关联到BaseDexClassLoader中</span><span class="err">。</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">5</span><span class="p">.</span><span class="w"> </span><span class="n">接着看下如果通过dex加载到class</span><span class="err">，</span><span class="n">该处理是在BaseDexClassLoader中的findClass</span><span class="err">：</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">```</span><span class="n">java</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//BaseDexClassLoader.findClass</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">protected</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">findClass</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">ClassNotFoundException</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">suppressedExceptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Class</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pathList</span><span class="p">.</span><span class="na">findClass</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">suppressedExceptions</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">ClassNotFoundException</span><span class="w"> </span><span class="n">cnfe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassNotFoundException</span><span class="p">(</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="s">&#34;Didn&#39;t find class \&#34;&#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;\&#34; on path: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pathList</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">Throwable</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">suppressedExceptions</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">cnfe</span><span class="p">.</span><span class="na">addSuppressed</span><span class="p">(</span><span class="n">t</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">throw</span><span class="w"> </span><span class="n">cnfe</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">c</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//DexPathList.findClass</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">public</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">findClass</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">suppressed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">Element</span><span class="w"> </span><span class="n">element</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">dexElements</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">clazz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">element</span><span class="p">.</span><span class="na">findClass</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">definingContext</span><span class="p">,</span><span class="w"> </span><span class="n">suppressed</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">clazz</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">return</span><span class="w"> </span><span class="n">clazz</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">DexFile</span><span class="w"> </span><span class="n">dex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadDexFile</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">optimizedDirectory</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">elements</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dex</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">elements</span><span class="o">[</span><span class="n">elementsPos</span><span class="o">++]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Element</span><span class="p">(</span><span class="n">file</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">elements</span><span class="o">[</span><span class="n">elementsPos</span><span class="o">++]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Element</span><span class="p">(</span><span class="n">dex</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dexElementsSuppressedExceptions</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">suppressed</span><span class="p">.</span><span class="na">addAll</span><span class="p">(</span><span class="n">Arrays</span><span class="p">.</span><span class="na">asList</span><span class="p">(</span><span class="n">dexElementsSuppressedExceptions</span><span class="p">));</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">logW</span><span class="p">(</span><span class="s">&#34;ClassLoader referenced unknown path: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">file</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//Element.findClass</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">public</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">findClass</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ClassLoader</span><span class="w"> </span><span class="n">definingContext</span><span class="p">,</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">suppressed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">dexFile</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">dexFile</span><span class="p">.</span><span class="na">loadClassBinaryName</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">definingContext</span><span class="p">,</span><span class="w"> </span><span class="n">suppressed</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">elementsPos</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">elements</span><span class="p">.</span><span class="na">length</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">elements</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arrays</span><span class="p">.</span><span class="na">copyOf</span><span class="p">(</span><span class="n">elements</span><span class="p">,</span><span class="w"> </span><span class="n">elementsPos</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">elements</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//DexPathList.loadDexFile</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">DexFile</span><span class="w"> </span><span class="nf">loadDexFile</span><span class="p">(</span><span class="n">File</span><span class="w"> </span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">File</span><span class="w"> </span><span class="n">optimizedDirectory</span><span class="p">,</span><span class="w"> </span><span class="n">ClassLoader</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="n">Element</span><span class="o">[]</span><span class="w"> </span><span class="n">elements</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">throws</span><span class="w"> </span><span class="n">IOException</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">optimizedDirectory</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">DexFile</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">elements</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">optimizedPath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">optimizedPathFor</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">optimizedDirectory</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">DexFile</span><span class="p">.</span><span class="na">loadDex</span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="na">getPath</span><span class="p">(),</span><span class="w"> </span><span class="n">optimizedPath</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">elements</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>从上面可以看出来，DexPathList里面会先split出dexPath，然后通过路径生成optimizedPath的路径，通过该路径生成DexFile对象，它就是表示一个dex文件。然后把DexFile塞入到Element数组中，最后该Element数组关联到BaseDexClassLoader中。</p>
+<ol start="5">
+<li>接着看下如果通过dex加载到class，该处理是在BaseDexClassLoader中的findClass：</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">//BaseDexClassLoader.findClass</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">protected</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">findClass</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">ClassNotFoundException</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">suppressedExceptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Class</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pathList</span><span class="p">.</span><span class="na">findClass</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">suppressedExceptions</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">ClassNotFoundException</span><span class="w"> </span><span class="n">cnfe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClassNotFoundException</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="s">&#34;Didn&#39;t find class \&#34;&#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;\&#34; on path: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pathList</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">Throwable</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">suppressedExceptions</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">cnfe</span><span class="p">.</span><span class="na">addSuppressed</span><span class="p">(</span><span class="n">t</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//DexFile.loadClassBinaryName</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">public</span><span class="w"> </span><span class="n">Class</span><span class="w"> </span><span class="nf">loadClassBinaryName</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ClassLoader</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">suppressed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">defineClass</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">mCookie</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">suppressed</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">cnfe</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">c</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//DexPathList.findClass</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">findClass</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">suppressed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">Element</span><span class="w"> </span><span class="n">element</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">dexElements</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">clazz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">element</span><span class="p">.</span><span class="na">findClass</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">definingContext</span><span class="p">,</span><span class="w"> </span><span class="n">suppressed</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">clazz</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">clazz</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//DexFile.defineClass</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">Class</span><span class="w"> </span><span class="nf">defineClass</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ClassLoader</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">cookie</span><span class="p">,</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                                     </span><span class="n">DexFile</span><span class="w"> </span><span class="n">dexFile</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">suppressed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Class</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">defineClassNative</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">cookie</span><span class="p">,</span><span class="w"> </span><span class="n">dexFile</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">NoClassDefFoundError</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">suppressed</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">suppressed</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">ClassNotFoundException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">suppressed</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">suppressed</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dexElementsSuppressedExceptions</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">suppressed</span><span class="p">.</span><span class="na">addAll</span><span class="p">(</span><span class="n">Arrays</span><span class="p">.</span><span class="na">asList</span><span class="p">(</span><span class="n">dexElementsSuppressedExceptions</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//Element.findClass</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">findClass</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ClassLoader</span><span class="w"> </span><span class="n">definingContext</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">suppressed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">dexFile</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">dexFile</span><span class="p">.</span><span class="na">loadClassBinaryName</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">definingContext</span><span class="p">,</span><span class="w"> </span><span class="n">suppressed</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//DexFile.loadClassBinaryName</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="n">Class</span><span class="w"> </span><span class="nf">loadClassBinaryName</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ClassLoader</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">suppressed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">defineClass</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">mCookie</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">suppressed</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//DexFile.defineClass</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">Class</span><span class="w"> </span><span class="nf">defineClass</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ClassLoader</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">cookie</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                             </span><span class="n">DexFile</span><span class="w"> </span><span class="n">dexFile</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Throwable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">suppressed</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Class</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">defineClassNative</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">cookie</span><span class="p">,</span><span class="w"> </span><span class="n">dexFile</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">NoClassDefFoundError</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">suppressed</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">suppressed</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//DexFile中的native方法</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">native</span><span class="w"> </span><span class="n">Class</span><span class="w"> </span><span class="nf">defineClassNative</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ClassLoader</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">cookie</span><span class="p">,</span><span class="n">DexFile</span><span class="w"> </span><span class="n">dexFile</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="kd">throws</span><span class="w"> </span><span class="n">ClassNotFoundException</span><span class="p">,</span><span class="w"> </span><span class="n">NoClassDefFoundError</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="err">```</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">从上面可以看到BaseDexClassLoader最终是通过DexPathList</span><span class="o">-&gt;</span><span class="n">Element</span><span class="o">-&gt;</span><span class="n">DexFile</span><span class="o">-&gt;</span><span class="n">native来加载到class</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">###</span><span class="w"> </span><span class="n">android中Choreographer工作内容</span><span class="err">（</span><span class="n">android</span><span class="w"> </span><span class="n">29</span><span class="err">）</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">*</span><span class="w"> </span><span class="n">当某个view发起绘制</span><span class="err">（</span><span class="n">requestLayout或invalidate</span><span class="err">）</span><span class="n">的时候</span><span class="err">，</span><span class="n">会调用到ViewRootImpl的scheduleTraversals</span><span class="err">，</span><span class="n">该方法里面会给主线程的looper中的消息队列插入了一条消息屏障</span><span class="err">，</span><span class="n">接着给Choreographer插入了一条CALLBACK_TRAVERSAL类型的callback</span><span class="err">：</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">```</span><span class="n">java</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">scheduleTraversals</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">ClassNotFoundException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">suppressed</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">suppressed</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">//DexFile中的native方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">native</span><span class="w"> </span><span class="n">Class</span><span class="w"> </span><span class="nf">defineClassNative</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ClassLoader</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">cookie</span><span class="p">,</span><span class="n">DexFile</span><span class="w"> </span><span class="n">dexFile</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">throws</span><span class="w"> </span><span class="n">ClassNotFoundException</span><span class="p">,</span><span class="w"> </span><span class="n">NoClassDefFoundError</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>从上面可以看到BaseDexClassLoader最终是通过DexPathList-&gt;Element-&gt;DexFile-&gt;native来加载到class</p>
+</li>
+</ol>
+</li>
+</ol>
+<h3 id="android中choreographer工作内容android-29">android中Choreographer工作内容（android 29）
+</h3><ul>
+<li>当某个view发起绘制（requestLayout或invalidate）的时候，会调用到ViewRootImpl的scheduleTraversals，该方法里面会给主线程的looper中的消息队列插入了一条消息屏障，接着给Choreographer插入了一条CALLBACK_TRAVERSAL类型的callback：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">scheduleTraversals</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//如果没有发起绘制，才会往下走</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">mTraversalScheduled</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mTraversalScheduled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
@@ -1478,216 +1468,206 @@ kotlin中的===：如果是对象类型，比较的是内存地址，指向的�
 </div><p>综上来看，lazy默认是线程安全的，默认使用的对象锁是当前lazy对象，也可以自己传入锁对象。使用Volatile来保证对象的可见性，通过synchronized保证创建对象是原子操作。</p>
 <h3 id="kotlin委托模式">kotlin委托模式
 </h3><ul>
-<li>属性委托：允许你把属性的getter、setter逻辑委托给一个独立的对象来管理
+<li>
+<p>属性委托：允许你把属性的getter、setter逻辑委托给一个独立的对象来管理</p>
 <ul>
 <li>通过「var 属性 by 委托类」的形式定义一个属性委托的过程，当使用var的时候，说明该属性能可读和可写，在属性写的时候实际编译器会去调委托类的setValue方法，当属性读的时候实际编译器会去调委托类的getValue方法。</li>
 </ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">Delegate</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">operator</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">getValue</span><span class="p">(</span><span class="n">thisRef</span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">property</span><span class="p">:</span><span class="w"> </span><span class="n">KProperty</span><span class="o">&lt;*&gt;</span><span class="p">):</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="s">&#34;属性 ${property.name} 被代理了&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">operator</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">setValue</span><span class="p">(</span><span class="n">thisRef</span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">property</span><span class="p">:</span><span class="w"> </span><span class="n">KProperty</span><span class="o">&lt;*&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="n">String</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">println</span><span class="p">(</span><span class="s">&#34;属性 ${property.name} 赋值为 $value&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">class</span> <span class="nc">Example</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="nf">Delegate</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">fun</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Example</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">println</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="na">message</span><span class="p">)</span><span class="w">  </span><span class="c1">// 访问时调用 getValue()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">e</span><span class="p">.</span><span class="na">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;Hello&#34;</span><span class="w"> </span><span class="c1">// 赋值时调用 setValue()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>实际对应的字节码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">Example</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">message$delegate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Delegate</span><span class="p">()</span><span class="w"> </span><span class="c1">// 委托对象变为一个私有属性</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="n">String</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nf">get</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">message$delegate</span><span class="p">.</span><span class="na">getValue</span><span class="p">(</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="p">::</span><span class="n">message</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">message$delegate</span><span class="p">.</span><span class="na">setValue</span><span class="p">(</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="p">::</span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>by Delegate() 其实是 Kotlin 编译器生成的 get() 和 set() 方法。</li>
+<li>getValue() 和 setValue() 由 Delegate 这个委托对象实现。</li>
+</ul>
 </li>
+<li>
+<p>类委托：允许一个类 将实现某个接口的功能委托给另一个对象，减少代码重复。</p>
+<ul>
+<li>by 关键字 可以让 Kotlin 自动生成委托方法，避免手写重复代码</li>
 </ul>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">  1
-</span><span class="lnt">  2
-</span><span class="lnt">  3
-</span><span class="lnt">  4
-</span><span class="lnt">  5
-</span><span class="lnt">  6
-</span><span class="lnt">  7
-</span><span class="lnt">  8
-</span><span class="lnt">  9
-</span><span class="lnt"> 10
-</span><span class="lnt"> 11
-</span><span class="lnt"> 12
-</span><span class="lnt"> 13
-</span><span class="lnt"> 14
-</span><span class="lnt"> 15
-</span><span class="lnt"> 16
-</span><span class="lnt"> 17
-</span><span class="lnt"> 18
-</span><span class="lnt"> 19
-</span><span class="lnt"> 20
-</span><span class="lnt"> 21
-</span><span class="lnt"> 22
-</span><span class="lnt"> 23
-</span><span class="lnt"> 24
-</span><span class="lnt"> 25
-</span><span class="lnt"> 26
-</span><span class="lnt"> 27
-</span><span class="lnt"> 28
-</span><span class="lnt"> 29
-</span><span class="lnt"> 30
-</span><span class="lnt"> 31
-</span><span class="lnt"> 32
-</span><span class="lnt"> 33
-</span><span class="lnt"> 34
-</span><span class="lnt"> 35
-</span><span class="lnt"> 36
-</span><span class="lnt"> 37
-</span><span class="lnt"> 38
-</span><span class="lnt"> 39
-</span><span class="lnt"> 40
-</span><span class="lnt"> 41
-</span><span class="lnt"> 42
-</span><span class="lnt"> 43
-</span><span class="lnt"> 44
-</span><span class="lnt"> 45
-</span><span class="lnt"> 46
-</span><span class="lnt"> 47
-</span><span class="lnt"> 48
-</span><span class="lnt"> 49
-</span><span class="lnt"> 50
-</span><span class="lnt"> 51
-</span><span class="lnt"> 52
-</span><span class="lnt"> 53
-</span><span class="lnt"> 54
-</span><span class="lnt"> 55
-</span><span class="lnt"> 56
-</span><span class="lnt"> 57
-</span><span class="lnt"> 58
-</span><span class="lnt"> 59
-</span><span class="lnt"> 60
-</span><span class="lnt"> 61
-</span><span class="lnt"> 62
-</span><span class="lnt"> 63
-</span><span class="lnt"> 64
-</span><span class="lnt"> 65
-</span><span class="lnt"> 66
-</span><span class="lnt"> 67
-</span><span class="lnt"> 68
-</span><span class="lnt"> 69
-</span><span class="lnt"> 70
-</span><span class="lnt"> 71
-</span><span class="lnt"> 72
-</span><span class="lnt"> 73
-</span><span class="lnt"> 74
-</span><span class="lnt"> 75
-</span><span class="lnt"> 76
-</span><span class="lnt"> 77
-</span><span class="lnt"> 78
-</span><span class="lnt"> 79
-</span><span class="lnt"> 80
-</span><span class="lnt"> 81
-</span><span class="lnt"> 82
-</span><span class="lnt"> 83
-</span><span class="lnt"> 84
-</span><span class="lnt"> 85
-</span><span class="lnt"> 86
-</span><span class="lnt"> 87
-</span><span class="lnt"> 88
-</span><span class="lnt"> 89
-</span><span class="lnt"> 90
-</span><span class="lnt"> 91
-</span><span class="lnt"> 92
-</span><span class="lnt"> 93
-</span><span class="lnt"> 94
-</span><span class="lnt"> 95
-</span><span class="lnt"> 96
-</span><span class="lnt"> 97
-</span><span class="lnt"> 98
-</span><span class="lnt"> 99
-</span><span class="lnt">100
-</span><span class="lnt">101
-</span><span class="lnt">102
-</span><span class="lnt">103
-</span><span class="lnt">104
-</span><span class="lnt">105
-</span><span class="lnt">106
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="w">    </span><span class="kd">class</span> <span class="nc">Delegate</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">operator</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">getValue</span><span class="p">(</span><span class="n">thisRef</span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">property</span><span class="p">:</span><span class="w"> </span><span class="n">KProperty</span><span class="o">&lt;*&gt;</span><span class="p">):</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="s">&#34;属性 ${property.name} 被代理了&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">operator</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">setValue</span><span class="p">(</span><span class="n">thisRef</span><span class="p">:</span><span class="w"> </span><span class="n">Any</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="n">property</span><span class="p">:</span><span class="w"> </span><span class="n">KProperty</span><span class="o">&lt;*&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="n">String</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">println</span><span class="p">(</span><span class="s">&#34;属性 ${property.name} 赋值为 $value&#34;</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">interface</span> <span class="nc">Printer</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">fun</span><span class="w"> </span><span class="nf">printMessage</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">class</span> <span class="nc">RealPrinter</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">printMessage</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">println</span><span class="p">(</span><span class="s">&#34;RealPrinter: 打印内容&#34;</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">class</span> <span class="nc">Example</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">var</span><span class="w"> </span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="nf">Delegate</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">class</span> <span class="nf">ProxyPrinter</span><span class="p">(</span><span class="n">printer</span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">printer</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">fun</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">realPrinter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RealPrinter</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">proxy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProxyPrinter</span><span class="p">(</span><span class="n">realPrinter</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">proxy</span><span class="p">.</span><span class="na">printMessage</span><span class="p">()</span><span class="w"> </span><span class="c1">// 调用的是 realPrinter 的方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面的ProxyPrinter被编译器编译为如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nf">ProxyPrinter</span><span class="p">(</span><span class="n">printer</span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">printerDelegate</span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">printer</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">printMessage</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">printerDelegate</span><span class="p">.</span><span class="na">printMessage</span><span class="p">()</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">fun</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">val</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Example</span><span class="p">()</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">println</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="na">message</span><span class="p">)</span><span class="w">  </span><span class="c1">// 访问时调用 getValue()</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">e</span><span class="p">.</span><span class="na">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;Hello&#34;</span><span class="w"> </span><span class="c1">// 赋值时调用 setValue()</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">```</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">实际对应的字节码</span><span class="err">：</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">```</span><span class="n">java</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">class</span> <span class="nc">Example</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">private</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">message$delegate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Delegate</span><span class="p">()</span><span class="w"> </span><span class="c1">// 委托对象变为一个私有属性</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">var</span><span class="w"> </span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="n">String</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nf">get</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">message$delegate</span><span class="p">.</span><span class="na">getValue</span><span class="p">(</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="p">::</span><span class="n">message</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">message$delegate</span><span class="p">.</span><span class="na">setValue</span><span class="p">(</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="p">::</span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">```</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="nf">Delegate</span><span class="p">()</span><span class="w"> </span><span class="n">其实是</span><span class="w"> </span><span class="n">Kotlin</span><span class="w"> </span><span class="n">编译器生成的</span><span class="w"> </span><span class="nf">get</span><span class="p">()</span><span class="w"> </span><span class="n">和</span><span class="w"> </span><span class="nf">set</span><span class="p">()</span><span class="w"> </span><span class="n">方法</span><span class="err">。</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">getValue</span><span class="p">()</span><span class="w"> </span><span class="n">和</span><span class="w"> </span><span class="nf">setValue</span><span class="p">()</span><span class="w"> </span><span class="n">由</span><span class="w"> </span><span class="n">Delegate</span><span class="w"> </span><span class="n">这个委托对象实现</span><span class="err">。</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">+</span><span class="w"> </span><span class="n">类委托</span><span class="err">：</span><span class="n">允许一个类</span><span class="w"> </span><span class="n">将实现某个接口的功能委托给另一个对象</span><span class="err">，</span><span class="n">减少代码重复</span><span class="err">。</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">关键字</span><span class="w"> </span><span class="n">可以让</span><span class="w"> </span><span class="n">Kotlin</span><span class="w"> </span><span class="n">自动生成委托方法</span><span class="err">，</span><span class="n">避免手写重复代码</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">```</span><span class="n">java</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">interface</span> <span class="nc">Printer</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">fun</span><span class="w"> </span><span class="nf">printMessage</span><span class="p">()</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">class</span> <span class="nc">RealPrinter</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">printMessage</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">println</span><span class="p">(</span><span class="s">&#34;RealPrinter: 打印内容&#34;</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">class</span> <span class="nf">ProxyPrinter</span><span class="p">(</span><span class="n">printer</span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">printer</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">fun</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">val</span><span class="w"> </span><span class="n">realPrinter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">RealPrinter</span><span class="p">()</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">val</span><span class="w"> </span><span class="n">proxy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProxyPrinter</span><span class="p">(</span><span class="n">realPrinter</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">proxy</span><span class="p">.</span><span class="na">printMessage</span><span class="p">()</span><span class="w"> </span><span class="c1">// 调用的是 realPrinter 的方法</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">```</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">上面的ProxyPrinter被编译器编译为如下</span><span class="err">：</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">```</span><span class="n">java</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">class</span> <span class="nf">ProxyPrinter</span><span class="p">(</span><span class="n">printer</span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">private</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">printerDelegate</span><span class="p">:</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">printer</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">override</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">printMessage</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">printerDelegate</span><span class="p">.</span><span class="na">printMessage</span><span class="p">()</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="err">```</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">printer</span><span class="w"> </span><span class="n">让</span><span class="w"> </span><span class="n">ProxyPrinter</span><span class="w"> </span><span class="n">自动实现</span><span class="w"> </span><span class="n">Printer</span><span class="w"> </span><span class="n">接口的方法</span><span class="err">，</span><span class="n">而不需要手动实现</span><span class="err">。</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">编译器在字节码层面会自动插入代理方法</span><span class="err">，</span><span class="n">提高代码简洁性</span><span class="err">。</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">###</span><span class="w"> </span><span class="n">为什么reified必须和inline一起使用</span><span class="err">？</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">reified关键字是用来修饰泛型</span><span class="err">，</span><span class="n">而泛型在编译后会被擦除掉</span><span class="err">，</span><span class="n">所以如果要在运行时获取到泛型的类型</span><span class="err">，</span><span class="n">就得用reified关键字</span><span class="err">，</span><span class="n">而inline的作用是修饰方法内联</span><span class="err">，</span><span class="n">之前讲内联函数的特点是将函数体平铺到调用处</span><span class="err">。</span><span class="n">那它两有什么联系呢</span><span class="err">？</span><span class="n">先来看一个例子</span><span class="err">：</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">![</span><span class="n">alt</span><span class="w"> </span><span class="n">text</span><span class="o">]</span><span class="p">(</span><span class="n">获取泛型的class类型</span><span class="p">.</span><span class="na">png</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">此处提示我</span><span class="err">，</span><span class="n">使用reified关键字来修饰泛型</span><span class="err">，</span><span class="n">因为泛型在编译后</span><span class="err">，</span><span class="n">会被擦除掉</span><span class="err">，</span><span class="n">所以是获取不到它的类型</span><span class="err">，</span><span class="n">只有添加reified才能保证它的类型存在</span><span class="err">。</span><span class="n">那添加完reified后提示为什么还要添加inline呢</span><span class="err">？</span><span class="o">&lt;/</span><span class="n">br</span><span class="o">&gt;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">这是因为只有内联函数将函数体进行平铺</span><span class="err">，</span><span class="n">然后将泛型通过</span><span class="err">「</span><span class="n">真类型</span><span class="err">」</span><span class="n">代入到函数体中</span><span class="err">，</span><span class="n">看下编译后的代码</span><span class="err">：</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">![</span><span class="n">alt</span><span class="w"> </span><span class="n">text</span><span class="o">]</span><span class="p">(</span><span class="n">reified编译前和编译后对比</span><span class="p">.</span><span class="na">png</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">###</span><span class="w"> </span><span class="n">关于viewModel的一些思考</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">*</span><span class="w"> </span><span class="n">创建</span><span class="err">：</span><span class="n">默认都是通过ViewModelProvider的get方法获取到viewModel</span><span class="err">，</span><span class="n">里面通过factory</span><span class="err">（</span><span class="n">工厂方法模式</span><span class="err">）</span><span class="n">的create来创建viewModel</span><span class="err">，</span><span class="n">创建完之后会把viewModel保存到ViewModelStore中</span><span class="err">。</span><span class="n">ViewModelStore实际是用一个hashMap来存储viewModel</span><span class="err">，</span><span class="n">key是viewModel的class</span><span class="w"> </span><span class="n">name拼上前缀</span><span class="err">，</span><span class="n">value就是当前viewModel</span><span class="err">。</span><span class="n">android中默认的factory是ViewModelProvider</span><span class="p">.</span><span class="w"> </span><span class="n">AndroidViewModelFactory</span><span class="err">，</span><span class="n">在它的create方法里面通过前面传进来的viewModel的class反射创建viewModel</span><span class="err">。</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">*</span><span class="w"> </span><span class="n">存储</span><span class="err">：</span><span class="n">像平时写的activity都是继承自</span><span class="err">`</span><span class="n">ComponentActivity</span><span class="err">`，</span><span class="n">它是实现了</span><span class="err">`</span><span class="n">ViewModelStoreOwner</span><span class="err">`</span><span class="n">接口</span><span class="err">，</span><span class="n">该接口需要持有一个ViewModelStore</span><span class="err">，</span><span class="n">ViewModelStore是在ensureViewModelStore方法中创建的</span><span class="err">：</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">```</span><span class="n">java</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">ensureViewModelStore</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>by printer 让 ProxyPrinter 自动实现 Printer 接口的方法，而不需要手动实现。</li>
+<li>编译器在字节码层面会自动插入代理方法，提高代码简洁性。</li>
+</ul>
+</li>
+</ul>
+<h3 id="为什么reified必须和inline一起使用">为什么reified必须和inline一起使用？
+</h3><p>reified关键字是用来修饰泛型，而泛型在编译后会被擦除掉，所以如果要在运行时获取到泛型的类型，就得用reified关键字，而inline的作用是修饰方法内联，之前讲内联函数的特点是将函数体平铺到调用处。那它两有什么联系呢？先来看一个例子：</p>
+<p><img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E8%8E%B7%E5%8F%96%E6%B3%9B%E5%9E%8B%E7%9A%84class%E7%B1%BB%E5%9E%8B.png"
+	width="1284"
+	height="244"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E8%8E%B7%E5%8F%96%E6%B3%9B%E5%9E%8B%E7%9A%84class%E7%B1%BB%E5%9E%8B_hu_b2fc5ae36fb66a74.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/%E8%8E%B7%E5%8F%96%E6%B3%9B%E5%9E%8B%E7%9A%84class%E7%B1%BB%E5%9E%8B_hu_662b07cb48c57e0b.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="526"
+		data-flex-basis="1262px"
+	
+></p>
+<p>此处提示我，使用reified关键字来修饰泛型，因为泛型在编译后，会被擦除掉，所以是获取不到它的类型，只有添加reified才能保证它的类型存在。那添加完reified后提示为什么还要添加inline呢？</br>
+这是因为只有内联函数将函数体进行平铺，然后将泛型通过「真类型」代入到函数体中，看下编译后的代码：</p>
+<p><img src="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/reified%E7%BC%96%E8%AF%91%E5%89%8D%E5%92%8C%E7%BC%96%E8%AF%91%E5%90%8E%E5%AF%B9%E6%AF%94.png"
+	width="3306"
+	height="1484"
+	srcset="/p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/reified%E7%BC%96%E8%AF%91%E5%89%8D%E5%92%8C%E7%BC%96%E8%AF%91%E5%90%8E%E5%AF%B9%E6%AF%94_hu_84da9ce362719951.png 480w, /p/%E7%AC%94%E8%AE%B0%E6%95%B4%E7%90%86/reified%E7%BC%96%E8%AF%91%E5%89%8D%E5%92%8C%E7%BC%96%E8%AF%91%E5%90%8E%E5%AF%B9%E6%AF%94_hu_37e6e2557341c889.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="222"
+		data-flex-basis="534px"
+	
+></p>
+<h3 id="关于viewmodel的一些思考">关于viewModel的一些思考
+</h3><ul>
+<li>创建：默认都是通过ViewModelProvider的get方法获取到viewModel，里面通过factory（工厂方法模式）的create来创建viewModel，创建完之后会把viewModel保存到ViewModelStore中。ViewModelStore实际是用一个hashMap来存储viewModel，key是viewModel的class name拼上前缀，value就是当前viewModel。android中默认的factory是ViewModelProvider. AndroidViewModelFactory，在它的create方法里面通过前面传进来的viewModel的class反射创建viewModel。</li>
+<li>存储：像平时写的activity都是继承自<code>ComponentActivity</code>，它是实现了<code>ViewModelStoreOwner</code>接口，该接口需要持有一个ViewModelStore，ViewModelStore是在ensureViewModelStore方法中创建的：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">ensureViewModelStore</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mViewModelStore</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">NonConfigurationInstances</span><span class="w"> </span><span class="n">nc</span><span class="w"> </span><span class="o">=</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">(</span><span class="n">NonConfigurationInstances</span><span class="p">)</span><span class="w"> </span><span class="n">getLastNonConfigurationInstance</span><span class="p">();</span><span class="w">
@@ -2351,12 +2331,110 @@ kotlin中的===：如果是对象类型，比较的是内存地址，指向的�
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><h3 id="math相关方法">Math相关方法
+</div><p>如果是形如/path1/path2这种形式直接通过toFileUri转化成Uri，如果不是，则通过Uri.parse转化成Uri，并判断Uri的scheme，scheme是什么：<t>
+scheme = “https”<t>
+也就是 https:// 前面这一段。<t>
+scheme 表示 URI 使用的协议（Protocol）或访问方式（Access Method）。<t>
+它告诉系统或浏览器：<t></p>
+<blockquote>
+<p>这个资源应该用哪种协议来访问。<t></p>
+</blockquote>
+<p>比如常见scheme：<t></p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>scheme</th>
+          <th>含义</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>http</td>
+          <td>通过 HTTP 协议访问资源</td>
+      </tr>
+      <tr>
+          <td>https</td>
+          <td>通过 HTTPS（加密的 HTTP）协议访问资源</td>
+      </tr>
+      <tr>
+          <td>ftp</td>
+          <td>使用 FTP 下载/上传文件</td>
+      </tr>
+      <tr>
+          <td>file</td>
+          <td>本地文件，例如 file:///sdcard/test.txt</td>
+      </tr>
+      <tr>
+          <td>content</td>
+          <td>Android 的 ContentProvider，例如 Uri.fromFile 或 content://media</td>
+      </tr>
+      <tr>
+          <td>data</td>
+          <td>Data URI，直接把数据编码在 URI 内</td>
+      </tr>
+      <tr>
+          <td>mailto</td>
+          <td>打开邮箱，例如 mailto:xxx@gmail.com</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="math相关方法">Math相关方法
 </h3><ul>
 <li>Math.ceil: 向上取整，比如6.1向上取整得到7</li>
 <li>Math.floor: 向下取整，比如6.7向下取整得到6</li>
 <li>Math.round: 四舍五入计算取整</li>
 </ul>
+<h3 id="plantuml中class关系说明">plantUml中class关系说明
+</h3><ol>
+<li>继承：A &ndash;|&gt; B</li>
+<li>实现：A ..|&gt; B</li>
+<li>构成：A &ndash;* B，表示A强依赖B，整体与部分不可分离
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">Car</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">Engine</span><span class="w"> </span><span class="n">engine</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Engine</span><span class="p">();</span><span class="w"> </span><span class="c1">// Car 死 Engine 必死</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>Car &ndash;* Engine</li>
+<li>聚合：A &ndash;o B，弱依赖，整体与部分可独立存在。</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">Team</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Player</span><span class="o">&gt;</span><span class="w"> </span><span class="n">players</span><span class="p">;</span><span class="w">  </span><span class="c1">// players 不随 team 强制销毁</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">   
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>Team &ndash;o Player
+5. 依赖：A &ndash;&gt; B，类在运行时使用另一个类，通常表示局部变量、方法参数。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">OrderService</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">createOrder</span><span class="p">(</span><span class="n">Order</span><span class="w"> </span><span class="n">order</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">OrderValidator</span><span class="w"> </span><span class="n">validator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">OrderValidator</span><span class="p">();</span><span class="w"> </span><span class="c1">// 依赖</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>OrderService &ndash;&gt; OrderValidator</p>
 
 </section>
 
