@@ -42,7 +42,7 @@
     })();
 </script>
 <div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
-    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
         <span class="hamburger-box">
             <span class="hamburger-inner"></span>
         </span>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
+                        <img src="/img/logo_hu_c5ce2387cd5c94f8.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -198,7 +198,7 @@
 
 
 
-                        <span>Dark Mode</span>
+                        <span>暗色模式</span>
                     </li>
                 
             </ol>
@@ -266,7 +266,7 @@
 
 
                 <time class="article-time--reading">
-                    3 minute read
+                    阅读时长: 3 分钟
                 </time>
             </div>
         
@@ -289,7 +289,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">internal</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="n">R_REGEX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;.*/R\\\$.*|.*/R\\.*&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">Pattern</span><span class="p">.</span><span class="na">matches</span><span class="p">(</span><span class="n">R_REGEX</span><span class="p">,</span><span class="w"> </span><span class="n">klass</span><span class="p">.</span><span class="na">name</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">Pattern</span><span class="p">.</span><span class="na">matches</span><span class="p">(</span><span class="n">R_REGEX</span><span class="p">,</span><span class="w"> </span><span class="n">klass</span><span class="p">.</span><span class="na">name</span><span class="p">)</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>我是想匹配到<code>com/xc/lib/R$color</code>或<code>com/xc/lib/R</code>形如这种class的名字，第一眼看的时候有点懵，然后通过查看正则表达式的语法时候，发现正则是有规律可循的，先看一张表格：</p>
@@ -469,7 +469,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">Pattern</span><span class="w"> </span><span class="n">pattern</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Pattern</span><span class="p">.</span><span class="na">compile</span><span class="p">(</span><span class="s">&#34;(#[^#]*[^#\\s]+[^#]*#)&#34;</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">Matcher</span><span class="w"> </span><span class="n">matcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pattern</span><span class="p">.</span><span class="na">match</span><span class="p">(</span><span class="s">&#34;#key_mmkv_migrate_version# &#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">Matcher</span><span class="w"> </span><span class="n">matcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pattern</span><span class="p">.</span><span class="na">match</span><span class="p">(</span><span class="s">&#34;#key_mmkv_migrate_version# &#34;</span><span class="p">)</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>该正则表达式作用：用于匹配 以 # 开头和结尾的内容，并且内容中至少包含 一个非空白的非 # 字符。
@@ -528,7 +528,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@kotlin.internal.InlineOnly</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="n">inline</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="n">String</span><span class="p">.</span><span class="na">toRegex</span><span class="p">():</span><span class="w"> </span><span class="n">Regex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Regex</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">inline</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="n">String</span><span class="p">.</span><span class="na">toRegex</span><span class="p">():</span><span class="w"> </span><span class="n">Regex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Regex</span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>将string转化成Regex:</p>
@@ -539,7 +539,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">regexStr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">`</span><span class="o">&lt;</span><span class="n">a</span><span class="o">[^&gt;]*?</span><span class="p">((</span><span class="o">&gt;[</span><span class="err">\</span><span class="n">s</span><span class="err">\</span><span class="n">S</span><span class="o">]*?&lt;/</span><span class="n">a</span><span class="o">&gt;</span><span class="p">)</span><span class="o">|</span><span class="p">(</span><span class="o">/&gt;</span><span class="p">))</span><span class="err">`</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">regex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regexStr</span><span class="p">.</span><span class="na">toRegex</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">regex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regexStr</span><span class="p">.</span><span class="na">toRegex</span><span class="p">()</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>用于 匹配 HTML <a> 标签（包括自闭合 <a /> 和 **带内容的 <a>&hellip;</a> 形式）。
@@ -584,9 +584,9 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">`</span><span class="o">&lt;</span><span class="n">a</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s">&#34;topic&#34;</span><span class="w"> </span><span class="o">&gt;</span><span class="err">#</span><span class="n">key_mmkv_migrate_version</span><span class="err">#</span><span class="o">&lt;/</span><span class="n">a</span><span class="o">&gt;</span><span class="w"> </span><span class="err">`</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">regexStr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">`</span><span class="o">&lt;</span><span class="n">a</span><span class="o">[^&gt;]*?</span><span class="p">((</span><span class="o">&gt;[</span><span class="err">\</span><span class="n">s</span><span class="err">\</span><span class="n">S</span><span class="o">]*?&lt;/</span><span class="n">a</span><span class="o">&gt;</span><span class="p">)</span><span class="o">|</span><span class="p">(</span><span class="o">/&gt;</span><span class="p">))</span><span class="err">`</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">regex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regexStr</span><span class="p">.</span><span class="na">toRegex</span><span class="p">()</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">source</span><span class="p">.</span><span class="na">contains</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">regexStr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">`</span><span class="o">&lt;</span><span class="n">a</span><span class="o">[^&gt;]*?</span><span class="p">((</span><span class="o">&gt;[</span><span class="err">\</span><span class="n">s</span><span class="err">\</span><span class="n">S</span><span class="o">]*?&lt;/</span><span class="n">a</span><span class="o">&gt;</span><span class="p">)</span><span class="o">|</span><span class="p">(</span><span class="o">/&gt;</span><span class="p">))</span><span class="err">`</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">regex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regexStr</span><span class="p">.</span><span class="na">toRegex</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">source</span><span class="p">.</span><span class="na">contains</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>contains方法表示是否符合这个正则判断。</p>
@@ -637,8 +637,8 @@ MatchResult.value:表示匹配到的内容</p>
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">attributeRegex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;(\\S+)=\&#34;([^\&#34;]+)\&#34;&#34;</span><span class="p">.</span><span class="na">toRegex</span><span class="p">()</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;&lt;a type=&#34;</span><span class="n">topic</span><span class="s">&#34; &gt;#key_mmkv_migrate_version#&lt;/a&gt; &#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">matchResultList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">attributeRegex</span><span class="p">.</span><span class="na">findAll</span><span class="p">(</span><span class="n">source</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;&lt;a type=&#34;</span><span class="n">topic</span><span class="s">&#34; &gt;#key_mmkv_migrate_version#&lt;/a&gt; &#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">matchResultList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">attributeRegex</span><span class="p">.</span><span class="na">findAll</span><span class="p">(</span><span class="n">source</span><span class="p">)</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>MatchResult.destructured属性</br>
@@ -661,17 +661,17 @@ MatchResult.value:表示匹配到的内容</p>
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">regex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Regex</span><span class="p">(</span><span class="s">&#34;(\\d{4})-(\\d{2})-(\\d{2})&#34;</span><span class="p">)</span><span class="w"> </span><span class="c1">// 匹配日期格式 YYYY-MM-DD</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;2024-03-07&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;2024-03-07&#34;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">matchResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regex</span><span class="p">.</span><span class="na">find</span><span class="p">(</span><span class="n">input</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">matchResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">regex</span><span class="p">.</span><span class="na">find</span><span class="p">(</span><span class="n">input</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">matchResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">matchResult</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="p">(</span><span class="n">year</span><span class="p">,</span><span class="w"> </span><span class="n">month</span><span class="p">,</span><span class="w"> </span><span class="n">day</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">matchResult</span><span class="p">.</span><span class="na">destructured</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nf">println</span><span class="p">(</span><span class="s">&#34;Year: $year, Month: $month, Day: $day&#34;</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">输出</span><span class="err">：</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nl">Year</span><span class="p">:</span><span class="w"> </span><span class="n">2024</span><span class="p">,</span><span class="w"> </span><span class="n">Month</span><span class="p">:</span><span class="w"> </span><span class="n">03</span><span class="p">,</span><span class="w"> </span><span class="n">Day</span><span class="p">:</span><span class="w"> </span><span class="n">07</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">输出</span><span class="err">：</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nl">Year</span><span class="p">:</span><span class="w"> </span><span class="n">2024</span><span class="p">,</span><span class="w"> </span><span class="n">Month</span><span class="p">:</span><span class="w"> </span><span class="n">03</span><span class="p">,</span><span class="w"> </span><span class="n">Day</span><span class="p">:</span><span class="w"> </span><span class="n">07</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>然后通过MatchResult.destructured.toList()方法转成list，就可以获取type和topic内容了。</p>
@@ -697,15 +697,15 @@ MatchResult.value:表示匹配到的内容</p>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">spannable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpannableStringBuilder</span><span class="p">(</span><span class="s">&#34;Hello, Android!&#34;</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 给 &#34;Android&#34; 设置红色</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">spannable</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 给 &#34;Android&#34; 设置红色</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">spannable</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ForegroundColorSpan</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="na">RED</span><span class="p">),</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">7</span><span class="p">,</span><span class="w"> </span><span class="n">14</span><span class="p">,</span><span class="w"> 
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Spannable</span><span class="p">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 应用到 TextView</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">textView</span><span class="p">.</span><span class="na">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spannable</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 应用到 TextView</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">textView</span><span class="p">.</span><span class="na">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spannable</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><ul>
@@ -742,22 +742,22 @@ MatchResult.value:表示匹配到的内容</p>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">spannable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpannableStringBuilder</span><span class="p">()</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 添加普通文本</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">spannable</span><span class="p">.</span><span class="na">append</span><span class="p">(</span><span class="s">&#34;Normal Text &#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 添加普通文本</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">spannable</span><span class="p">.</span><span class="na">append</span><span class="p">(</span><span class="s">&#34;Normal Text &#34;</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 添加红色文字</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">redText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpannableString</span><span class="p">(</span><span class="s">&#34;Red Text&#34;</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">redText</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="n">ForegroundColorSpan</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="na">RED</span><span class="p">),</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">redText</span><span class="p">.</span><span class="na">length</span><span class="p">,</span><span class="w"> </span><span class="n">Spannable</span><span class="p">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">spannable</span><span class="p">.</span><span class="na">append</span><span class="p">(</span><span class="n">redText</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 添加红色文字</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">redText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpannableString</span><span class="p">(</span><span class="s">&#34;Red Text&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">redText</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="n">ForegroundColorSpan</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="na">RED</span><span class="p">),</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">redText</span><span class="p">.</span><span class="na">length</span><span class="p">,</span><span class="w"> </span><span class="n">Spannable</span><span class="p">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">spannable</span><span class="p">.</span><span class="na">append</span><span class="p">(</span><span class="n">redText</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 添加蓝色斜体文字</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">blueText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpannableString</span><span class="p">(</span><span class="s">&#34; Blue Italic&#34;</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">blueText</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="n">ForegroundColorSpan</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="na">BLUE</span><span class="p">),</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">blueText</span><span class="p">.</span><span class="na">length</span><span class="p">,</span><span class="w"> </span><span class="n">Spannable</span><span class="p">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">blueText</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="n">StyleSpan</span><span class="p">(</span><span class="n">Typeface</span><span class="p">.</span><span class="na">ITALIC</span><span class="p">),</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">blueText</span><span class="p">.</span><span class="na">length</span><span class="p">,</span><span class="w"> </span><span class="n">Spannable</span><span class="p">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">spannable</span><span class="p">.</span><span class="na">append</span><span class="p">(</span><span class="n">blueText</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 添加蓝色斜体文字</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">blueText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpannableString</span><span class="p">(</span><span class="s">&#34; Blue Italic&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">blueText</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="n">ForegroundColorSpan</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="na">BLUE</span><span class="p">),</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">blueText</span><span class="p">.</span><span class="na">length</span><span class="p">,</span><span class="w"> </span><span class="n">Spannable</span><span class="p">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">blueText</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="n">StyleSpan</span><span class="p">(</span><span class="n">Typeface</span><span class="p">.</span><span class="na">ITALIC</span><span class="p">),</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">blueText</span><span class="p">.</span><span class="na">length</span><span class="p">,</span><span class="w"> </span><span class="n">Spannable</span><span class="p">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">spannable</span><span class="p">.</span><span class="na">append</span><span class="p">(</span><span class="n">blueText</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 应用到 TextView</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">textView</span><span class="p">.</span><span class="na">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spannable</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 应用到 TextView</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">textView</span><span class="p">.</span><span class="na">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spannable</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面用到了SpannableString，它是实现了CharSequence，是对字符串进行样式的扩展类，然后把它添加到SpannableStringBuilder中。</p>
@@ -779,17 +779,17 @@ MatchResult.value:表示匹配到的内容</p>
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">spannable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SpannableStringBuilder</span><span class="p">(</span><span class="s">&#34;Text with image &#34;</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">drawable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ContextCompat</span><span class="p">.</span><span class="na">getDrawable</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">drawable</span><span class="p">.</span><span class="na">ic_launcher_foreground</span><span class="p">)</span><span class="o">!!</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">drawable</span><span class="p">.</span><span class="na">setBounds</span><span class="p">(</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">drawable</span><span class="p">.</span><span class="na">intrinsicWidth</span><span class="p">,</span><span class="w"> </span><span class="n">drawable</span><span class="p">.</span><span class="na">intrinsicHeight</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">drawable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ContextCompat</span><span class="p">.</span><span class="na">getDrawable</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">drawable</span><span class="p">.</span><span class="na">ic_launcher_foreground</span><span class="p">)</span><span class="o">!!</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">drawable</span><span class="p">.</span><span class="na">setBounds</span><span class="p">(</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">drawable</span><span class="p">.</span><span class="na">intrinsicWidth</span><span class="p">,</span><span class="w"> </span><span class="n">drawable</span><span class="p">.</span><span class="na">intrinsicHeight</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">// 在文本末尾添加图片</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">spannable</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 在文本末尾添加图片</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">spannable</span><span class="p">.</span><span class="na">setSpan</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ImageSpan</span><span class="p">(</span><span class="n">drawable</span><span class="p">,</span><span class="w"> </span><span class="n">ImageSpan</span><span class="p">.</span><span class="na">ALIGN_BASELINE</span><span class="p">),</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">spannable</span><span class="p">.</span><span class="na">length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">1</span><span class="p">,</span><span class="w"> </span><span class="n">spannable</span><span class="p">.</span><span class="na">length</span><span class="p">,</span><span class="w"> 
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Spannable</span><span class="p">.</span><span class="na">SPAN_EXCLUSIVE_EXCLUSIVE</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">textView</span><span class="p">.</span><span class="na">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spannable</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">textView</span><span class="p">.</span><span class="na">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spannable</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div>
@@ -884,8 +884,8 @@ MatchResult.value:表示匹配到的内容</p>
     </section>
     
     <section class="powerby">
-        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
     </section>
 </footer>
 

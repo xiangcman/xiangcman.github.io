@@ -42,7 +42,7 @@
     })();
 </script>
 <div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
-    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
         <span class="hamburger-box">
             <span class="hamburger-inner"></span>
         </span>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
+                        <img src="/img/logo_hu_c5ce2387cd5c94f8.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -198,7 +198,7 @@
 
 
 
-                        <span>Dark Mode</span>
+                        <span>暗色模式</span>
                     </li>
                 
             </ol>
@@ -223,7 +223,7 @@
 
 
         </div>
-        <h2 class="widget-title section-title">Table of contents</h2>
+        <h2 class="widget-title section-title">目录</h2>
         
         <div class="widget--toc">
             <nav id="TableOfContents">
@@ -303,7 +303,7 @@
 
 
                 <time class="article-time--reading">
-                    18 minute read
+                    阅读时长: 18 分钟
                 </time>
             </div>
         
@@ -340,7 +340,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">RequestManager</span><span class="w"> </span><span class="nf">with</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Activity</span><span class="w"> </span><span class="n">activity</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">getRetriever</span><span class="p">(</span><span class="n">activity</span><span class="p">).</span><span class="na">get</span><span class="p">(</span><span class="n">activity</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>先获取RequestManagerRetriever，然后再获取RequestManager：</p>
@@ -353,7 +353,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">RequestManagerRetriever</span><span class="w"> </span><span class="nf">getRetriever</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">Glide</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">context</span><span class="p">).</span><span class="na">getRequestManagerRetriever</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>首先调用Glide.get(context)方法，然后通过getRequestManagerRetriever方法获取到RequestManagerRetriever：</p>
@@ -380,14 +380,14 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">glide</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>可以看到该方法是一个静态方法加锁，锁的是所有线程创建glide的实例。如果glide为空，会调用checkAndInitializeGlide方法，猜测是创建glide实例的方法：</p>
 <p><img src="/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/%E5%88%9B%E5%BB%BAglide%E5%AE%9E%E4%BE%8B%E7%9A%84%E6%96%B9%E6%B3%95.png"
 	width="1754"
 	height="626"
-	srcset="/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/%E5%88%9B%E5%BB%BAglide%E5%AE%9E%E4%BE%8B%E7%9A%84%E6%96%B9%E6%B3%95_hu_d34d2da22efe8389.png 480w, /p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/%E5%88%9B%E5%BB%BAglide%E5%AE%9E%E4%BE%8B%E7%9A%84%E6%96%B9%E6%B3%95_hu_73245705d261ba8c.png 1024w"
+	srcset="/p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/%E5%88%9B%E5%BB%BAglide%E5%AE%9E%E4%BE%8B%E7%9A%84%E6%96%B9%E6%B3%95_hu_c9249e146db4f53d.png 480w, /p/glide%E5%8A%A0%E8%BD%BD%E5%9B%BE%E7%89%87%E6%B5%81%E7%A8%8B/%E5%88%9B%E5%BB%BAglide%E5%AE%9E%E4%BE%8B%E7%9A%84%E6%96%B9%E6%B3%95_hu_4cc1a96c5417bbcc.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -410,7 +410,7 @@
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">initializeGlide</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">GeneratedAppGlideModule</span><span class="w"> </span><span class="n">generatedAppGlideModule</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">initializeGlide</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">GlideBuilder</span><span class="p">(),</span><span class="w"> </span><span class="n">generatedAppGlideModule</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>调用了另外一个initializeGlide方法：</p>
@@ -437,7 +437,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Glide</span><span class="w"> </span><span class="n">glide</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">builder</span><span class="p">.</span><span class="na">build</span><span class="p">(</span><span class="n">applicationContext</span><span class="p">,</span><span class="w"> </span><span class="n">manifestModules</span><span class="p">,</span><span class="w"> </span><span class="n">annotationGeneratedModule</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">applicationContext</span><span class="p">.</span><span class="na">registerComponentCallbacks</span><span class="p">(</span><span class="n">glide</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Glide</span><span class="p">.</span><span class="na">glide</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glide</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此处省略了通过注解来生成各种配置，其中注解是 <code>GlideModule</code> 的注解，它是一个编译时注解，通过编译时扫描到该注解，然后生成GeneratedAppGlideModuleImpl类，initializeGlide是通过反射执行GeneratedAppGlideModuleImpl类。最终通过GlideBuilder.build方法来生成glide对象：</p>
@@ -560,7 +560,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">logLevel</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">defaultRequestOptions</span><span class="p">.</span><span class="na">lock</span><span class="p">(),</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">defaultTransitionOptions</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>初始化线程池，构造了Engine、RequestManagerRetriever对象，最后初始化了Glide对象。所以上面的getRequestManagerRetriever方法返回的对象就是此处new的RequestManagerRetriever对象。接着调用了RequestManagerRetriever的get方法：</p>
@@ -583,7 +583,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@NonNull</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="n">RequestManager</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">RequestManager</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IllegalArgumentException</span><span class="p">(</span><span class="s">&#34;You cannot start a load on a null Context&#34;</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Util</span><span class="p">.</span><span class="na">isOnMainThread</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">context</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">Application</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -595,7 +595,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">getApplicationManager</span><span class="p">(</span><span class="n">context</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>该方法会返回一个RequestManager对象，如果context不是Application类型，则通过get方法创建RequestManager对象，如果是Application类型，则通过getApplicationManager方法创建。首先来看下通过FragmentActivity来创建RequestManager对象：</p>
@@ -634,7 +634,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">activity</span><span class="p">.</span><span class="na">getLifecycle</span><span class="p">(),</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">activity</span><span class="p">.</span><span class="na">getSupportFragmentManager</span><span class="p">(),</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">isActivityVisible</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>首先判断当前线程如果不是主线程，则通过Application创建RequestManager，接着判断activity是否可见，可见的条件是activity没有finish掉。最终通过LifecycleRequestManagerRetriever的getOrCreate方法来创建RequestManager：</p>
@@ -713,7 +713,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>先通过getOnly从lifecycleToRequestManager这个map中取，key是activity的lifecycle对象，如果没有取到则通过factory.build来创建RequestManager，factory是RequestManagerFactory接口，它是在glide初始化的时候构造的。LifecycleRequestManagerRetriever中的factory是在RequestManagerRetriever构造方法中传进来的：</p>
@@ -730,7 +730,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="na">factory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">factory</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">factory</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">DEFAULT_FACTORY</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">lifecycleRequestManagerRetriever</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">LifecycleRequestManagerRetriever</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="na">factory</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">frameWaiter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buildFrameWaiter</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>RequestManagerRetriever构造方法中默认传入的RequestManagerFactory是空的，因此会用DEFAULT_FACTORY：</p>
@@ -786,7 +786,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;</span><span class="n">Drawable</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">string</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">asDrawable</span><span class="p">().</span><span class="na">load</span><span class="p">(</span><span class="n">string</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>我们通过传进来的string作为讲解，首先调用了asDrawable方法：</p>
@@ -804,12 +804,12 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;</span><span class="n">Drawable</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">asDrawable</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">as</span><span class="p">(</span><span class="n">Drawable</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">ResourceType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;</span><span class="n">ResourceType</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">as</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">ResourceType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;</span><span class="n">ResourceType</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">as</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;</span><span class="n">ResourceType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">resourceClass</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="n">glide</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">resourceClass</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>将Drawable作为RequestBuilder的泛型，并返回了RequestBuilder实例，接着看RequestBuilder的load方法：</p>
@@ -830,15 +830,15 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">string</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">loadGeneric</span><span class="p">(</span><span class="n">string</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">loadGeneric</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">model</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">RequestBuilder</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">loadGeneric</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">model</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isAutoCloneEnabled</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">clone</span><span class="p">().</span><span class="na">loadGeneric</span><span class="p">(</span><span class="n">model</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="na">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">model</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">isModelSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">selfOrThrowIfLocked</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>load方法将url传给了RequestBuilder的model属性，然后返回自己。</p>
@@ -911,7 +911,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="cm">/* targetListener= */</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestOptions</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Executors</span><span class="p">.</span><span class="na">mainThreadExecutor</span><span class="p">());</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>RequestBbuilder继承自BaseRequestOptions，在into里面首先通过imageView的scaleType，然后生成不同的BaseRequestOptions，然后通过glideContext.buildImageViewTarget方法将ImageView包装成ViewTarget：</p>
@@ -935,16 +935,16 @@
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">X</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ViewTarget</span><span class="o">&lt;</span><span class="n">ImageView</span><span class="p">,</span><span class="w"> </span><span class="n">X</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">buildImageViewTarget</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ImageView</span><span class="w"> </span><span class="n">imageView</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;</span><span class="n">X</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transcodeClass</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">imageViewTargetFactory</span><span class="p">.</span><span class="na">buildTarget</span><span class="p">(</span><span class="n">imageView</span><span class="p">,</span><span class="w"> </span><span class="n">transcodeClass</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ViewTarget</span><span class="o">&lt;</span><span class="n">ImageView</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">buildTarget</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ViewTarget</span><span class="o">&lt;</span><span class="n">ImageView</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">buildTarget</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ImageView</span><span class="w"> </span><span class="n">view</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Class</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">clazz</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Bitmap</span><span class="p">.</span><span class="na">class</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">clazz</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">ViewTarget</span><span class="o">&lt;</span><span class="n">ImageView</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BitmapImageViewTarget</span><span class="p">(</span><span class="n">view</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Drawable</span><span class="p">.</span><span class="na">class</span><span class="p">.</span><span class="na">isAssignableFrom</span><span class="p">(</span><span class="n">clazz</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">ViewTarget</span><span class="o">&lt;</span><span class="n">ImageView</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">DrawableImageViewTarget</span><span class="p">(</span><span class="n">view</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面分析过clazz传进来的是Drawable.class，所以会包装成DrawableImageViewTarget。
@@ -996,7 +996,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">requestManager</span><span class="p">.</span><span class="na">track</span><span class="p">(</span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="n">request</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">target</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>首先调用了buildRequest方法来构建Request，然后获取target的request和当前request是不是同一个，如果是的话，则直接返回已经存在的target，否则调用requestManager.track，我们先看buildRequest：</p>
@@ -1064,9 +1064,9 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestOptions</span><span class="p">.</span><span class="na">getOverrideHeight</span><span class="p">(),</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">requestOptions</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="nf">buildRequestRecursive</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="nf">buildRequestRecursive</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="n">requestLock</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Target</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">RequestListener</span><span class="o">&lt;</span><span class="n">TranscodeType</span><span class="o">&gt;</span><span class="w"> </span><span class="n">targetListener</span><span class="p">,</span><span class="w">
@@ -1091,7 +1091,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">mainRequest</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面的buildRequestRecursive方法省去了errorBuilder相关的处理，默认是不用去处理的，所以可以看到上面构建Request实际调用了buildThumbnailRequestRecursive方法：</p>
@@ -1144,7 +1144,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">overrideWidth</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">overrideHeight</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面也是省去了其他相关逻辑，所以我们直接看obtainRequest方法：</p>
@@ -1245,9 +1245,9 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">glideContext</span><span class="p">.</span><span class="na">getEngine</span><span class="p">(),</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">transitionOptions</span><span class="p">.</span><span class="na">getTransitionFactory</span><span class="p">(),</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">SingleRequest</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">obtain</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">SingleRequest</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">obtain</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">GlideContext</span><span class="w"> </span><span class="n">glideContext</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="n">requestLock</span><span class="p">,</span><span class="w">
@@ -1281,7 +1281,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">engine</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">animationFactory</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">callbackExecutor</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面都没什么好说的，直接new了一个SingleRequest，此处SingleRequest的发型是Drawable，这是在上面分析load的时候知道的，先明确这点。我们再回到上面RequestBuilder的into方法，先构建一个SingleRequest，然后看当前target的request和构建的SingleRequest是不是同一个，如果是直接返回，如果不是调用requestManager.track，先看target.getRequest，前面分析过target是一个DrawableImageViewTarget，它的父父类ViewTarget：</p>
@@ -1328,21 +1328,21 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">request</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">tagId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">id</span><span class="p">.</span><span class="na">glide_custom_view_target_tag</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="nf">getTag</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">tagId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">id</span><span class="p">.</span><span class="na">glide_custom_view_target_tag</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="nf">getTag</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">getTag</span><span class="p">(</span><span class="n">tagId</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">setRequest</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="n">request</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">setRequest</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="n">request</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">setTag</span><span class="p">(</span><span class="n">request</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">setTag</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">tag</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">setTag</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">tag</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">isTagUsedAtLeastOnce</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">view</span><span class="p">.</span><span class="na">setTag</span><span class="p">(</span><span class="n">tagId</span><span class="p">,</span><span class="w"> </span><span class="n">tag</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>可以看到request是塞入到view的tag上，并且该tag是绑定了一个id。接着看下requestManager.track：</p>
@@ -1357,7 +1357,7 @@
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">synchronized</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">track</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Target</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="n">request</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">targetTracker</span><span class="p">.</span><span class="na">track</span><span class="p">(</span><span class="n">target</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">requestTracker</span><span class="p">.</span><span class="na">runRequest</span><span class="p">(</span><span class="n">request</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">  
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>将target放到TargetTracker中：</p>
@@ -1372,9 +1372,9 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Set</span><span class="o">&lt;</span><span class="n">Target</span><span class="o">&lt;?&gt;&gt;</span><span class="w"> </span><span class="n">targets</span><span class="w"> </span><span class="o">=</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Collections</span><span class="p">.</span><span class="na">newSetFromMap</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">WeakHashMap</span><span class="o">&lt;</span><span class="n">Target</span><span class="o">&lt;?&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">Boolean</span><span class="o">&gt;</span><span class="p">());</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">track</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Target</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">target</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">track</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Target</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">target</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">targets</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">target</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>将target只是放到set集合中，后面会用到，先不用管。重要看RequestTracker的runRequest方法：</p>
@@ -1395,7 +1395,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Set</span><span class="o">&lt;</span><span class="n">Request</span><span class="o">&gt;</span><span class="w"> </span><span class="n">requests</span><span class="w"> </span><span class="o">=</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Collections</span><span class="p">.</span><span class="na">newSetFromMap</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">WeakHashMap</span><span class="o">&lt;</span><span class="n">Request</span><span class="p">,</span><span class="w"> </span><span class="n">Boolean</span><span class="o">&gt;</span><span class="p">());</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">runRequest</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="n">request</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">runRequest</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Request</span><span class="w"> </span><span class="n">request</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">requests</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">request</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">isPaused</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">request</span><span class="p">.</span><span class="na">begin</span><span class="p">();</span><span class="w">
@@ -1403,7 +1403,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">request</span><span class="p">.</span><span class="na">clear</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">pendingRequests</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">request</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>首先将request也是放到set集合中，接着判断当前是不是pause状态，默认不是pause状态，则调用request的begin方法，前面分析过该request实际是SingleRequest：</p>
@@ -1452,7 +1452,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">target</span><span class="p">.</span><span class="na">onLoadStarted</span><span class="p">(</span><span class="n">getPlaceholderDrawable</span><span class="p">());</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>如果没有通过override方法制定加载图片的大小，则调用target.getSize方法：</p>
@@ -1465,7 +1465,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">getSize</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">SizeReadyCallback</span><span class="w"> </span><span class="n">cb</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">sizeDeterminer</span><span class="p">.</span><span class="na">getSize</span><span class="p">(</span><span class="n">cb</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>调用了内部类SizeDeterminer的getSize方法：</p>
@@ -1510,7 +1510,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//否则监听绘制的前置事件</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">observer</span><span class="p">.</span><span class="na">addOnPreDrawListener</span><span class="p">(</span><span class="n">layoutListener</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>获取target的宽高，如果宽高校验通过则回调到SingleRequest中，否则监听target的绘制前置事件。我们看下如何获取宽高的：</p>
@@ -1553,9 +1553,9 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">LayoutParams</span><span class="w"> </span><span class="n">layoutParams</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">getLayoutParams</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">layoutParamSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">layoutParams</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">layoutParams</span><span class="p">.</span><span class="na">width</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">PENDING_SIZE</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">getTargetDimen</span><span class="p">(</span><span class="n">view</span><span class="p">.</span><span class="na">getWidth</span><span class="p">(),</span><span class="w"> </span><span class="n">layoutParamSize</span><span class="p">,</span><span class="w"> </span><span class="n">horizontalPadding</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getTargetDimen</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">viewSize</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">paramSize</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">paddingSize</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getTargetDimen</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">viewSize</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">paramSize</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">paddingSize</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">adjustedParamSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">paramSize</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">paddingSize</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//如果layoutParams中设置了精确宽度</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">adjustedParamSize</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -1577,7 +1577,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">getMaxDisplayLength</span><span class="p">(</span><span class="n">view</span><span class="p">.</span><span class="na">getContext</span><span class="p">());</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PENDING_SIZE</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>我们只分析宽度和高度为LayoutParams. WRAP_CONTENT情况，此时会调getMaxDisplayLength：</p>
@@ -1606,7 +1606,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">maxDisplayLength</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Math</span><span class="p">.</span><span class="na">max</span><span class="p">(</span><span class="n">displayDimensions</span><span class="p">.</span><span class="na">x</span><span class="p">,</span><span class="w"> </span><span class="n">displayDimensions</span><span class="p">.</span><span class="na">y</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">maxDisplayLength</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>可以看到获取的是屏幕的宽高，所以如果没有imageView定宽高，并且还没到测量的时候，此时设置的初始宽高是屏幕宽高的最大值。获取到默认宽高后会回调到SingleRequest的onSizeReady：</p>
@@ -1679,7 +1679,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">loadStatus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>调用了Engine的load方法：</p>
@@ -1822,7 +1822,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">cb</span><span class="p">.</span><span class="na">onResourceReady</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">memoryResource</span><span class="p">,</span><span class="w"> </span><span class="n">DataSource</span><span class="p">.</span><span class="na">MEMORY_CACHE</span><span class="p">,</span><span class="w"> </span><span class="cm">/* isLoadedFromAlternateCacheKey= */</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>先不用管内存加载这块，直接看waitForExistingOrStartNewJob方法：</p>
@@ -1955,7 +1955,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//触发加载逻辑</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">engineJob</span><span class="p">.</span><span class="na">start</span><span class="p">(</span><span class="n">decodeJob</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">LoadStatus</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span><span class="w"> </span><span class="n">engineJob</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面创建EngineJob和DecodeJob，从名字看EngineJob是专门用来加载主逻辑的Job，DecodeJob是解码用的。先不管它们是怎么创建的，后面会讲到，直接看EngineJob的start方法：</p>
@@ -1974,7 +1974,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">GlideExecutor</span><span class="w"> </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">decodeJob</span><span class="p">.</span><span class="na">willDecodeFromCache</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">diskCacheExecutor</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">getActiveSourceExecutor</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">executor</span><span class="p">.</span><span class="na">execute</span><span class="p">(</span><span class="n">decodeJob</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此时将DecodeJob作为runnable放到线程池中执行，看下它的run方法：</p>
@@ -1987,7 +1987,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">run</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">runWrapped</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>其余的代码删除掉了，只保留核心的方法调用：</p>
@@ -2024,7 +2024,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">decodeFromRetrievedData</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">break</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>runReason的默认值是INITIALIZE，然后调用getNextStage获取到当前stage，然后通过getNextGenerator获取下一个generator，然后调用runGenerators来执行generator，来看下这一段逻辑：</p>
@@ -2069,7 +2069,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">default</span><span class="p">:</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IllegalArgumentException</span><span class="p">(</span><span class="s">&#34;Unrecognized stage: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">current</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>默认是支持decodeCachedResource的，它表示是否获取解码后的缓存资源，所以此时返回Stage. RESOURCE_CACHE，接着调用getNextGenerator方法：</p>
@@ -2104,7 +2104,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">default</span><span class="p">:</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IllegalStateException</span><span class="p">(</span><span class="s">&#34;Unrecognized stage: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">stage</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>创建了ResourceCacheGenerator，然后调用runGenerators方法：</p>
@@ -2145,7 +2145,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">stage</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Stage</span><span class="p">.</span><span class="na">FINISHED</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">isCancelled</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">isStarted</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">notifyFailed</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>我们直接看stage为SOURCE, generator直接是SourceGenerator时候，看下它的startNext方法：</p>
@@ -2220,7 +2220,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">started</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>startNext中首先从DecodeHelper中获取到loadData，此处我们先不用管怎么获取到loadData，获取到loadData后调用startNextLoad方法：</p>
@@ -2263,7 +2263,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">});</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此时调用loadData中的fetcher的loadData方法，此处的loadData.fetcher是谁呢？这个后面的章节再了解，先知道是HttpUrlFetcher，然后看下它的loadData方法：</p>
@@ -2288,7 +2288,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">IOException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">callback</span><span class="p">.</span><span class="na">onLoadFailed</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> 
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>调用了loadDataWithRedirects方法：</p>
@@ -2376,7 +2376,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">.</span><span class="na">getDataSource</span><span class="p">(),</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">originalKey</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>将获取到的数据给到dataToCache，并且回调到DecodeJob的reschedule方法：</p>
@@ -2394,12 +2394,12 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">reschedule</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">reschedule</span><span class="p">(</span><span class="n">RunReason</span><span class="p">.</span><span class="na">SWITCH_TO_SOURCE_SERVICE</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">reschedule</span><span class="p">(</span><span class="n">RunReason</span><span class="w"> </span><span class="n">runReason</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">reschedule</span><span class="p">(</span><span class="n">RunReason</span><span class="w"> </span><span class="n">runReason</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="na">runReason</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runReason</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">callback</span><span class="p">.</span><span class="na">reschedule</span><span class="p">(</span><span class="k">this</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此处的callback是EngineJob，继续回调到reschedule：</p>
@@ -2412,7 +2412,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">reschedule</span><span class="p">(</span><span class="n">DecodeJob</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">job</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">getActiveSourceExecutor</span><span class="p">().</span><span class="na">execute</span><span class="p">(</span><span class="n">job</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此处又是一个线程池，再次执行DecodeJob，注意了此时DecodeJob中的runReason是SWITCH_TO_SOURCE_SERVICE，又回到刚才说的runWrapped方法中：</p>
@@ -2470,9 +2470,9 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">runGenerators</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">break</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">runGenerators</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">runGenerators</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isStarted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//前面分析过currentGenerator是SourceGenerator，所以再次执行它的startNext方法</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">isCancelled</span><span class="w">
@@ -2488,9 +2488,9 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">stage</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Stage</span><span class="p">.</span><span class="na">FINISHED</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">isCancelled</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">isStarted</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">notifyFailed</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">startNext</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">startNext</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dataToCache</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Object</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dataToCache</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">dataToCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
@@ -2507,7 +2507,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//...省略了前面分析过的流程</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>前面分析过获取到网络数据后，给dataToCache赋值，所以再次执行startNext时候，会调用dataToCache不为空的逻辑。其中cacheData是将原始图片的inputStream数据保存到磁盘中：</p>
@@ -2538,7 +2538,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">sourceCacheGenerator</span><span class="w"> </span><span class="o">=</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">DataCacheGenerator</span><span class="p">(</span><span class="n">Collections</span><span class="p">.</span><span class="na">singletonList</span><span class="p">(</span><span class="n">loadData</span><span class="p">.</span><span class="na">sourceKey</span><span class="p">),</span><span class="w"> </span><span class="n">helper</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>保存完磁盘后，创建了DataCacheGenerator，所以回到startNext方法中，会执行DataCacheGenerator的startNext方法：</p>
@@ -2575,7 +2575,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">started</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此处的loadData.fetcher是一个ByteBufferFetcher，后面再分析怎么得到该fetcher，会执行到它的loadData：</p>
@@ -2594,7 +2594,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">ByteBuffer</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ByteBufferUtil</span><span class="p">.</span><span class="na">fromFile</span><span class="p">(</span><span class="n">file</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">callback</span><span class="p">.</span><span class="na">onDataReady</span><span class="p">(</span><span class="n">result</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>将文件转换成buffer数据，并回调到DataCacheGenerator的onDataReady：</p>
@@ -2607,7 +2607,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onDataReady</span><span class="p">(</span><span class="n">Object</span><span class="w"> </span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">cb</span><span class="p">.</span><span class="na">onDataFetcherReady</span><span class="p">(</span><span class="n">sourceKey</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">,</span><span class="w"> </span><span class="n">DataSource</span><span class="p">.</span><span class="na">DATA_DISK_CACHE</span><span class="p">,</span><span class="w"> </span><span class="n">sourceKey</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>回调到SourceGenerator的onDataFetcherReady：</p>
@@ -2622,7 +2622,7 @@
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onDataFetcherReady</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Key</span><span class="w"> </span><span class="n">sourceKey</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">DataFetcher</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">fetcher</span><span class="p">,</span><span class="w"> </span><span class="n">DataSource</span><span class="w"> </span><span class="n">dataSource</span><span class="p">,</span><span class="w"> </span><span class="n">Key</span><span class="w"> </span><span class="n">attemptedKey</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">cb</span><span class="p">.</span><span class="na">onDataFetcherReady</span><span class="p">(</span><span class="n">sourceKey</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">fetcher</span><span class="p">,</span><span class="w"> </span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">.</span><span class="na">getDataSource</span><span class="p">(),</span><span class="w"> </span><span class="n">sourceKey</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>继续回调到DecodeJob的onDataFetcherReady方法：</p>
@@ -2649,7 +2649,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="na">currentAttemptingKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">attemptedKey</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="na">isLoadingFromAlternateCacheKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sourceKey</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">decodeHelper</span><span class="p">.</span><span class="na">getCacheKeys</span><span class="p">().</span><span class="na">get</span><span class="p">(</span><span class="n">0</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">reschedule</span><span class="p">(</span><span class="n">RunReason</span><span class="p">.</span><span class="na">DECODE_DATA</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>还是和上面拿到网络数据一样，继续执行DecodeJob的runWrapped：</p>
@@ -2670,7 +2670,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">decodeFromRetrievedData</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">break</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>调用开始解码的方法：</p>
@@ -2705,7 +2705,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">runGenerators</span><span class="p">();</span><span class="w"> 
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>关于解码这块后面会分析到，解码成功后先回调到DecodeJob的onResourceDecoded方法：</p>
@@ -2762,7 +2762,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">transformed</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在我们的事例中首次获取的是图片原始尺寸，并且transformed和decoded是同一个，所以直接返回了。接着回到decodeFromRetrievedData方法中，继续调用了notifyEncodeAndRelease方法：</p>
@@ -2787,7 +2787,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">notifyComplete</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="w"> </span><span class="n">dataSource</span><span class="p">,</span><span class="w"> </span><span class="n">isLoadedFromAlternateCacheKey</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">stage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Stage</span><span class="p">.</span><span class="na">ENCODE</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">onEncodeComplete</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面把encode逻辑去掉了，因为上面返回的是原始图片，所以无需进行encode的本地保存。看下notifyComplete方法：</p>
@@ -2802,7 +2802,7 @@
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">notifyComplete</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="n">DataSource</span><span class="w"> </span><span class="n">dataSource</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isLoadedFromAlternateCacheKey</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">callback</span><span class="p">.</span><span class="na">onResourceReady</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="n">dataSource</span><span class="p">,</span><span class="w"> </span><span class="n">isLoadedFromAlternateCacheKey</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>回调到EngineJob的onResourceReady：</p>
@@ -2827,7 +2827,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">this</span><span class="p">.</span><span class="na">isLoadedFromAlternateCacheKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">isLoadedFromAlternateCacheKey</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">notifyCallbacksOfResult</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>继续调用notifyCallbacksOfResult：</p>
@@ -2874,7 +2874,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">entry</span><span class="p">.</span><span class="na">executor</span><span class="p">.</span><span class="na">execute</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">CallResourceReady</span><span class="p">(</span><span class="n">entry</span><span class="p">.</span><span class="na">cb</span><span class="p">));</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">decrementPendingCallbacks</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>首先调用onEngineJobComplete进行回调保存到内存中，接着通过线程池调用了CallResourceReady，其实此处的线程池是回调到主线程，在上面cbs.copy()的使用，是为了防止使用原始集合遍历的时候，可能发生modifyException问题，所以创建了一个新的对象出来遍历，看下CallResourceReady的run方法：</p>
@@ -2905,7 +2905,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">decrementPendingCallbacks</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>主要看下callCallbackOnResourceReady方法：</p>
@@ -2926,7 +2926,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Throwable</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CallbackException</span><span class="p">(</span><span class="n">t</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此处的cb对象是在Engine的waitForExistingOrStartNewJob方法中添加的，实际是SingleRequest对象，所以继续回调到SingleRequest的onResourceReady方法：</p>
@@ -2948,12 +2948,12 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Resource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="n">DataSource</span><span class="w"> </span><span class="n">dataSource</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isLoadedFromAlternateCacheKey</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">onResourceReady</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">(</span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">R</span><span class="p">)</span><span class="w"> </span><span class="n">received</span><span class="p">,</span><span class="w"> </span><span class="n">dataSource</span><span class="p">,</span><span class="w"> </span><span class="n">isLoadedFromAlternateCacheKey</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onResourceReady</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onResourceReady</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="n">R</span><span class="w"> </span><span class="n">result</span><span class="p">,</span><span class="w"> </span><span class="n">DataSource</span><span class="w"> </span><span class="n">dataSource</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isAlternateCacheKey</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">target</span><span class="p">.</span><span class="na">onResourceReady</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="w"> </span><span class="n">animation</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>前面分析过target是DrawableImageViewTarget，它是继承自ImageViewTarget，它的onResourceReady方法：</p>
@@ -2974,7 +2974,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">maybeUpdateAnimatable</span><span class="p">(</span><span class="n">resource</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此处的transition是一个NoTransition，所以会走setResourceInternal：</p>
@@ -2991,9 +2991,9 @@
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">setResourceInternal</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="n">resource</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">setResource</span><span class="p">(</span><span class="n">resource</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">maybeUpdateAnimatable</span><span class="p">(</span><span class="n">resource</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">protected</span><span class="w"> </span><span class="kd">abstract</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">setResource</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="n">resource</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">protected</span><span class="w"> </span><span class="kd">abstract</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">setResource</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="n">resource</span><span class="p">);</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在DrawableImageViewTarget中重写了setResource方法：</p>
@@ -3006,7 +3006,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">protected</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">setResource</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Drawable</span><span class="w"> </span><span class="n">resource</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">view</span><span class="p">.</span><span class="na">setImageDrawable</span><span class="p">(</span><span class="n">resource</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>最终将图片展示到imageView上。</p>
@@ -3113,8 +3113,8 @@
     </section>
     
     <section class="powerby">
-        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
     </section>
 </footer>
 

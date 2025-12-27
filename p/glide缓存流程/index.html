@@ -42,7 +42,7 @@
     })();
 </script>
 <div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
-    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
         <span class="hamburger-box">
             <span class="hamburger-inner"></span>
         </span>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
+                        <img src="/img/logo_hu_c5ce2387cd5c94f8.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -198,7 +198,7 @@
 
 
 
-                        <span>Dark Mode</span>
+                        <span>暗色模式</span>
                     </li>
                 
             </ol>
@@ -223,7 +223,7 @@
 
 
         </div>
-        <h2 class="widget-title section-title">Table of contents</h2>
+        <h2 class="widget-title section-title">目录</h2>
         
         <div class="widget--toc">
             <nav id="TableOfContents">
@@ -307,7 +307,7 @@
 
 
                 <time class="article-time--reading">
-                    7 minute read
+                    阅读时长: 7 分钟
                 </time>
             </div>
         
@@ -396,7 +396,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">options</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">memoryResource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadFromMemory</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">isMemoryCacheable</span><span class="p">,</span><span class="w"> </span><span class="n">startTime</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>先通过KeyFactory的buildKey创建一个缓存的key，model是load方法传进来的参数，宽和高是加载的图片尺寸。resourceClass在上一节中解码时候获取LoadPath介绍过，它主要影响到过滤DecodePath，默认是Object.class，可以通过RequestOptions的decodeTypeOf方法设置。transformations是load方法传进来的参数类型，比如默认传进来一个url，则transformations是一个Drawable.class。signature是一个签名参数，默认是EmptySignature，可以通过RequestOptions的signatureOf方法进行设置。options可以配置一些参数，比如解码方式等。此处使用EngineKeyFactory的buildKey直接构建，也是一种工厂模式，只不过此处不需要外界进行构建，所以直接通过普通类创建EngineKey。接着看下loadFromMemory方法：</p>
@@ -433,7 +433,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">cached</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>isMemoryCacheable表示内存缓存是否可使用，如果可使用，调用过loadFromActiveResources方法获取一级缓存：</p>
@@ -450,13 +450,13 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">ActiveResources</span><span class="w"> </span><span class="n">activeResources</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">loadFromActiveResources</span><span class="p">(</span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">loadFromActiveResources</span><span class="p">(</span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">active</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">activeResources</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">key</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">active</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">active</span><span class="p">.</span><span class="na">acquire</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">active</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>通过ActiveResources的get方法获取一级缓存：</p>
@@ -494,7 +494,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">final</span><span class="w"> </span><span class="n">Map</span><span class="o">&lt;</span><span class="n">Key</span><span class="p">,</span><span class="w"> </span><span class="n">ResourceWeakReference</span><span class="o">&gt;</span><span class="w"> </span><span class="n">activeEngineResources</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">HashMap</span><span class="o">&lt;&gt;</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">synchronized</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">get</span><span class="p">(</span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">synchronized</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">get</span><span class="p">(</span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">ResourceWeakReference</span><span class="w"> </span><span class="n">activeRef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">activeEngineResources</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">key</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">activeRef</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
@@ -504,9 +504,9 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cleanupActiveReference</span><span class="p">(</span><span class="n">activeRef</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">active</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">void</span><span class="w"> </span><span class="nf">cleanupActiveReference</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ResourceWeakReference</span><span class="w"> </span><span class="n">ref</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">cleanupActiveReference</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">ResourceWeakReference</span><span class="w"> </span><span class="n">ref</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">synchronized</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">activeEngineResources</span><span class="p">.</span><span class="na">remove</span><span class="p">(</span><span class="n">ref</span><span class="p">.</span><span class="na">key</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">ref</span><span class="p">.</span><span class="na">isCacheable</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">ref</span><span class="p">.</span><span class="na">resource</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -521,7 +521,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">ref</span><span class="p">.</span><span class="na">key</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="n">listener</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">listener</span><span class="p">.</span><span class="na">onResourceReleased</span><span class="p">(</span><span class="n">ref</span><span class="p">.</span><span class="na">key</span><span class="p">,</span><span class="w"> </span><span class="n">newResource</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在get方法中先从activeEngineResources这个map中获取ResourceWeakReference，它是一个弱引用，里面存储的对象是EngineResource：</p>
@@ -580,7 +580,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">resource</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">clear</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在get方法中如果若引用没有获取到，则返回null，如果获取到，则继续获取弱引用中的对象（EngineResource），如果弱引用中的对象为空，则调用cleanupActiveReference方法，在该方法里面通过弱引用中的key将该弱引用从map中移除掉，并回调onResourceReleased方法。<br></p>
@@ -594,7 +594,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="n">Object</span><span class="w"> </span><span class="n">obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Object</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">WeakReference</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span><span class="w"> </span><span class="n">weakRef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">WeakReference</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">WeakReference</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span><span class="w"> </span><span class="n">weakRef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">WeakReference</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="n">obj</span><span class="p">);</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此时对象生命周期：
@@ -640,7 +640,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="o">++</span><span class="n">acquired</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>它表示当前图片正在使用的次数，后面会用到，知道当前给acquired累加次数就行。在一级缓存中，可以看到弱引用使用了引用队列，它是用来检测我们弱引用对象是否被回收的标志，在ActiveResources的cleanReferenceQueue方法中判断队列中是否存在弱引用对象：</p>
@@ -679,7 +679,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Thread</span><span class="p">.</span><span class="na">currentThread</span><span class="p">().</span><span class="na">interrupt</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>该方法是一个while循环，只要没有isShutdown就一直从引用队列中检索弱引用对象，从引用队列中获取到弱引用对象之后，接着也是调用了cleanupActiveReference方法，这个在上面get方法中有讲到过。它是从map中移除ResourceWeakReference。注意了cleanReferenceQueue方法是在外界传进来的线程池（Executors.newSingleThreadExecutor）中执行的。它是在ActiveResources构造方法中初始化的。</p>
@@ -724,10 +724,10 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">activeResources</span><span class="p">.</span><span class="na">activate</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">cached</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">cached</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">MemoryCache</span><span class="w"> </span><span class="n">cache</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">getEngineResourceFromCache</span><span class="p">(</span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">MemoryCache</span><span class="w"> </span><span class="n">cache</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">getEngineResourceFromCache</span><span class="p">(</span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Resource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cache</span><span class="p">.</span><span class="na">remove</span><span class="p">(</span><span class="n">key</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cached</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -744,7 +744,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="cm">/* listener= */</span><span class="w"> </span><span class="k">this</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此处从cache中取Resource，如果取到了返回EngineResource，此处的cache是LruResourceCache对象，它是LruCache实现的。可以看到它是获取的时候直接remove掉了，紧接着调用acquire，并把缓存放到一级缓存中(activeResources.activate)。也就是说如果二级缓存中有数据，获取到后从二级缓存中移除掉并放到一级缓存中，然后将acquired变量+1。上面会涉及到二级缓存的最大缓存的内存计算，这个在后面讲内存的时候再说。</p>
@@ -813,7 +813,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>先创建了ResourceCacheKey的key，这个和前面在解码完回调中，也就是DecodeJob的onResourceDecoded中也是创建了ResourceCacheKey：</p>
@@ -850,7 +850,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">options</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">deferredEncodeManager</span><span class="p">.</span><span class="na">init</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">encoder</span><span class="p">,</span><span class="w"> </span><span class="n">lockedResult</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>创建完ResourceCacheKey后，继续调用了helper.getDiskCache().get(currentKey)获取缓存的file文件，此处的diskCache和前面介绍的解码完成后，进行编码保存bitmap所使用的DiskLruCacheWrapper是一致的。获取到file文件后，通过file获取到modelLoaders集合。这个其实跟前面介绍sourceGenerator获取到网络数据后，调用了DataCacheGenerator的startNext方法，在该方法里面也是通过file获取到ByteBufferFetcher将File转化成ByteBuffer。转化完后回调到ResourceCacheGenerator的onDataReady方法：</p>
@@ -869,7 +869,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cb</span><span class="p">.</span><span class="na">onDataFetcherReady</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">sourceKey</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">loadData</span><span class="p">.</span><span class="na">fetcher</span><span class="p">,</span><span class="w"> </span><span class="n">DataSource</span><span class="p">.</span><span class="na">RESOURCE_DISK_CACHE</span><span class="p">,</span><span class="w"> </span><span class="n">currentKey</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>然后继续回调到DecodeJob的onDataFetcherReady方法，注意了此处的dataSource回传的是DataSource.RESOURCE_DISK_CACHE，在前面下载完网络资源后，将File转化成ByteBuffer，也是回调给DecodeJob的onDataFetcherReady方法，只不过那个dataSource回传的是DataSource.DATA_DISK_CACHE。也就是说DataSource.RESOURCE_DISK_CACHE表示获取到相同尺寸的bitmap缓存，而DataSource.DATA_DISK_CACHE表示获取到原始尺寸的bitmap缓存。回到DecodeJob的onDataFetcherReady后，就回到了解码流程，获取到相同尺寸的图片后，为什么还要进行解码呢？因为目前拿到的还是byteBuffer的数据，需要将它包装成流，然后解码成bitmap数据，只不过在解码的时候，图片的采样率=1，inTargetDensity和inDensity的比例等于1，所以只不过是将流转化成bitmap而已。解码完后回到了DecodeJob的onResourceDecoded方法，在该方法里面梳理过：</p>
@@ -984,7 +984,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在onResourceDecoded方法中，如果dataSource是RESOURCE_DISK_CACHE就不进入到transformation的逻辑，并且也不进行编码的参数初始化，所以在DecodeJob的notifyEncodeAndRelease方法中不进行编码了，因为磁盘中已经存在该缓存。</p>
@@ -1059,7 +1059,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">started</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>和前面介绍的cacheData保存原始文件是相呼应的，首先创建了DataCacheKey，然后通过DiskLruCacheWrapper获取到cacheFile文件，然后和上面获取解码后的图片通过ByteBufferFetcher转化成byteBuffer一样的，转化完byteBuffer后，回调到DataCacheGenerator的onDataReady方法，继而回调到DecodeJob的onDataFetcherReady方法，回调的dataSource是DataSource.DATA_DISK_CACHE，表示原始图片的缓存。最后经过解码，解码完成后会进行transformation操作，最后完成bitmap的编码操作。</p>
@@ -1084,7 +1084,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">activeResources</span><span class="p">.</span><span class="na">activate</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">resource</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>如果memory缓存可用，则调用ActiveResources的activate方法：</p>
@@ -1109,7 +1109,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">removed</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">removed</span><span class="p">.</span><span class="na">reset</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>创建了弱引用，然后把弱引用指向的强引用对象包装起来，最后放到一级缓存的map中，put完后会把老的弱引用对象给重置掉。其实activate方法在前面介绍从二级缓存中获取到后，会从二级缓存中移除掉并加入到一级缓存中也是调用该方法。</p>
@@ -1137,7 +1137,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onResourceReleased</span><span class="p">(</span><span class="n">Key</span><span class="w"> </span><span class="n">cacheKey</span><span class="p">,</span><span class="w"> </span><span class="n">EngineResource</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="n">resource</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">cache</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">cacheKey</span><span class="p">,</span><span class="w"> </span><span class="n">resource</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>其中onResourceReleased是由两处调用，一处是ActiveResources在cleanupActiveReference中调用：</p>
@@ -1180,7 +1180,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">listener</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">listener</span><span class="p">.</span><span class="na">onResourceReleased</span><span class="p">(</span><span class="n">ref</span><span class="p">.</span><span class="na">key</span><span class="p">,</span><span class="w"> </span><span class="n">newResource</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>该方法在获取一级缓存的时候，如果发现弱引用包装的强引用为空，或者在检测到弱引用队列中存在弱引用的时候，就会调用cleanupActiveReference方法，也就是发生GC的时候，发现外界强引用不再被使用的时候调用该方法。<br>
@@ -1216,7 +1216,7 @@ GC 动作：
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">release</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">listener</span><span class="p">.</span><span class="na">onResourceReleased</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>可以看到当发现acquired等于0的时候，就可以将缓存存到二级缓存中。而release方法调用用很多，一处是由Engine的release方法调用，一处是由Engine的decrementPendingCallbacks方法调用。也就是说当前图片资源如果没有被其他地方使用也会被加入到二级缓存中。<br>
@@ -1356,8 +1356,8 @@ GC 动作：
     </section>
     
     <section class="powerby">
-        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
     </section>
 </footer>
 

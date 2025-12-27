@@ -42,7 +42,7 @@
     })();
 </script>
 <div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
-    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
         <span class="hamburger-box">
             <span class="hamburger-inner"></span>
         </span>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
+                        <img src="/img/logo_hu_c5ce2387cd5c94f8.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -198,7 +198,7 @@
 
 
 
-                        <span>Dark Mode</span>
+                        <span>暗色模式</span>
                     </li>
                 
             </ol>
@@ -223,7 +223,7 @@
 
 
         </div>
-        <h2 class="widget-title section-title">Table of contents</h2>
+        <h2 class="widget-title section-title">目录</h2>
         
         <div class="widget--toc">
             <nav id="TableOfContents">
@@ -303,7 +303,7 @@
 
 
                 <time class="article-time--reading">
-                    8 minute read
+                    阅读时长: 8 分钟
                 </time>
             </div>
         
@@ -328,9 +328,9 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">intent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Intent</span><span class="p">(</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">BitmapActivity</span><span class="p">::</span><span class="kd">class</span><span class="err">.</span><span class="nc">java</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">val</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ByteArray</span><span class="p">(</span><span class="n">1024</span><span class="o">*</span><span class="n">1024</span><span class="p">)</span><span class="n">open</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">intent</span><span class="p">.</span><span class="na">putExtra</span><span class="p">(</span><span class="s">&#34;data&#34;</span><span class="p">,</span><span class="n">data</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">startActivity</span><span class="p">(</span><span class="n">intent</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">val</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ByteArray</span><span class="p">(</span><span class="n">1024</span><span class="o">*</span><span class="n">1024</span><span class="p">)</span><span class="n">open</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">intent</span><span class="p">.</span><span class="na">putExtra</span><span class="p">(</span><span class="s">&#34;data&#34;</span><span class="p">,</span><span class="n">data</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">startActivity</span><span class="p">(</span><span class="n">intent</span><span class="p">)</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此处是直接携带1M的数据，然后系统给我来了个异常信息：</p>
@@ -390,10 +390,10 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">2025</span><span class="o">-</span><span class="n">04</span><span class="o">-</span><span class="n">17</span><span class="w"> </span><span class="n">20</span><span class="p">:</span><span class="n">33</span><span class="p">:</span><span class="n">24</span><span class="p">.</span><span class="na">613</span><span class="w">  </span><span class="n">8782</span><span class="o">-</span><span class="n">8782</span><span class="w">  </span><span class="n">JavaBinder</span><span class="w">              </span><span class="n">com</span><span class="p">.</span><span class="na">example</span><span class="p">.</span><span class="na">coroutinescopedemo</span><span class="w">       </span><span class="n">E</span><span class="w">  </span><span class="o">!!!</span><span class="w"> </span><span class="n">FAILED</span><span class="w"> </span><span class="n">BINDER</span><span class="w"> </span><span class="n">TRANSACTION</span><span class="w"> </span><span class="o">!!!</span><span class="w">  </span><span class="p">(</span><span class="n">parcel</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">1049068</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">---------</span><span class="w"> </span><span class="n">beginning</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">crash</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">2025</span><span class="o">-</span><span class="n">04</span><span class="o">-</span><span class="n">17</span><span class="w"> </span><span class="n">20</span><span class="p">:</span><span class="n">33</span><span class="p">:</span><span class="n">24</span><span class="p">.</span><span class="na">627</span><span class="w">  </span><span class="n">8782</span><span class="o">-</span><span class="n">8782</span><span class="w">  </span><span class="n">AndroidRuntime</span><span class="w">          </span><span class="n">com</span><span class="p">.</span><span class="na">example</span><span class="p">.</span><span class="na">coroutinescopedemo</span><span class="w">       </span><span class="n">E</span><span class="w">  </span><span class="n">FATAL</span><span class="w"> </span><span class="n">EXCEPTION</span><span class="p">:</span><span class="w"> </span><span class="n">main</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="o">---------</span><span class="w"> </span><span class="n">beginning</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">crash</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">2025</span><span class="o">-</span><span class="n">04</span><span class="o">-</span><span class="n">17</span><span class="w"> </span><span class="n">20</span><span class="p">:</span><span class="n">33</span><span class="p">:</span><span class="n">24</span><span class="p">.</span><span class="na">627</span><span class="w">  </span><span class="n">8782</span><span class="o">-</span><span class="n">8782</span><span class="w">  </span><span class="n">AndroidRuntime</span><span class="w">          </span><span class="n">com</span><span class="p">.</span><span class="na">example</span><span class="p">.</span><span class="na">coroutinescopedemo</span><span class="w">       </span><span class="n">E</span><span class="w">  </span><span class="n">FATAL</span><span class="w"> </span><span class="n">EXCEPTION</span><span class="p">:</span><span class="w"> </span><span class="n">main</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">                                                                                                    </span><span class="n">Process</span><span class="p">:</span><span class="w"> </span><span class="n">com</span><span class="p">.</span><span class="na">example</span><span class="p">.</span><span class="na">coroutinescopedemo</span><span class="p">,</span><span class="w"> </span><span class="n">PID</span><span class="p">:</span><span class="w"> </span><span class="n">8782</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">java</span><span class="p">.</span><span class="na">lang</span><span class="p">.</span><span class="na">RuntimeException</span><span class="p">:</span><span class="w"> </span><span class="n">Failure</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">system</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">java</span><span class="p">.</span><span class="na">lang</span><span class="p">.</span><span class="na">RuntimeException</span><span class="p">:</span><span class="w"> </span><span class="n">Failure</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">system</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="n">at</span><span class="w"> </span><span class="n">android</span><span class="p">.</span><span class="na">app</span><span class="p">.</span><span class="na">Instrumentation</span><span class="p">.</span><span class="na">execStartActivity</span><span class="p">(</span><span class="n">Instrumentation</span><span class="p">.</span><span class="na">java</span><span class="p">:</span><span class="n">1749</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="n">at</span><span class="w"> </span><span class="n">android</span><span class="p">.</span><span class="na">app</span><span class="p">.</span><span class="na">Activity</span><span class="p">.</span><span class="na">startActivityForResult</span><span class="p">(</span><span class="n">Activity</span><span class="p">.</span><span class="na">java</span><span class="p">:</span><span class="n">5533</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="n">at</span><span class="w"> </span><span class="n">androidx</span><span class="p">.</span><span class="na">activity</span><span class="p">.</span><span class="na">ComponentActivity</span><span class="p">.</span><span class="na">startActivityForResult</span><span class="p">(</span><span class="n">ComponentActivity</span><span class="p">.</span><span class="na">kt</span><span class="p">:</span><span class="n">704</span><span class="p">)</span><span class="w">
@@ -415,7 +415,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="n">at</span><span class="w"> </span><span class="n">android</span><span class="p">.</span><span class="na">app</span><span class="p">.</span><span class="na">ActivityThread</span><span class="p">.</span><span class="na">main</span><span class="p">(</span><span class="n">ActivityThread</span><span class="p">.</span><span class="na">java</span><span class="p">:</span><span class="n">8293</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="n">at</span><span class="w"> </span><span class="n">com</span><span class="p">.</span><span class="na">android</span><span class="p">.</span><span class="na">internal</span><span class="p">.</span><span class="na">os</span><span class="p">.</span><span class="na">RuntimeInit$MethodAndArgsCaller</span><span class="p">.</span><span class="na">run</span><span class="p">(</span><span class="n">RuntimeInit</span><span class="p">.</span><span class="na">java</span><span class="p">:</span><span class="n">556</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="n">at</span><span class="w"> </span><span class="n">com</span><span class="p">.</span><span class="na">android</span><span class="p">.</span><span class="na">internal</span><span class="p">.</span><span class="na">os</span><span class="p">.</span><span class="na">ZygoteInit</span><span class="p">.</span><span class="na">main</span><span class="p">(</span><span class="n">ZygoteInit</span><span class="p">.</span><span class="na">java</span><span class="p">:</span><span class="n">1045</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">Caused</span><span class="w"> </span><span class="n">by</span><span class="p">:</span><span class="w"> </span><span class="n">android</span><span class="p">.</span><span class="na">os</span><span class="p">.</span><span class="na">TransactionTooLargeException</span><span class="p">:</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">parcel</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="n">1049092</span><span class="w"> </span><span class="n">bytes</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">Caused</span><span class="w"> </span><span class="n">by</span><span class="p">:</span><span class="w"> </span><span class="n">android</span><span class="p">.</span><span class="na">os</span><span class="p">.</span><span class="na">TransactionTooLargeException</span><span class="p">:</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">parcel</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="n">1049092</span><span class="w"> </span><span class="n">bytes</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="n">at</span><span class="w"> </span><span class="n">android</span><span class="p">.</span><span class="na">os</span><span class="p">.</span><span class="na">BinderProxy</span><span class="p">.</span><span class="na">transactNative</span><span class="p">(</span><span class="n">Native</span><span class="w"> </span><span class="n">Method</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="n">at</span><span class="w"> </span><span class="n">android</span><span class="p">.</span><span class="na">os</span><span class="p">.</span><span class="na">BinderProxy</span><span class="p">.</span><span class="na">transact</span><span class="p">(</span><span class="n">BinderProxy</span><span class="p">.</span><span class="na">java</span><span class="p">:</span><span class="n">624</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="n">at</span><span class="w"> </span><span class="n">android</span><span class="p">.</span><span class="na">app</span><span class="p">.</span><span class="na">IActivityTaskManager$Stub$Proxy</span><span class="p">.</span><span class="na">startActivity</span><span class="p">(</span><span class="n">IActivityTaskManager</span><span class="p">.</span><span class="na">java</span><span class="p">:</span><span class="n">2664</span><span class="p">)</span><span class="w">
@@ -452,7 +452,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">final</span><span class="w"> </span><span class="n">IBinder</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ServiceManager</span><span class="p">.</span><span class="na">getService</span><span class="p">(</span><span class="n">Context</span><span class="p">.</span><span class="na">ACTIVITY_TASK_SERVICE</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">return</span><span class="w"> </span><span class="n">IActivityTaskManager</span><span class="p">.</span><span class="na">Stub</span><span class="p">.</span><span class="na">asInterface</span><span class="p">(</span><span class="n">b</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">return</span><span class="w"> </span><span class="n">IActivityTaskManager</span><span class="p">.</span><span class="na">Stub</span><span class="p">.</span><span class="na">asInterface</span><span class="p">(</span><span class="n">b</span><span class="p">);</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>其中ServiceManager.getService(Context. ACTIVITY_TASK_SERVICE)拿到的是binderProxy对象，它是c++层的BinderProxy对应java层的BinderProxy对象，在IActivityTaskManager. Stub.asInterface中判断如果调用进程和目标进程不是一个的话，会返回Proxy对象，然后调用到Proxy的startActivity方法：</p>
@@ -513,7 +513,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">startActivity</span><span class="p">(</span><span class="n">IApplicationThread</span><span class="w"> </span><span class="n">caller</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">callingPackage</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">startActivity</span><span class="p">(</span><span class="n">IApplicationThread</span><span class="w"> </span><span class="n">caller</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">callingPackage</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Intent</span><span class="w"> </span><span class="n">intent</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">resolvedType</span><span class="p">,</span><span class="w"> </span><span class="n">IBinder</span><span class="w"> </span><span class="n">resultTo</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">resultWho</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">requestCode</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">ProfilerInfo</span><span class="w"> </span><span class="n">profilerInfo</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Bundle</span><span class="w"> </span><span class="n">options</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">RemoteException</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -563,7 +563,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_result</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在该方法里面，会创建两个Parcel对象，一个是_data，一个是_reply。然后将参数都放到_data中，最终调用了mRemote的transact方法，并把_data和_reply传入其中。此处的_remote对象java层的BinderProxy对象，从堆栈上看然后调用了transactNative方法，该方法是一个native方法，对应的aosp中是android_util_Binder.cpp的android_os_BinderProxy_transact方法，可以看如下方法注册：</p>
@@ -600,7 +600,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="s">&#34;(Landroid/os/IBinder$FrozenStateChangeCallback;)Z&#34;</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">android_os_BinderProxy_removeFrozenStateChangeCallback</span><span class="p">},</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">{</span><span class="s">&#34;getNativeFinalizer&#34;</span><span class="p">,</span><span class="w">  </span><span class="s">&#34;()J&#34;</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">android_os_BinderProxy_getNativeFinalizer</span><span class="p">},</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">{</span><span class="s">&#34;getExtension&#34;</span><span class="p">,</span><span class="w">        </span><span class="s">&#34;()Landroid/os/IBinder;&#34;</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">android_os_BinderProxy_getExtension</span><span class="p">},</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">};</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">};</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><div class="highlight"><div class="chroma">
@@ -653,7 +653,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">static</span><span class="w"> </span><span class="n">jboolean</span><span class="w"> </span><span class="nf">android_os_BinderProxy_transact</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span><span class="w"> </span><span class="n">env</span><span class="p">,</span><span class="w"> </span><span class="n">jobject</span><span class="w"> </span><span class="n">obj</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">jint</span><span class="w"> </span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="n">jobject</span><span class="w"> </span><span class="n">dataObj</span><span class="p">,</span><span class="w"> </span><span class="n">jobject</span><span class="w"> </span><span class="n">replyObj</span><span class="p">,</span><span class="w"> </span><span class="n">jint</span><span class="w"> </span><span class="n">flags</span><span class="p">)</span><span class="w"> </span><span class="c1">// throws RemoteException</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="c1">//①、dataObj是java层传过来的发送数据的parcel</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dataObj</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">jniThrowNullPointerException</span><span class="p">(</span><span class="n">env</span><span class="p">,</span><span class="w"> </span><span class="n">NULL</span><span class="p">);</span><span class="w">
@@ -694,7 +694,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">	</span><span class="c1">//⑦、输出错误信息</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">signalExceptionForError</span><span class="p">(</span><span class="n">env</span><span class="p">,</span><span class="w"> </span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="cm">/*canThrowRemoteException*/</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="o">-&gt;</span><span class="n">dataSize</span><span class="p">());</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">JNI_FALSE</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><blockquote>
@@ -720,11 +720,11 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">status_t</span><span class="w"> </span><span class="n">BpBinder</span><span class="p">::</span><span class="n">transact</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">uint32_t</span><span class="w"> </span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="n">Parcel</span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">Parcel</span><span class="o">*</span><span class="w"> </span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="n">uint32_t</span><span class="w"> </span><span class="n">flags</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">status</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">IPCThreadState</span><span class="p">::</span><span class="n">self</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">transact</span><span class="p">(</span><span class="n">binderHandle</span><span class="p">(),</span><span class="w"> </span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">status</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面只列出关键代码，IPCThreadState::self()是线程单例，调用到IPCThreadState的transact方法，并且可以看到第一个参数是获取BpBinder的binderHandle方法，它就是获取服务端的binder句柄，通过它告诉驱动层，想要的服务端binder是哪个，下面来看下IPCThreadState的transact方法：</p>
@@ -763,7 +763,7 @@
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">status_t</span><span class="w"> </span><span class="n">IPCThreadState</span><span class="p">::</span><span class="n">transact</span><span class="p">(</span><span class="n">int32_t</span><span class="w"> </span><span class="n">handle</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">                                  </span><span class="n">uint32_t</span><span class="w"> </span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="n">Parcel</span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">                                  </span><span class="n">Parcel</span><span class="o">*</span><span class="w"> </span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="n">uint32_t</span><span class="w"> </span><span class="n">flags</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">err</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">flags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">TF_ACCEPT_FDS</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//往驱动层写数据</span><span class="w">
@@ -787,7 +787,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">waitForResponse</span><span class="p">(</span><span class="n">nullptr</span><span class="p">,</span><span class="w"> </span><span class="n">nullptr</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">err</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>transact逻辑还是挺清晰的，首先往驱动层写数据，如果有error就不往下执行。如果没问题判断是不是one way的请求方式，如果不是则等待返回结果，如果是one way传进入的reply是null。</p>
@@ -836,7 +836,7 @@
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">status_t</span><span class="w"> </span><span class="n">IPCThreadState</span><span class="p">::</span><span class="n">writeTransactionData</span><span class="p">(</span><span class="n">int32_t</span><span class="w"> </span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="n">uint32_t</span><span class="w"> </span><span class="n">binderFlags</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">int32_t</span><span class="w"> </span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">uint32_t</span><span class="w"> </span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="n">Parcel</span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">status_t</span><span class="o">*</span><span class="w"> </span><span class="n">statusBuffer</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//定义驱动层认识的数据结构</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">binder_transaction_data</span><span class="w"> </span><span class="n">tr</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
@@ -871,7 +871,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mOut</span><span class="p">.</span><span class="na">write</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tr</span><span class="p">,</span><span class="w"> </span><span class="n">sizeof</span><span class="p">(</span><span class="n">tr</span><span class="p">));</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">NO_ERROR</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>首先定义binder_transaction_data数据结构，然后判断发送的数据是否有问题，如果没有则将data相关的数据给到binder_transaction_data，如果有问题，则返回失败，最后将BC_TRANSACTION和binder_transaction_data写入到mOut这个parcel里面。</p>
@@ -938,7 +938,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">err</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>通过while循环来判断命令，首先每次先通过talkWithDriver往驱动层写东西：</p>
@@ -966,7 +966,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">status_t</span><span class="w"> </span><span class="n">IPCThreadState</span><span class="p">::</span><span class="n">talkWithDriver</span><span class="p">(</span><span class="n">bool</span><span class="w"> </span><span class="n">doReceive</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">binder_write_read</span><span class="w"> </span><span class="n">bwr</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="n">bool</span><span class="w"> </span><span class="n">needRead</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mIn</span><span class="p">.</span><span class="na">dataPosition</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">mIn</span><span class="p">.</span><span class="na">dataSize</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="n">size_t</span><span class="w"> </span><span class="n">outAvail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">doReceive</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">needRead</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">mOut</span><span class="p">.</span><span class="na">dataSize</span><span class="p">()</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
@@ -983,7 +983,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ioctl</span><span class="p">(</span><span class="n">mProcess</span><span class="o">-&gt;</span><span class="n">mDriverFD</span><span class="p">,</span><span class="w"> </span><span class="n">BINDER_WRITE_READ</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">bwr</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">err</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>前面在分析writeTransactionData时候，会把binder_transaction_data数据结构保存到oOut这个parcel里面，此处把oOut的地址指向了binder_write_read的write_buffer字段，如果能读的话，则将mIn的地址指向了binder_write_read的read_buffer字段。最后通过ioctl方法将binder_write_read发送到驱动层。关于ioctl是驱动层的方法，在linux内核代码中。</br>
@@ -1021,13 +1021,13 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">err</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p><img src="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/one%20way%E6%94%B6%E5%88%B0%E7%9A%84%E6%8C%87%E4%BB%A4.png"
 	width="1244"
 	height="340"
-	srcset="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/one%20way%E6%94%B6%E5%88%B0%E7%9A%84%E6%8C%87%E4%BB%A4_hu_a438abe5b03979b9.png 480w, /p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/one%20way%E6%94%B6%E5%88%B0%E7%9A%84%E6%8C%87%E4%BB%A4_hu_5147a9bd235a6008.png 1024w"
+	srcset="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/one%20way%E6%94%B6%E5%88%B0%E7%9A%84%E6%8C%87%E4%BB%A4_hu_dd5847da835e7032.png 480w, /p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/one%20way%E6%94%B6%E5%88%B0%E7%9A%84%E6%8C%87%E4%BB%A4_hu_223320da84e11a10.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1042,7 +1042,7 @@
 <p><img src="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/one%20way%E6%B6%88%E6%81%AF%E7%9A%84%E6%97%B6%E5%BA%8F%E5%9B%BE.png"
 	width="1088"
 	height="466"
-	srcset="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/one%20way%E6%B6%88%E6%81%AF%E7%9A%84%E6%97%B6%E5%BA%8F%E5%9B%BE_hu_c10989787c800f79.png 480w, /p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/one%20way%E6%B6%88%E6%81%AF%E7%9A%84%E6%97%B6%E5%BA%8F%E5%9B%BE_hu_cac20ab38babe470.png 1024w"
+	srcset="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/one%20way%E6%B6%88%E6%81%AF%E7%9A%84%E6%97%B6%E5%BA%8F%E5%9B%BE_hu_ac5cb40dca5a8d57.png 480w, /p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/one%20way%E6%B6%88%E6%81%AF%E7%9A%84%E6%97%B6%E5%BA%8F%E5%9B%BE_hu_6ffe1b8b30f25535.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1057,7 +1057,7 @@
 <p><img src="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/%E5%90%8C%E6%AD%A5%E6%B6%88%E6%81%AF%E7%9A%84%E6%97%B6%E5%BA%8F%E5%9B%BE.png"
 	width="1250"
 	height="504"
-	srcset="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/%E5%90%8C%E6%AD%A5%E6%B6%88%E6%81%AF%E7%9A%84%E6%97%B6%E5%BA%8F%E5%9B%BE_hu_5151af251561b087.png 480w, /p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/%E5%90%8C%E6%AD%A5%E6%B6%88%E6%81%AF%E7%9A%84%E6%97%B6%E5%BA%8F%E5%9B%BE_hu_b165ef5573d6bf0b.png 1024w"
+	srcset="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/%E5%90%8C%E6%AD%A5%E6%B6%88%E6%81%AF%E7%9A%84%E6%97%B6%E5%BA%8F%E5%9B%BE_hu_729c55e5ecf23814.png 480w, /p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/%E5%90%8C%E6%AD%A5%E6%B6%88%E6%81%AF%E7%9A%84%E6%97%B6%E5%BA%8F%E5%9B%BE_hu_8089e85304881eeb.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1102,7 +1102,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="n">bool</span><span class="w"> </span><span class="n">mIsMain</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">};</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">};</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>server端主要通过binder线程，这个binder线程其实就是new了一个普通的线程，然后再调用了IPCThreadState::self()-&gt;joinThreadPool(mIsMain)这行代码，把这个线程注册到binder驱动，这样他就成为一个binder线程了，接着来看下IPCThreadState的joinThreadPool方法：</p>
@@ -1122,7 +1122,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="n">IPCThreadState</span><span class="p">::</span><span class="n">joinThreadPool</span><span class="p">(</span><span class="n">bool</span><span class="w"> </span><span class="n">isMain</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mOut</span><span class="p">.</span><span class="na">writeInt32</span><span class="p">(</span><span class="n">isMain</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">BC_ENTER_LOOPER</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">BC_REGISTER_LOOPER</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
@@ -1131,7 +1131,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="o">-</span><span class="n">ECONNREFUSED</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="o">-</span><span class="n">EBADF</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mOut</span><span class="p">.</span><span class="na">writeInt32</span><span class="p">(</span><span class="n">BC_EXIT_LOOPER</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">talkWithDriver</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>这里省略了其它无关的代码，先是往mOut里面写了一个BC_ENTER_LOOPER或者BC_REGISTER_LOOPER，BC_ENTER_LOOPER表示这个线程是自己主动注册到binder驱动的，BC_REGISTER_LOOPER表示是被动的，由binder先申请，然后由应用来注册。注册成功之后，他在一个while循环里面不停地执行getAndExecuteCommand方法，不停地去取指令、处理指令，这个while循环一般是不会退出的，除非是遇到了什么错误。<br>
@@ -1152,7 +1152,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">status_t</span><span class="w"> </span><span class="n">IPCThreadState</span><span class="p">::</span><span class="n">getAndExecuteCommand</span><span class="p">()</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">int32_t</span><span class="w"> </span><span class="n">cmd</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
@@ -1161,7 +1161,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">executeCommand</span><span class="p">(</span><span class="n">cmd</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>通过talkWithDriver从驱动读取请求，这个在前面讲过，主要是通过binder_write_read的数据结构和驱动读和写数据。再就是executeCommand处理这个请求，在处理请求之前要先从mIn里面把指令读出来，然后根据这个指令来执行不同的操作。<br>
@@ -1195,7 +1195,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">status_t</span><span class="w"> </span><span class="n">IPCThreadState</span><span class="p">::</span><span class="n">executeCommand</span><span class="p">(</span><span class="n">int32_t</span><span class="w"> </span><span class="n">cmd</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">BBinder</span><span class="o">*</span><span class="w"> </span><span class="n">obj</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">RefBase</span><span class="p">::</span><span class="n">weakref_type</span><span class="o">*</span><span class="w"> </span><span class="n">refs</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NO_ERROR</span><span class="p">;</span><span class="w">
@@ -1217,7 +1217,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>这里根据不同的cmd走到不同的case里面，我们主要关注BR_TRANSACTION这个case，它的意思是说Client把请求发给驱动，驱动再把请求转发给Server端，转发给Server端的时候呢Server端的Binder线程就会收到这个指令BR_TRANSACTION。<br>
@@ -1237,12 +1237,12 @@ binder_transaction_data里面有个cookie字段，保存的是Binder实体对象
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">status_t</span><span class="w"> </span><span class="n">IPCThreadState</span><span class="p">::</span><span class="n">sendReply</span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="n">Parcel</span><span class="o">&amp;</span><span class="w"> </span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="n">uint32_t</span><span class="w"> </span><span class="n">flags</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">err</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">statusBuffer</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">writeTransactionData</span><span class="p">(</span><span class="n">BC_REPLY</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">1</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">statusBuffer</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">waitForResponse</span><span class="p">(</span><span class="n">nullptr</span><span class="p">,</span><span class="w"> </span><span class="n">nullptr</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>sendReply的实现中，先调用writeTransactionData方法，把数据写到驱动里面，驱动再转发给Client端，我们需要注意下这里的协议是BC_REPLY；接着调用waitForResponse方法，方法的两个入参都是NULL，跟oneway有点像，表示不用等待对方回复了。</p>
@@ -1264,7 +1264,7 @@ binder_transaction_data里面有个cookie字段，保存的是Binder实体对象
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">status_t</span><span class="w"> </span><span class="n">BBinder</span><span class="p">::</span><span class="n">transact</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">uint32_t</span><span class="w"> </span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="n">Parcel</span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">Parcel</span><span class="o">*</span><span class="w"> </span><span class="n">reply</span><span class="p">,</span><span class="w"> </span><span class="n">uint32_t</span><span class="w"> </span><span class="n">flags</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">status_t</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NO_ERROR</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">code</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">default</span><span class="p">:</span><span class="w">
@@ -1272,7 +1272,7 @@ binder_transaction_data里面有个cookie字段，保存的是Binder实体对象
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">err</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在transact中根据不同的code执行不同的指令，这里走的是default分支，调用的是onTransact方法，BBinder的实际对象是JavaBBinder对象，继续看JavaBBinder::onTransact，源码位于/frameworks/base/core/jni/android_util_Binder.cpp：</p>
@@ -1318,8 +1318,8 @@ binder_transaction_data里面有个cookie字段，保存的是Binder实体对象
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="n">kBinderPathName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&#34;android/os/Binder&#34;</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">int_register_android_os_Binder</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span><span class="w"> </span><span class="n">env</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">int_register_android_os_Binder</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span><span class="w"> </span><span class="n">env</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">jclass</span><span class="w"> </span><span class="n">clazz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FindClassOrDie</span><span class="p">(</span><span class="n">env</span><span class="p">,</span><span class="w"> </span><span class="n">kBinderPathName</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">gBinderOffsets</span><span class="p">.</span><span class="na">mClass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MakeGlobalRefOrDie</span><span class="p">(</span><span class="n">env</span><span class="p">,</span><span class="w"> </span><span class="n">clazz</span><span class="p">);</span><span class="w">
@@ -1327,7 +1327,7 @@ binder_transaction_data里面有个cookie字段，保存的是Binder实体对象
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">RegisterMethodsOrDie</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">env</span><span class="p">,</span><span class="w"> </span><span class="n">kBinderPathName</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">gBinderMethods</span><span class="p">,</span><span class="w"> </span><span class="n">NELEM</span><span class="p">(</span><span class="n">gBinderMethods</span><span class="p">));</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>而我们服务端的binder对象正是aidl生成的Stub内部类，比如在启动activity过程中，实际就是IActivityTaskManager.aidl通过aidl工具编译成的内部类stub，而frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java它是继承自IActivityManager. Stub，所以最终是调用了ActivityManagerService的onTransact方法。</p>
@@ -1365,7 +1365,7 @@ binder_transaction_data里面有个cookie字段，保存的是Binder实体对象
 <p><img src="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/binder%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%E5%9B%BE.png"
 	width="1366"
 	height="768"
-	srcset="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/binder%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%E5%9B%BE_hu_fd6fbb7b3f4c1247.png 480w, /p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/binder%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%E5%9B%BE_hu_8172fd4359d73969.png 1024w"
+	srcset="/p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/binder%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%E5%9B%BE_hu_109d7020e819502e.png 480w, /p/binder%E9%80%9A%E4%BF%A1%E5%8E%9F%E7%90%86/binder%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%E5%9B%BE_hu_f3ee07ebe3578637.png 1024w"
 	loading="lazy"
 	
 		alt="alt text"
@@ -1468,8 +1468,8 @@ binder_transaction_data里面有个cookie字段，保存的是Binder实体对象
     </section>
     
     <section class="powerby">
-        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
     </section>
 </footer>
 

@@ -42,7 +42,7 @@
     })();
 </script>
 <div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
-    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
         <span class="hamburger-box">
             <span class="hamburger-inner"></span>
         </span>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
+                        <img src="/img/logo_hu_c5ce2387cd5c94f8.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -198,7 +198,7 @@
 
 
 
-                        <span>Dark Mode</span>
+                        <span>暗色模式</span>
                     </li>
                 
             </ol>
@@ -223,7 +223,7 @@
 
 
         </div>
-        <h2 class="widget-title section-title">Table of contents</h2>
+        <h2 class="widget-title section-title">目录</h2>
         
         <div class="widget--toc">
             <nav id="TableOfContents">
@@ -310,7 +310,7 @@
 
 
                 <time class="article-time--reading">
-                    2 minute read
+                    阅读时长: 2 分钟
                 </time>
             </div>
         
@@ -349,16 +349,16 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="n">wh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getViewWh</span><span class="p">(</span><span class="n">view</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;width:${wh.first}&#34;</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;height:${wh.second}&#34;</span><span class="p">)</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;outer coroutine&#34;</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;outer coroutine&#34;</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">private</span><span class="w"> </span><span class="n">suspend</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">getViewWh</span><span class="p">(</span><span class="n">view</span><span class="p">:</span><span class="w"> </span><span class="n">View</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">suspendCoroutine</span><span class="o">&lt;</span><span class="n">Pair</span><span class="o">&lt;</span><span class="n">Int</span><span class="p">,</span><span class="w"> </span><span class="n">Int</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">continuation</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">suspend</span><span class="w"> </span><span class="n">fun</span><span class="w"> </span><span class="nf">getViewWh</span><span class="p">(</span><span class="n">view</span><span class="p">:</span><span class="w"> </span><span class="n">View</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">suspendCoroutine</span><span class="o">&lt;</span><span class="n">Pair</span><span class="o">&lt;</span><span class="n">Int</span><span class="p">,</span><span class="w"> </span><span class="n">Int</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">continuation</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">view</span><span class="p">.</span><span class="na">post</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">val</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">width</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">val</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="na">height</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">continuation</span><span class="p">.</span><span class="na">resume</span><span class="p">(</span><span class="n">Pair</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">))</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>日志如下：</p>
@@ -379,7 +379,7 @@
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda.png"
 	width="2642"
 	height="258"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda_hu_2c182a92d1b92ae7.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda_hu_64974adc4173dd24.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda_hu_567393a366859403.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda_hu_39613f063d3a05fa.png 1024w"
 	loading="lazy"
 	
 		alt="第一个suspendLambda.png"
@@ -394,7 +394,7 @@ launch启动的时候，内部的协程代码块编译结果是<code>SuspendCoro
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda%E7%9A%84invokeSuspend%E8%B0%83%E7%94%A8.png"
 	width="1658"
 	height="1276"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda%E7%9A%84invokeSuspend%E8%B0%83%E7%94%A8_hu_2dd5b8d9cb1f0528.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda%E7%9A%84invokeSuspend%E8%B0%83%E7%94%A8_hu_8b77d1d52385a7fe.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda%E7%9A%84invokeSuspend%E8%B0%83%E7%94%A8_hu_5770ec2a419978e8.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%B8%80%E4%B8%AAsuspendLambda%E7%9A%84invokeSuspend%E8%B0%83%E7%94%A8_hu_b50d8aba48474816.png 1024w"
 	loading="lazy"
 	
 		alt="第一个suspendLambda的invokeSuspend调用.png"
@@ -409,7 +409,7 @@ launch启动的时候，内部的协程代码块编译结果是<code>SuspendCoro
 <p><img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95.png"
 	width="1678"
 	height="146"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95_hu_9feff405ee4a1f33.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95_hu_bb2fb791f96628a2.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95_hu_fbe5d81db15b39b6.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95_hu_2d6a753494a25afe.png 1024w"
 	loading="lazy"
 	
 		alt="编译完后的静态方法.png"
@@ -424,7 +424,7 @@ launch启动的时候，内部的协程代码块编译结果是<code>SuspendCoro
 <p><img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/getViewWh%E5%AE%9E%E7%8E%B0.png"
 	width="1258"
 	height="388"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/getViewWh%E5%AE%9E%E7%8E%B0_hu_99b588d44ecb2518.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/getViewWh%E5%AE%9E%E7%8E%B0_hu_c756ad18174f993d.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/getViewWh%E5%AE%9E%E7%8E%B0_hu_88e4b67374e2de53.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/getViewWh%E5%AE%9E%E7%8E%B0_hu_1c4081962000c24d.png 1024w"
 	loading="lazy"
 	
 		alt="getViewWh实现.png"
@@ -440,7 +440,7 @@ launch启动的时候，内部的协程代码块编译结果是<code>SuspendCoro
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%BA%8C%E4%B8%AAsuspendLambda.png"
 	width="1302"
 	height="560"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%BA%8C%E4%B8%AAsuspendLambda_hu_f363d7e57fd3a4f6.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%BA%8C%E4%B8%AAsuspendLambda_hu_f92e4955dc1f0a4d.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%BA%8C%E4%B8%AAsuspendLambda_hu_488f5517db3c7e4d.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/%E7%AC%AC%E4%BA%8C%E4%B8%AAsuspendLambda_hu_9580cfd3cea2206c.png 1024w"
 	loading="lazy"
 	
 		alt="第二个suspendLambda.png"
@@ -455,7 +455,7 @@ launch启动的时候，内部的协程代码块编译结果是<code>SuspendCoro
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeCoroutinuation%E7%9A%84resumeWith%E5%AE%9E%E7%8E%B0.png"
 	width="2082"
 	height="704"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeCoroutinuation%E7%9A%84resumeWith%E5%AE%9E%E7%8E%B0_hu_17fd81a8a9d57a00.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeCoroutinuation%E7%9A%84resumeWith%E5%AE%9E%E7%8E%B0_hu_6ebb6ee0abc49714.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeCoroutinuation%E7%9A%84resumeWith%E5%AE%9E%E7%8E%B0_hu_44ae24ad38dae54d.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeCoroutinuation%E7%9A%84resumeWith%E5%AE%9E%E7%8E%B0_hu_2218fb70ccf755c5.png 1024w"
 	loading="lazy"
 	
 		alt="safeCoroutinuation的resumeWith实现.png"
@@ -470,7 +470,7 @@ launch启动的时候，内部的协程代码块编译结果是<code>SuspendCoro
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84result%E9%BB%98%E8%AE%A4%E5%80%BC.png"
 	width="1678"
 	height="536"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84result%E9%BB%98%E8%AE%A4%E5%80%BC_hu_9c8ad4bcc2eace52.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84result%E9%BB%98%E8%AE%A4%E5%80%BC_hu_596ec85c97a387f1.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84result%E9%BB%98%E8%AE%A4%E5%80%BC_hu_9e9783026f4e43f0.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84result%E9%BB%98%E8%AE%A4%E5%80%BC_hu_65fe2542444ce3c0.png 1024w"
 	loading="lazy"
 	
 		alt="safeContinuation的result默认值.png"
@@ -485,7 +485,7 @@ launch启动的时候，内部的协程代码块编译结果是<code>SuspendCoro
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84getOrThrow%E5%AE%9E%E7%8E%B0.png"
 	width="2278"
 	height="702"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84getOrThrow%E5%AE%9E%E7%8E%B0_hu_6f711601aed2ac2d.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84getOrThrow%E5%AE%9E%E7%8E%B0_hu_d8213e508b79e545.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84getOrThrow%E5%AE%9E%E7%8E%B0_hu_c6aeb6f61572cbda.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/safeContinuation%E7%9A%84getOrThrow%E5%AE%9E%E7%8E%B0_hu_e23abc8134a3ce05.png 1024w"
 	loading="lazy"
 	
 		alt="safeContinuation的getOrThrow实现.png"
@@ -537,7 +537,7 @@ launch启动的时候，内部的协程代码块编译结果是<code>SuspendCoro
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">dispatchResume</span><span class="p">(</span><span class="n">resumeMode</span><span class="p">)</span><span class="w"> </span><span class="c1">// no need for additional cancellation checks</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此处会构造出CancelledContinuation，它是CompletedExceptionally对象，这个其实就是协程异常的扩展类，最终把该对象设置到CancellableContinuationImpl的state上。
@@ -583,14 +583,14 @@ launch启动的时候，内部的协程代码块编译结果是<code>SuspendCoro
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// or undispatched mode was requested</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">resume</span><span class="p">(</span><span class="n">delegate</span><span class="p">,</span><span class="w"> </span><span class="n">undispatched</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此处会走dispatcher.dispatch逻辑，因为上面的GlobalScope.launch其实创建的dispatcher是一个Dispatcher.Default类型的。DispatchedTask是一个runnable接口，看下它的run方法：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95%E5%A4%84%E7%90%86%E5%BC%82%E5%B8%B8.png"
 	width="1988"
 	height="1644"
-	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95%E5%A4%84%E7%90%86%E5%BC%82%E5%B8%B8_hu_64f8e9b2fc0a11b3.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95%E5%A4%84%E7%90%86%E5%BC%82%E5%B8%B8_hu_609f696d7fa79946.png 1024w"
+	srcset="/p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95%E5%A4%84%E7%90%86%E5%BC%82%E5%B8%B8_hu_942033fb79e691ab.png 480w, /p/%E5%8D%8F%E7%A8%8B%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E5%A4%84%E7%90%86%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83/DispatchedTask%E7%9A%84run%E6%96%B9%E6%B3%95%E5%A4%84%E7%90%86%E5%BC%82%E5%B8%B8_hu_20c19fda0382bc8e.png 1024w"
 	loading="lazy"
 	
 		alt="DispatchedTask的run方法处理异常.png"
@@ -696,8 +696,8 @@ launch启动的时候，内部的协程代码块编译结果是<code>SuspendCoro
     </section>
     
     <section class="powerby">
-        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
     </section>
 </footer>
 

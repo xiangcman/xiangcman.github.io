@@ -42,7 +42,7 @@
     })();
 </script>
 <div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
-    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
         <span class="hamburger-box">
             <span class="hamburger-inner"></span>
         </span>
@@ -58,7 +58,7 @@
                     
                     
                         
-                        <img src="/img/logo_hu_221c4e8ad5e24f52.png" width="300"
+                        <img src="/img/logo_hu_c5ce2387cd5c94f8.png" width="300"
                             height="300" class="site-logo" loading="lazy" alt="Avatar">
                     
                 
@@ -198,7 +198,7 @@
 
 
 
-                        <span>Dark Mode</span>
+                        <span>暗色模式</span>
                     </li>
                 
             </ol>
@@ -270,7 +270,7 @@
 
 
                 <time class="article-time--reading">
-                    8 minute read
+                    阅读时长: 8 分钟
                 </time>
             </div>
         
@@ -328,10 +328,10 @@
 </span></span></span><span class="line"><span class="cl"><span class="cm"> * On L+, with RenderThread, the UI thread has idle time after it has passed a frame off to
 </span></span></span><span class="line"><span class="cl"><span class="cm"> * RenderThread but before the next frame begins. We schedule prefetch work in this window.
 </span></span></span><span class="line"><span class="cl"><span class="cm"> */</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">ALLOW_THREAD_GAP_WORK</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Build</span><span class="p">.</span><span class="na">VERSION</span><span class="p">.</span><span class="na">SDK_INT</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">21</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">ALLOW_THREAD_GAP_WORK</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Build</span><span class="p">.</span><span class="na">VERSION</span><span class="p">.</span><span class="na">SDK_INT</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">21</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nd">@Override</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">protected</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onAttachedToWindow</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">protected</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onAttachedToWindow</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">super</span><span class="p">.</span><span class="na">onAttachedToWindow</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//省略代码</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ALLOW_THREAD_GAP_WORK</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -354,7 +354,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mGapWorker</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="k">this</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>可以看到有一个静态变量，ALLOW_THREAD_GAP_WORK是大于等于21（Android5.0）才会为true，这是因为在5.0之后，引进了RenderThread线程，专门用来渲染ui线程绘制好的数据，渲染完后，会提交到事先申请的bufferqueue中，然后当vsync-sf信号来的时候，sufaceflinger会去对应app的bufferqueue中取出前面提交的buffer数据，然后进行合成layer，最终屏幕（hwc）收到该请求后，进行图层进行合成，最终送到屏幕硬件上显示。这就是一针从创建到消费的过程。
@@ -387,7 +387,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">recyclerView</span><span class="p">.</span><span class="na">mPrefetchRegistry</span><span class="p">.</span><span class="na">setPrefetchVector</span><span class="p">(</span><span class="n">prefetchDx</span><span class="p">,</span><span class="w"> </span><span class="n">prefetchDy</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>可以看出来实际是通过recyclerview.post，然后传的是自己，因此会直接run方法。预加载时机在源码里面有两处调用了：</p>
@@ -480,7 +480,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">    
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>看下GapWorker的run方法如何实现的预加载：</p>
@@ -519,7 +519,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">run</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">run</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">TraceCompat</span><span class="p">.</span><span class="na">beginSection</span><span class="p">(</span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">TRACE_PREFETCH_TAG</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mRecyclerViews</span><span class="p">.</span><span class="na">isEmpty</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -547,7 +547,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mPostTimeNs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">TraceCompat</span><span class="p">.</span><span class="na">endSection</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在调用prefetch前传入nextFrameNs，该值表示预估的下一个vsync来临的时间，首先获取上一针的绘制起始时间，也就是latestFrameVsyncMs，而mFrameIntervalNs是通过刷新率算出来的一针需要的时间，比如60hz的手机，一秒是60帧，那么mFrameIntervalNs的值是一针需要16ms，mFrameIntervalNs的单位是纳秒，这个时间在开篇的onAttachedToWindow方法中计算的，所以可以看出来，nextFrameNs时间就是预加载最后的期限时间，超过这个时间就会放弃该预加载，上面提到的上一针时间是用过recyclerview的getDrawingTime获取的，它是获取的attachInfo的mDrawingTime时间，而mDrawingTime是在viewRootImpl中draw方法给赋值的：</p>
@@ -566,7 +566,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mAttachInfo</span><span class="p">.</span><span class="na">mDrawingTime</span><span class="w"> </span><span class="o">=</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">mChoreographer</span><span class="p">.</span><span class="na">getFrameTimeNanos</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">TimeUtils</span><span class="p">.</span><span class="na">NANOS_PER_MS</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//省略代码        </span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>可以看出来，它是通过Choreographer的getFrameTimeNanos方法来获取的：</p>
@@ -580,10 +580,10 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@UnsupportedAppUsage</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="nf">getFrameTimeNanos</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="nf">getFrameTimeNanos</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//省略代码</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">USE_FRAME_TIME</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">mLastFrameTimeNanos</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">nanoTime</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>mLastFrameTimeNanos是在doFrame中将参数frameTimeNanos给赋值的，而frameTimeNanos参数表示的就是当前vsnyc信号来临的时间。所以最终结论就是通过遍历recyclerview的drawingtime，来获取最近一次的vsync时间，并加上当前设备一针所需要的时间，从而得到下一个vsync信号来临的时间，也就是预加载要完成的最晚时间。继续跟进GapWorker的prefetch方法：</p>
@@ -598,7 +598,7 @@
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span><span class="w"> </span><span class="nf">prefetch</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">deadlineNs</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">buildTaskList</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">flushTasksWithDeadline</span><span class="p">(</span><span class="n">deadlineNs</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>buildTaskList，它是用来构建预加载的task列表：</p>
@@ -633,7 +633,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//省略代码</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>首先是调用了view.mPrefetchRegistry.collectPrefetchPositionsFromView(view, false)来收集预加载的view：</p>
@@ -674,7 +674,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//省略代码</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>可以看出来调用了layoutmanager的collectAdjacentPrefetchPositions的方法，把需要预加载的水平和竖直方向的偏移量传入其中，看下LinearLayoutManager的该方法：</p>
@@ -697,7 +697,7 @@
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">collectAdjacentPrefetchPositions</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">dx</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dy</span><span class="p">,</span><span class="w"> </span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">State</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">collectAdjacentPrefetchPositions</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">dx</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">dy</span><span class="p">,</span><span class="w"> </span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">State</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">LayoutPrefetchRegistry</span><span class="w"> </span><span class="n">layoutPrefetchRegistry</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">delta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">mOrientation</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">HORIZONTAL</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">dx</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">dy</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">getChildCount</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">delta</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
@@ -709,7 +709,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">absDelta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Math</span><span class="p">.</span><span class="na">abs</span><span class="p">(</span><span class="n">delta</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">updateLayoutState</span><span class="p">(</span><span class="n">layoutDirection</span><span class="p">,</span><span class="w"> </span><span class="n">absDelta</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">collectPrefetchPositionsForLayoutState</span><span class="p">(</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">mLayoutState</span><span class="p">,</span><span class="w"> </span><span class="n">layoutPrefetchRegistry</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>通过方法来判断偏移量，然后把方向标识传入到updateLayoutState中：</p>
@@ -760,7 +760,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//省略代码</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mLayoutState</span><span class="p">.</span><span class="na">mScrollingOffset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scrollingOffset</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>此处只保留从上到下的滑动，先是获取页面滚动的最后一个表项，然后判断是不是reverseLayout，如果不是则取LayoutState.ITEM_DIRECTION_TAIL(该值等于1)，预加载的position等于最后一个表项的position+1，接着算出预加载的表项离recyclerview底部的距离。它是通过mOrientationHelper.getDecoratedEnd(child)- mOrientationHelper.getEndAfterPadding()得到的。
@@ -776,11 +776,11 @@ mOrientationHelper.getDecoratedEnd(child)它是在OrientationHelper中定义的c
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getDecoratedEnd</span><span class="p">(</span><span class="n">View</span><span class="w"> </span><span class="n">view</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getDecoratedEnd</span><span class="p">(</span><span class="n">View</span><span class="w"> </span><span class="n">view</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">LayoutParams</span><span class="w"> </span><span class="n">params</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">LayoutParams</span><span class="p">)</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">view</span><span class="p">.</span><span class="na">getLayoutParams</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">mLayoutManager</span><span class="p">.</span><span class="na">getDecoratedBottom</span><span class="p">(</span><span class="n">view</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">params</span><span class="p">.</span><span class="na">bottomMargin</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><div class="highlight"><div class="chroma">
@@ -792,7 +792,7 @@ mOrientationHelper.getDecoratedEnd(child)它是在OrientationHelper中定义的c
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getDecoratedBottom</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="n">child</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">child</span><span class="p">.</span><span class="na">getBottom</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">getBottomDecorationHeight</span><span class="p">(</span><span class="n">child</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>getDecoratedBottom是获取child的bottom+child的底部间距高度，所以getDecoratedEnd是获取child的bottom+child的底部间距高度+下间距。
@@ -806,9 +806,9 @@ mOrientationHelper.getEndAfterPadding()也是在OrientationHelper中定义的cre
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getEndAfterPadding</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getEndAfterPadding</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">mLayoutManager</span><span class="p">.</span><span class="na">getHeight</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">mLayoutManager</span><span class="p">.</span><span class="na">getPaddingBottom</span><span class="p">();</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>getEndAfterPadding是recyclerview的高度-recyclerview的下内边距。所以scrollingOffset是即将要预加载的表项离recyclerview底部的间距。接着看下collectPrefetchPositionsForLayoutState方法：</p>
@@ -829,7 +829,7 @@ mOrientationHelper.getEndAfterPadding()也是在OrientationHelper中定义的cre
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pos</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">getItemCount</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">layoutPrefetchRegistry</span><span class="p">.</span><span class="na">addPosition</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span><span class="w"> </span><span class="n">Math</span><span class="p">.</span><span class="na">max</span><span class="p">(</span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">layoutState</span><span class="p">.</span><span class="na">mScrollingOffset</span><span class="p">));</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>将刚才算的预加载的postion和偏移量传入到addPosition中，该方法是在GapWorker中实现的：</p>
@@ -846,13 +846,13 @@ mOrientationHelper.getEndAfterPadding()也是在OrientationHelper中定义的cre
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">addPosition</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">layoutPosition</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">pixelDistance</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">addPosition</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">layoutPosition</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">pixelDistance</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//省略代码</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">storagePosition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mCount</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">2</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mPrefetchArray</span><span class="o">[</span><span class="n">storagePosition</span><span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">layoutPosition</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mPrefetchArray</span><span class="o">[</span><span class="n">storagePosition</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">1</span><span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pixelDistance</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mCount</span><span class="o">++</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>将position和偏移量成对保存在mPrefetchArray数组中。构建完数组中，接着就是将数组的数据存到task中。这块逻辑在buildTaskList中：</p>
@@ -915,7 +915,7 @@ mOrientationHelper.getEndAfterPadding()也是在OrientationHelper中定义的cre
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">totalTaskIndex</span><span class="o">++</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>task信息由由以下组成：
@@ -938,7 +938,7 @@ position：预加载表项的位置
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 3.对任务列表进行优先级排序</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Collections</span><span class="p">.</span><span class="na">sort</span><span class="p">(</span><span class="n">mTasks</span><span class="p">,</span><span class="w"> </span><span class="n">sTaskComparator</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面就是整个buildTaskList的逻辑，接着就是根据构建的task来创建viewholder，该逻辑是在flushTasksWithDeadline方法中：</p>
@@ -965,7 +965,7 @@ position：预加载表项的位置
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">flushTaskWithDeadline</span><span class="p">(</span><span class="n">task</span><span class="p">,</span><span class="w"> </span><span class="n">deadlineNs</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">task</span><span class="p">.</span><span class="na">clear</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>flushTaskWithDeadline:</p>
@@ -984,7 +984,7 @@ position：预加载表项的位置
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">RecyclerView</span><span class="p">.</span><span class="na">ViewHolder</span><span class="w"> </span><span class="n">holder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">prefetchPositionWithDeadline</span><span class="p">(</span><span class="n">task</span><span class="p">.</span><span class="na">view</span><span class="p">,</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">task</span><span class="p">.</span><span class="na">position</span><span class="p">,</span><span class="w"> </span><span class="n">taskDeadlineNs</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//省略代码</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><div class="highlight"><div class="chroma">
@@ -1024,7 +1024,7 @@ position：预加载表项的位置
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">holder</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>上面通过tryGetViewHolderForPositionByDeadline获取viewholder，和正常获取viewholder的区别是传入了deadlineNs，直接看该方法是如何放弃超时的viewholder：</p>
@@ -1051,7 +1051,7 @@ position：预加载表项的位置
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>如果deadlineNs不是FOREVER_NS，普通调用该方法传入的deadlineNs是FOREVER_NS，所以是通过该值区分是不是预加载调用的，接着通过willCreateInTime返回值判断要不要放弃：</p>
@@ -1066,7 +1066,7 @@ position：预加载表项的位置
 <pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">boolean</span><span class="w"> </span><span class="nf">willCreateInTime</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">viewType</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">approxCurrentNs</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">deadlineNs</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="n">expectedDurationNs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getScrapDataForType</span><span class="p">(</span><span class="n">viewType</span><span class="p">).</span><span class="na">mCreateRunningAverageNs</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">expectedDurationNs</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">approxCurrentNs</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">expectedDurationNs</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">deadlineNs</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>expectedDurationNs取的是对应viewholder的平均创建时间，其实也不叫平均时间：</p>
@@ -1089,13 +1089,13 @@ position：预加载表项的位置
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">ScrapData</span><span class="w"> </span><span class="n">scrapData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getScrapDataForType</span><span class="p">(</span><span class="n">viewType</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">scrapData</span><span class="p">.</span><span class="na">mCreateRunningAverageNs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runningAverage</span><span class="p">(</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">scrapData</span><span class="p">.</span><span class="na">mCreateRunningAverageNs</span><span class="p">,</span><span class="w"> </span><span class="n">createTimeNs</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="kt">long</span><span class="w"> </span><span class="nf">runningAverage</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">oldAverage</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">newValue</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kt">long</span><span class="w"> </span><span class="nf">runningAverage</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">oldAverage</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">newValue</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">oldAverage</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">newValue</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">oldAverage</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">4</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">newValue</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">4</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>每次将之前的创建viewholder时间占3分之4，当前创建的时间占1分之4。所以willCreateInTime的返回值是如果当前时间+平均创建viewholder时间小于最晚约定时间则不会放弃，否则直接放弃。如果不放弃接着会判断bind过程有没有超过约定时间：</p>
@@ -1128,7 +1128,7 @@ position：预加载表项的位置
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="n">endBindNs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getNanoTime</span><span class="p">();</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mRecyclerPool</span><span class="p">.</span><span class="na">factorInBindTime</span><span class="p">(</span><span class="n">holder</span><span class="p">.</span><span class="na">getItemViewType</span><span class="p">(),</span><span class="w"> </span><span class="n">endBindNs</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">startBindNs</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>bind过程是通过willBindInTime方法来判断有没有超过约定时间的，整个逻辑很清晰。</p>
@@ -1180,7 +1180,7 @@ position：预加载表项的位置
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">mCachedViews</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">targetCacheIndex</span><span class="p">,</span><span class="w"> </span><span class="n">holder</span><span class="p">);</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//省略代码</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>默认插入cacheview缓存的索引是在末尾，在插入正常离屏的viewholder时候如果遇到预拉取的viewholder，则往前找直到最后一个离屏的viewholder，然后插入到它后面。所以不难看出，预拉取的会在后面，离屏的会在前面。这样的好处是预加载的viewholder由于在后面使用的机会会很大，放在集合的后面删除的概率要小。</p>
@@ -1278,8 +1278,8 @@ position：预加载表项的位置
     </section>
     
     <section class="powerby">
-        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
-        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
     </section>
 </footer>
 
