@@ -232,8 +232,22 @@
       <ol>
         <li><a href="#glide单例初始化">Glide单例初始化</a></li>
         <li><a href="#builder建造者模式">Builder建造者模式</a></li>
-        <li><a href="#原型模式">原型模式</a></li>
-        <li><a href="#工厂模式">工厂模式</a></li>
+        <li><a href="#原型模式">原型模式</a>
+          <ol>
+            <li><a href="#requestbuilder的clone">RequestBuilder的clone</a></li>
+          </ol>
+        </li>
+        <li><a href="#工厂模式">工厂模式</a>
+          <ol>
+            <li><a href="#diskcache的创建">DiskCache的创建</a></li>
+            <li><a href="#requestoptions的创建">RequestOptions的创建</a></li>
+            <li><a href="#registry的创建">Registry的创建</a></li>
+            <li><a href="#modelloader的创建">ModelLoader的创建</a></li>
+            <li><a href="#datarewinder的创建">DataRewinder的创建</a></li>
+            <li><a href="#encoder的获取">Encoder的获取</a></li>
+          </ol>
+        </li>
+        <li><a href="#解码静态代理">解码(静态代理)</a></li>
       </ol>
     </li>
   </ol>
@@ -398,7 +412,8 @@
 </li>
 </ul>
 <h3 id="原型模式">原型模式
-</h3><p>在RequestBuilder中的into方法里面每次先clone一份RequestOptions出来：</p>
+</h3><h4 id="requestbuilder的clone">RequestBuilder的clone
+</h4><p>在RequestBuilder中的into方法里面每次先clone一份RequestOptions出来：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -524,7 +539,8 @@
 </li>
 </ul>
 <h3 id="工厂模式">工厂模式
-</h3><p>glide中使用的工厂模式分为工厂方法模式和抽象工厂模式，首先看下哪些地方用到了工厂方法模式：</p>
+</h3><h4 id="diskcache的创建">DiskCache的创建
+</h4><p>glide中使用的工厂模式分为工厂方法模式和抽象工厂模式，首先看下哪些地方用到了工厂方法模式：</p>
 <ul>
 <li>DiskCache的创建
 <ul>
@@ -637,12 +653,9 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>LazyDiskCacheProvider从字面意思也能看出来，它是一个延迟获取DiskCache的封装类。如果没有它，那就得在Glide初始化的时候创建DiskCache了。因为DiskCache是一个重量级的类，里面涉及到文件目录的创建等。并且在LazyDiskCacheProvider中保证了线程安全来创建DiskCache。</p>
-<ul>
-<li>RequestOptions的创建
-<ul>
+<h4 id="requestoptions的创建">RequestOptions的创建
+</h4><ul>
 <li>它也是通过工厂方法模式来创建的：</li>
-</ul>
-</li>
 </ul>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -712,12 +725,9 @@
 </span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><ul>
-<li>Registry的创建
-<ul>
+</div><h4 id="registry的创建">Registry的创建
+</h4><ul>
 <li>Registry是通过GlideSupplier接口创建的，也是一个工厂方法模式：</li>
-</ul>
-</li>
 </ul>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -772,12 +782,9 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>也是一个类中内部接口，不过该接口是一个泛型。外界需要调用memorize方法，并传入一个GlideSupplier的实现类，在前面介绍Registry创建过程中，它是在GlideContext的getRegistry方法进行获取的，而默认是调用memorize方法获取到GlideSupplier对象，等到需要Registry时候才会调用GlideSupplier的get方法，显而易见这是一个延迟初始化，并且这里使用了静态代理，将Registry的最终获取交给了外界传入的Registry。同时匿名内部类的GlideSupplier通过双重锁保证了线程安全，这里其实和上面的DiskCache的创建有点异曲同工之妙。</p>
-<ul>
-<li>ModelLoader的创建
-<ul>
+<h4 id="modelloader的创建">ModelLoader的创建
+</h4><ul>
 <li>ModelLoader是通过ModelLoaderFactory接口来创建的：</li>
-</ul>
-</li>
 </ul>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -795,12 +802,9 @@
 </div>
 </div><p>在RegistryFactory中先把modelClass、dataClass、ModelLoaderFactory注册到MultiModelLoaderFactory中，组转成一个个的Entry对象，等到要使用ModelLoader时候，通过modelClass和dataClass过滤出ModelLoaderFactory，然后通过ModelLoaderFactory创建出ModelLoader，接着获取到LoadData，最后获取到DataFetcher。
 在MultiModelLoader中装载了ModelLoader的集合，包含了多个子节点，在获取LoadData的时候使用了责任链模式，依次让每个ModelLoader尝试进行获取LoadData，同时这里也体现出了迭代器模式。</p>
-<ul>
-<li>DataRewinder的创建
-<ul>
+<h4 id="datarewinder的创建">DataRewinder的创建
+</h4><ul>
 <li>DataRewinder是一个数据重置器，它也是通过方法工厂来创建的</li>
-</ul>
-</li>
 </ul>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -835,11 +839,9 @@
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>也是在外部接口中定义内部接口。在前面介绍InputStream转化成File的时候讲过，先把各种DataRewinder.Factory注册到DataRewinderRegistry中，然后通过传入的class类型获取到对应的DataRewinder.Factory，接着通过build方法获取到DataRewinder。</p>
-<ul>
-<li>Encoder的获取
-Encoder是编码器的接口类，Encoder的创建虽然没有用到Factory，但是它是和上面DataRewinder的创建形成了对比，Encoder它是直接在Registry阶段直接包转成Entry，然后在获取的时候直接从Entry中获取到Encoder。
-Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factory来创建？</li>
-</ul>
+<h4 id="encoder的获取">Encoder的获取
+</h4><p>Encoder是编码器的接口类，Encoder的创建虽然没有用到Factory，但是它是和上面DataRewinder的创建形成了对比，Encoder它是直接在Registry阶段直接包转成Entry，然后在获取的时候直接从Entry中获取到Encoder。
+Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factory来创建？</p>
 <div class="table-wrapper"><table>
   <thead>
       <tr>
@@ -959,10 +961,8 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>它需要持有数据，因为它需要多次对流进行重置位置。并且每次获取图片都需要创建一个新的DataRewinder，所以它需要通过factory来创建不同的DataRewinder，因为它是跟数据绑定在一块的，因此用到了延迟初始化。</p>
-<ul>
-<li>
-<p>解码(静态代理)</p>
-<ul>
+<h3 id="解码静态代理">解码(静态代理)
+</h3><ul>
 <li>首先了解几个概念，dataClass：数据源类型，比如从网络获取的数据类型是byteBuffer.class类型。resourceClass：解码后的资源类型，比如bitmap的解码，它是BitmapDrawable.class，也就是bitmap的drawable包装。transcodeClass：最终转换类型，比如要展示到imageView上的时候，此时是Drawable.class类型。</li>
 <li>在注册的时候，会按照bucket、dataClass、resourceClass、decoder四个参数组转成Entry，并且该Entry是定义在ResourceDecoderRegistry的私有内部类中。保证高内聚，低耦合。</li>
 </ul>
@@ -1007,9 +1007,6 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>最终将这些Entry装载到ResourceDecoderRegistry的decoders这个map中。比如在前面介绍的BitmapDrawableDecoder，它就是按照bucket= &ldquo;BitmapDrawable&rdquo;,dataClass=&ldquo;ByteBuffer.class&rdquo;,resourceClass=&ldquo;BitmapDrawable.class&rdquo;,decoder=BitmapDrawableDecoder组成的entry来获取的。并且在BitmapDrawableDecoder中使用了代理模式，实际代理到ByteBufferBitmapDecoder，最终会调用到Downsampler中。</p>
-</li>
-<li></li>
-</ul>
 
 </section>
 
@@ -1098,7 +1095,7 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
         
             2020 - 
         
-        2025 xiangcheng
+        2026 xiangcheng
     </section>
     
     <section class="powerby">

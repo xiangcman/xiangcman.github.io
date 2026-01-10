@@ -92,7 +92,8 @@
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;原型模式&#34;&gt;原型模式
-&lt;/h3&gt;&lt;p&gt;在RequestBuilder中的into方法里面每次先clone一份RequestOptions出来：&lt;/p&gt;
+&lt;/h3&gt;&lt;h4 id=&#34;requestbuilder的clone&#34;&gt;RequestBuilder的clone
+&lt;/h4&gt;&lt;p&gt;在RequestBuilder中的into方法里面每次先clone一份RequestOptions出来：&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
 &lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
@@ -218,7 +219,8 @@
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;工厂模式&#34;&gt;工厂模式
-&lt;/h3&gt;&lt;p&gt;glide中使用的工厂模式分为工厂方法模式和抽象工厂模式，首先看下哪些地方用到了工厂方法模式：&lt;/p&gt;
+&lt;/h3&gt;&lt;h4 id=&#34;diskcache的创建&#34;&gt;DiskCache的创建
+&lt;/h4&gt;&lt;p&gt;glide中使用的工厂模式分为工厂方法模式和抽象工厂模式，首先看下哪些地方用到了工厂方法模式：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;DiskCache的创建
 &lt;ul&gt;
@@ -331,12 +333,9 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;LazyDiskCacheProvider从字面意思也能看出来，它是一个延迟获取DiskCache的封装类。如果没有它，那就得在Glide初始化的时候创建DiskCache了。因为DiskCache是一个重量级的类，里面涉及到文件目录的创建等。并且在LazyDiskCacheProvider中保证了线程安全来创建DiskCache。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;RequestOptions的创建
-&lt;ul&gt;
+&lt;h4 id=&#34;requestoptions的创建&#34;&gt;RequestOptions的创建
+&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;它也是通过工厂方法模式来创建的：&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
@@ -406,12 +405,9 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;ul&gt;
-&lt;li&gt;Registry的创建
-&lt;ul&gt;
+&lt;/div&gt;&lt;h4 id=&#34;registry的创建&#34;&gt;Registry的创建
+&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;Registry是通过GlideSupplier接口创建的，也是一个工厂方法模式：&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
@@ -466,12 +462,9 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;也是一个类中内部接口，不过该接口是一个泛型。外界需要调用memorize方法，并传入一个GlideSupplier的实现类，在前面介绍Registry创建过程中，它是在GlideContext的getRegistry方法进行获取的，而默认是调用memorize方法获取到GlideSupplier对象，等到需要Registry时候才会调用GlideSupplier的get方法，显而易见这是一个延迟初始化，并且这里使用了静态代理，将Registry的最终获取交给了外界传入的Registry。同时匿名内部类的GlideSupplier通过双重锁保证了线程安全，这里其实和上面的DiskCache的创建有点异曲同工之妙。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;ModelLoader的创建
-&lt;ul&gt;
+&lt;h4 id=&#34;modelloader的创建&#34;&gt;ModelLoader的创建
+&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;ModelLoader是通过ModelLoaderFactory接口来创建的：&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
@@ -489,12 +482,9 @@
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;在RegistryFactory中先把modelClass、dataClass、ModelLoaderFactory注册到MultiModelLoaderFactory中，组转成一个个的Entry对象，等到要使用ModelLoader时候，通过modelClass和dataClass过滤出ModelLoaderFactory，然后通过ModelLoaderFactory创建出ModelLoader，接着获取到LoadData，最后获取到DataFetcher。
 在MultiModelLoader中装载了ModelLoader的集合，包含了多个子节点，在获取LoadData的时候使用了责任链模式，依次让每个ModelLoader尝试进行获取LoadData，同时这里也体现出了迭代器模式。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;DataRewinder的创建
-&lt;ul&gt;
+&lt;h4 id=&#34;datarewinder的创建&#34;&gt;DataRewinder的创建
+&lt;/h4&gt;&lt;ul&gt;
 &lt;li&gt;DataRewinder是一个数据重置器，它也是通过方法工厂来创建的&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
@@ -529,11 +519,9 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;也是在外部接口中定义内部接口。在前面介绍InputStream转化成File的时候讲过，先把各种DataRewinder.Factory注册到DataRewinderRegistry中，然后通过传入的class类型获取到对应的DataRewinder.Factory，接着通过build方法获取到DataRewinder。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Encoder的获取
-Encoder是编码器的接口类，Encoder的创建虽然没有用到Factory，但是它是和上面DataRewinder的创建形成了对比，Encoder它是直接在Registry阶段直接包转成Entry，然后在获取的时候直接从Entry中获取到Encoder。
-Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factory来创建？&lt;/li&gt;
-&lt;/ul&gt;
+&lt;h4 id=&#34;encoder的获取&#34;&gt;Encoder的获取
+&lt;/h4&gt;&lt;p&gt;Encoder是编码器的接口类，Encoder的创建虽然没有用到Factory，但是它是和上面DataRewinder的创建形成了对比，Encoder它是直接在Registry阶段直接包转成Entry，然后在获取的时候直接从Entry中获取到Encoder。
+Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factory来创建？&lt;/p&gt;
 &lt;table&gt;
   &lt;thead&gt;
       &lt;tr&gt;
@@ -653,10 +641,8 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;它需要持有数据，因为它需要多次对流进行重置位置。并且每次获取图片都需要创建一个新的DataRewinder，所以它需要通过factory来创建不同的DataRewinder，因为它是跟数据绑定在一块的，因此用到了延迟初始化。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;解码(静态代理)&lt;/p&gt;
-&lt;ul&gt;
+&lt;h3 id=&#34;解码静态代理&#34;&gt;解码(静态代理)
+&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;首先了解几个概念，dataClass：数据源类型，比如从网络获取的数据类型是byteBuffer.class类型。resourceClass：解码后的资源类型，比如bitmap的解码，它是BitmapDrawable.class，也就是bitmap的drawable包装。transcodeClass：最终转换类型，比如要展示到imageView上的时候，此时是Drawable.class类型。&lt;/li&gt;
 &lt;li&gt;在注册的时候，会按照bucket、dataClass、resourceClass、decoder四个参数组转成Entry，并且该Entry是定义在ResourceDecoderRegistry的私有内部类中。保证高内聚，低耦合。&lt;/li&gt;
 &lt;/ul&gt;
@@ -701,9 +687,6 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;最终将这些Entry装载到ResourceDecoderRegistry的decoders这个map中。比如在前面介绍的BitmapDrawableDecoder，它就是按照bucket= &amp;ldquo;BitmapDrawable&amp;rdquo;,dataClass=&amp;ldquo;ByteBuffer.class&amp;rdquo;,resourceClass=&amp;ldquo;BitmapDrawable.class&amp;rdquo;,decoder=BitmapDrawableDecoder组成的entry来获取的。并且在BitmapDrawableDecoder中使用了代理模式，实际代理到ByteBufferBitmapDecoder，最终会调用到Downsampler中。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;/li&gt;
-&lt;/ul&gt;
 </description>
         </item>
         <item>
