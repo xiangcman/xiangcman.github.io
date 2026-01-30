@@ -207,7 +207,7 @@ class VideoAudioProcessor:
             cmd = [
                 'python3', '-m', 'demucs.separate',
                 '--two-stems', 'vocals',  # 只分离人声和伴奏（注意：不是 --two-stems=vocals）
-                '--n', model,
+                '-n', model,
                 '--out', output_dir,
                 audio_file  # 音频文件作为位置参数
             ]

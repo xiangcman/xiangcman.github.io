@@ -13,7 +13,227 @@
         <pubDate>Thu, 08 Jan 2026 14:45:24 +0800</pubDate>
         
         <guid>http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/</guid>
-        <description>&lt;p&gt;Perfetto中观察线程的状态变化可以知道线程到底发生了什么，首先来看下Perfetto中线程状态都有哪几种：&lt;/p&gt;
+        <description>&lt;p&gt;Perfetto中观察线程的状态变化可以知道线程（主线程20566）到底发生了什么，首先来看下Perfetto中线程状态调度问题。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;sleep案例一分析：
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/sleep%E7%8A%B6%E6%80%81%E6%A1%88%E4%BE%8B%E4%B8%80.png&#34;
+	width=&#34;1900&#34;
+	height=&#34;264&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/sleep%E7%8A%B6%E6%80%81%E6%A1%88%E4%BE%8B%E4%B8%80_hu_1368a2a8c793d946.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/sleep%E7%8A%B6%E6%80%81%E6%A1%88%E4%BE%8B%E4%B8%80_hu_cd7c1de8bb43e3c1.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;719&#34;
+		data-flex-basis=&#34;1727px&#34;
+	
+&gt;
+可以看到该线程是被20672持有了锁，可以找到20672这个线程在该阶段做了什么。&lt;br&gt;
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E7%BA%BF%E7%A8%8B%E6%8C%81%E6%9C%89%E9%94%81%E9%97%AE%E9%A2%98.png&#34;
+	width=&#34;3348&#34;
+	height=&#34;1308&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E7%BA%BF%E7%A8%8B%E6%8C%81%E6%9C%89%E9%94%81%E9%97%AE%E9%A2%98_hu_31cb5662fadd7fca.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E7%BA%BF%E7%A8%8B%E6%8C%81%E6%9C%89%E9%94%81%E9%97%AE%E9%A2%98_hu_8d0e41697db44381.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;255&#34;
+		data-flex-basis=&#34;614px&#34;
+	
+&gt;
+在20672线程中，也是被其它线程占用了锁，它是被20671线程持有了锁，而20671线程它在等待HandlerThread中的looper创建，所以它也会sleep。workHandler线程(20673)也就是刚HandlerThread中指定的线程名，而workHandler线程(20673)它是被20672持有了锁。
+当线程发生了sleep时候，观察当前sleep线程后面的runnable状态，它表示当前线程即将被cpu调度。在runnable面板中可以看到Woken by (maybe interrupt)是被谁唤起的，可以直接点过去：
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E4%B8%BB%E7%BA%BF%E7%A8%8Brunnable%E7%8A%B6%E6%80%81.png&#34;
+	width=&#34;2912&#34;
+	height=&#34;428&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E4%B8%BB%E7%BA%BF%E7%A8%8Brunnable%E7%8A%B6%E6%80%81_hu_4a8deec8b320c977.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E4%B8%BB%E7%BA%BF%E7%A8%8Brunnable%E7%8A%B6%E6%80%81_hu_f73db3a574c0dadb.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;680&#34;
+		data-flex-basis=&#34;1632px&#34;
+	
+&gt;
+从主线程（20566）的sleep状态的woken by信息中看到它是被workHnadler(20673)所唤醒的。经过上面的分析，最终是由于20671中创建了HandlerThread导致主线程sleep了4ms。
+如果想通过各个状态连接来看的话，可以通过点击主线程20566的sleep状态详细面板中的&lt;code&gt;Critical path lite&lt;/code&gt;查看各个线程的运行连接情况。&lt;/li&gt;
+&lt;li&gt;sleep案例二分析：
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/sleep%E7%8A%B6%E6%80%81%E6%A1%88%E4%BE%8B%E4%BA%8C.png&#34;
+	width=&#34;2312&#34;
+	height=&#34;68&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/sleep%E7%8A%B6%E6%80%81%E6%A1%88%E4%BE%8B%E4%BA%8C_hu_c07451c686071b5f.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/sleep%E7%8A%B6%E6%80%81%E6%A1%88%E4%BE%8B%E4%BA%8C_hu_1f2ea31eb9047d50.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;3400&#34;
+		data-flex-basis=&#34;8160px&#34;
+	
+&gt;
+这里有2ms的sleep状态，点击它后面的runnable状态能看到它是被谁唤醒的：
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E7%BA%BF%E7%A8%8B%E5%9C%A8runnable%E6%97%B6%E8%A2%AB%E5%94%A4%E9%86%92.png&#34;
+	width=&#34;2978&#34;
+	height=&#34;424&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E7%BA%BF%E7%A8%8B%E5%9C%A8runnable%E6%97%B6%E8%A2%AB%E5%94%A4%E9%86%92_hu_211512cb7ad355f6.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E7%BA%BF%E7%A8%8B%E5%9C%A8runnable%E6%97%B6%E8%A2%AB%E5%94%A4%E9%86%92_hu_9f6da87883005408.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;702&#34;
+		data-flex-basis=&#34;1685px&#34;
+	
+&gt;
+可以看到它是被ConnecttivityThr线程唤醒的，点击该线程能知道它在干什么，上面的3ms的sleep是因为线程一直在被HandlerThread给阻塞住了：
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/HandlerThread%E5%88%9B%E5%BB%BAlooper%E5%AF%BC%E8%87%B4%E7%BA%BF%E7%A8%8Bsleep.png&#34;
+	width=&#34;2732&#34;
+	height=&#34;230&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/HandlerThread%E5%88%9B%E5%BB%BAlooper%E5%AF%BC%E8%87%B4%E7%BA%BF%E7%A8%8Bsleep_hu_32f792026b457460.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/HandlerThread%E5%88%9B%E5%BB%BAlooper%E5%AF%BC%E8%87%B4%E7%BA%BF%E7%A8%8Bsleep_hu_85581a7c2ea5dba2.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;1187&#34;
+		data-flex-basis=&#34;2850px&#34;
+	
+&gt;
+在这段时间内，上层线程等待ConnectivityThread(HandlerThread)的Looper创建。所以在上面线程中sleep了2ms。&lt;/li&gt;
+&lt;li&gt;sleep案例三分析：
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/binder%E8%B0%83%E7%94%A8%E5%AF%BC%E8%87%B4%E7%BA%BF%E7%A8%8Bsleep.png&#34;
+	width=&#34;2634&#34;
+	height=&#34;442&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/binder%E8%B0%83%E7%94%A8%E5%AF%BC%E8%87%B4%E7%BA%BF%E7%A8%8Bsleep_hu_98eaa39e78144b51.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/binder%E8%B0%83%E7%94%A8%E5%AF%BC%E8%87%B4%E7%BA%BF%E7%A8%8Bsleep_hu_6361b842cf67d7c1.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;595&#34;
+		data-flex-basis=&#34;1430px&#34;
+	
+&gt;
+这个线程在runnable状态的时候，是system_server进程中的binder线程唤醒的线程。点到对应的线程确实发现在binder reply调用：
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%9A%84binder_reply%E8%B0%83%E7%94%A8.png&#34;
+	width=&#34;1222&#34;
+	height=&#34;164&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%9A%84binder_reply%E8%B0%83%E7%94%A8_hu_b09b6409973772b7.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%9A%84binder_reply%E8%B0%83%E7%94%A8_hu_2c602cdcefe13644.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;745&#34;
+		data-flex-basis=&#34;1788px&#34;
+	
+&gt;
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%9A%84binder_reply%E8%AF%A6%E7%BB%86%E9%9D%A2%E6%9D%BF.png&#34;
+	width=&#34;3006&#34;
+	height=&#34;814&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%9A%84binder_reply%E8%AF%A6%E7%BB%86%E9%9D%A2%E6%9D%BF_hu_f3f28b8270013aac.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%9A%84binder_reply%E8%AF%A6%E7%BB%86%E9%9D%A2%E6%9D%BF_hu_b2592b958df9451e.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;369&#34;
+		data-flex-basis=&#34;886px&#34;
+	
+&gt;
+通过详细面板中的binder transaction能找到对应的client调用：
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84binder_transaction%E8%B0%83%E7%94%A8.png&#34;
+	width=&#34;1364&#34;
+	height=&#34;182&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84binder_transaction%E8%B0%83%E7%94%A8_hu_33dddc8e65d3e5ba.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84binder_transaction%E8%B0%83%E7%94%A8_hu_f024a06a3fece210.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;749&#34;
+		data-flex-basis=&#34;1798px&#34;
+	
+&gt;
+通过btrace的slice也能观察到当前的transaction发生了什么：
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/btrace%E4%B8%AD%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84binder_transaction%E8%B0%83%E7%94%A8.png&#34;
+	width=&#34;2482&#34;
+	height=&#34;234&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/btrace%E4%B8%AD%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84binder_transaction%E8%B0%83%E7%94%A8_hu_636ccb172b45a653.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/btrace%E4%B8%AD%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84binder_transaction%E8%B0%83%E7%94%A8_hu_293adea2fd2dbaa3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;1060&#34;
+		data-flex-basis=&#34;2545px&#34;
+	
+&gt;
+它是客户端网络监听的binder调用。&lt;/li&gt;
+&lt;li&gt;sleep案例四分析：
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/CountDownLatch%E7%9A%84await%E6%96%B9%E6%B3%95%E5%AF%BC%E8%87%B4%E7%BA%BF%E7%A8%8Bsleep.png&#34;
+	width=&#34;1408&#34;
+	height=&#34;192&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/CountDownLatch%E7%9A%84await%E6%96%B9%E6%B3%95%E5%AF%BC%E8%87%B4%E7%BA%BF%E7%A8%8Bsleep_hu_37211915534ffc6f.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/CountDownLatch%E7%9A%84await%E6%96%B9%E6%B3%95%E5%AF%BC%E8%87%B4%E7%BA%BF%E7%A8%8Bsleep_hu_c9cb554318895e7d.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;733&#34;
+		data-flex-basis=&#34;1760px&#34;
+	
+&gt;
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E7%BA%BF%E7%A8%8B%E5%A4%A7%E6%AE%B5%E7%9A%84sleep%E7%8A%B6%E6%80%81.png&#34;
+	width=&#34;1430&#34;
+	height=&#34;68&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E7%BA%BF%E7%A8%8B%E5%A4%A7%E6%AE%B5%E7%9A%84sleep%E7%8A%B6%E6%80%81_hu_c2c3e22a985e2732.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/%E7%BA%BF%E7%A8%8B%E5%A4%A7%E6%AE%B5%E7%9A%84sleep%E7%8A%B6%E6%80%81_hu_2a8fee8a13d8c93e.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;2102&#34;
+		data-flex-basis=&#34;5047px&#34;
+	
+&gt;
+此处可以看到线程出现了大段的sleep了，是由于线程被CountDownLatch的await方法阻塞住了，点击线程的sleep状态后面的runnable看下是谁唤醒的，然后通过critical path lite能找到线程调用的顺序。&lt;/li&gt;
+&lt;li&gt;Uninterruptible Sleep (non-IO)状态分析：
+不可中断睡眠，但不是由I/O操作引起的。不可中断的意思是不可被信号（SIGKILL除外）唤醒，必须等待内核操作完成，保证内核数据一致性。常见在我们pthread_create方法会进入该状态：
+&lt;img src=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/pthread_create%E9%98%B6%E6%AE%B5%E7%BA%BF%E7%A8%8B%E9%98%BB%E5%A1%9E%E4%BD%8F.png&#34;
+	width=&#34;998&#34;
+	height=&#34;280&#34;
+	srcset=&#34;http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/pthread_create%E9%98%B6%E6%AE%B5%E7%BA%BF%E7%A8%8B%E9%98%BB%E5%A1%9E%E4%BD%8F_hu_86f133bb770dbf0f.png 480w, http://xiangcman.xyz/p/perfetto%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%B7%9F%E8%B8%AA/pthread_create%E9%98%B6%E6%AE%B5%E7%BA%BF%E7%A8%8B%E9%98%BB%E5%A1%9E%E4%BD%8F_hu_e04481776d558bd2.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;356&#34;
+		data-flex-basis=&#34;855px&#34;
+	
+&gt; &lt;p&gt;
+为什么pthread_create会进入该状态？&lt;p&gt;
+&lt;img src= &#34;pthread_create流程.png&#34; width = &#34;30%&#34;&gt;&lt;p&gt;
+可以看出来当调用pthread_create的线程会进入到内核态的阻塞。等待调度器唤醒新线程。&lt;/li&gt;
+&lt;/ul&gt;
 </description>
         </item>
         

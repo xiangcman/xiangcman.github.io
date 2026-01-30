@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="yt-dlp 的替代工具 yt-dlp 是目前最流行的视频下载工具之一，但也有一些类似的替代工具，各有特点：\n1. yt-dlp（推荐） 类型: 命令行工具 语言: Python 特点: yt-dl 的活跃分支，功能最强大 支持 1000+ 个网站 活跃维护，更新频繁 支持下载视频、音频、字幕、缩略图等 支持 Cookie 认证（下载会员视频） 支持多线程下载 安装: pip install yt-dlp 官网: https://github.com/yt-dlp/yt-dlp 优点: 功能最全面，社区活跃 缺点: 需要 Python 环境 2. youtube-dl 类型: 命令行工具 语言: Python 特点: yt-dlp 的前身 支持多个视频网站 功能相对基础 安装: pip install youtube-dl 官网: https://github.com/ytdl-org/youtube-dl 优点: 经典工具，稳定 缺点: 更新较慢，功能不如 yt-dlp 3. gallery-dl 类型: 命令行工具 语言: Python 特点: 专注于图片和视频下载 支持 Instagram、Twitter、Pinterest 等 支持批量下载 安装: pip install gallery-dl 官网: https://github.com/mikf/gallery-dl 优点: 适合图片和社交媒体内容 缺点: 主要面向图片，视频支持较少 4. 4K Video Downloader 类型: GUI 应用程序 平台: Windows, macOS, Linux 特点: 图形界面，易于使用 支持 YouTube、Vimeo 等 支持下载 4K、8K 视频 支持下载播放列表 官网: https://www.4kdownload.com/ 优点: 界面友好，无需命令行 缺点: 免费版有限制，部分功能需付费 5. JDownloader 类型: GUI 应用程序 平台: Windows, macOS, Linux 特点: 功能强大的下载管理器 支持多个视频网站 支持自动解压、重命名等 支持插件扩展 官网: https://jdownloader.org/ 优点: 功能全面，支持批量下载 缺点: 界面较复杂，需要学习 6. ytmdl (YouTube Music Downloader) 类型: 命令行工具 语言: Python 特点: 专注于音频下载 支持 YouTube、SoundCloud 等 自动添加元数据（封面、艺术家等） 安装: pip install ytmdl 官网: https://github.com/deepjyoti30/ytmdl 优点: 音频下载体验好 缺点: 主要面向音频，视频功能有限 7. NewPipe (Android) 类型: Android 应用 平台: Android 特点: 开源 YouTube 客户端 支持下载视频和音频 无广告，隐私友好 官网: https://newpipe.net/ 优点: Android 上最好的选择之一 缺点: 仅支持 Android 8. yt-dlp-webui 类型: Web 界面 语言: Python 特点: yt-dlp 的 Web 界面包装 通过浏览器使用 支持所有 yt-dlp 功能 安装: pip install yt-dlp-webui 官网: https://github.com/wanghaisheng/yt-dlp-webui 优点: 图形界面，易于使用 缺点: 需要运行服务器 9. Streamlink 类型: 命令行工具 语言: Python 特点: 专注于直播流下载 支持 Twitch、YouTube Live 等 可以将直播流保存为文件 安装: pip install streamlink 官网: https://streamlink.github.io/ 优点: 直播流下载专业工具 缺点: 主要面向直播，点播视频支持有限 10. annie 类型: 命令行工具 语言: Go 特点: 轻量级，单文件可执行 支持多个视频网站 无需 Python 环境 安装: 下载二进制文件 官网: https://github.com/iawia002/annie 优点: 轻量，跨平台 缺点: 功能相对简单，更新较慢 工具对比表 工具 类型 平台 易用性 功能 更新频率 推荐度 yt-dlp 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ youtube-dl 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐ ⭐⭐⭐ gallery-dl 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐ 4K Video Downloader GUI 全平台 ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐⭐ JDownloader GUI 全平台 ⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐⭐ ytmdl 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐ NewPipe 应用 Android ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ yt-dlp-webui Web 全平台 ⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐ Streamlink 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐ annie 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐ ⭐⭐ ⭐⭐⭐ 使用场景推荐 场景1: 命令行用户，需要强大功能 推荐: yt-dlp\n">
+<title>视频下载工具对比</title>
+
+<link rel='canonical' href='http://localhost:1313/p/%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD%E5%B7%A5%E5%85%B7%E5%AF%B9%E6%AF%94/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="视频下载工具对比">
+<meta property='og:description' content="yt-dlp 的替代工具 yt-dlp 是目前最流行的视频下载工具之一，但也有一些类似的替代工具，各有特点：\n1. yt-dlp（推荐） 类型: 命令行工具 语言: Python 特点: yt-dl 的活跃分支，功能最强大 支持 1000+ 个网站 活跃维护，更新频繁 支持下载视频、音频、字幕、缩略图等 支持 Cookie 认证（下载会员视频） 支持多线程下载 安装: pip install yt-dlp 官网: https://github.com/yt-dlp/yt-dlp 优点: 功能最全面，社区活跃 缺点: 需要 Python 环境 2. youtube-dl 类型: 命令行工具 语言: Python 特点: yt-dlp 的前身 支持多个视频网站 功能相对基础 安装: pip install youtube-dl 官网: https://github.com/ytdl-org/youtube-dl 优点: 经典工具，稳定 缺点: 更新较慢，功能不如 yt-dlp 3. gallery-dl 类型: 命令行工具 语言: Python 特点: 专注于图片和视频下载 支持 Instagram、Twitter、Pinterest 等 支持批量下载 安装: pip install gallery-dl 官网: https://github.com/mikf/gallery-dl 优点: 适合图片和社交媒体内容 缺点: 主要面向图片，视频支持较少 4. 4K Video Downloader 类型: GUI 应用程序 平台: Windows, macOS, Linux 特点: 图形界面，易于使用 支持 YouTube、Vimeo 等 支持下载 4K、8K 视频 支持下载播放列表 官网: https://www.4kdownload.com/ 优点: 界面友好，无需命令行 缺点: 免费版有限制，部分功能需付费 5. JDownloader 类型: GUI 应用程序 平台: Windows, macOS, Linux 特点: 功能强大的下载管理器 支持多个视频网站 支持自动解压、重命名等 支持插件扩展 官网: https://jdownloader.org/ 优点: 功能全面，支持批量下载 缺点: 界面较复杂，需要学习 6. ytmdl (YouTube Music Downloader) 类型: 命令行工具 语言: Python 特点: 专注于音频下载 支持 YouTube、SoundCloud 等 自动添加元数据（封面、艺术家等） 安装: pip install ytmdl 官网: https://github.com/deepjyoti30/ytmdl 优点: 音频下载体验好 缺点: 主要面向音频，视频功能有限 7. NewPipe (Android) 类型: Android 应用 平台: Android 特点: 开源 YouTube 客户端 支持下载视频和音频 无广告，隐私友好 官网: https://newpipe.net/ 优点: Android 上最好的选择之一 缺点: 仅支持 Android 8. yt-dlp-webui 类型: Web 界面 语言: Python 特点: yt-dlp 的 Web 界面包装 通过浏览器使用 支持所有 yt-dlp 功能 安装: pip install yt-dlp-webui 官网: https://github.com/wanghaisheng/yt-dlp-webui 优点: 图形界面，易于使用 缺点: 需要运行服务器 9. Streamlink 类型: 命令行工具 语言: Python 特点: 专注于直播流下载 支持 Twitch、YouTube Live 等 可以将直播流保存为文件 安装: pip install streamlink 官网: https://streamlink.github.io/ 优点: 直播流下载专业工具 缺点: 主要面向直播，点播视频支持有限 10. annie 类型: 命令行工具 语言: Go 特点: 轻量级，单文件可执行 支持多个视频网站 无需 Python 环境 安装: 下载二进制文件 官网: https://github.com/iawia002/annie 优点: 轻量，跨平台 缺点: 功能相对简单，更新较慢 工具对比表 工具 类型 平台 易用性 功能 更新频率 推荐度 yt-dlp 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ youtube-dl 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐ ⭐⭐⭐ gallery-dl 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐ 4K Video Downloader GUI 全平台 ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐⭐ JDownloader GUI 全平台 ⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐⭐ ytmdl 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐ NewPipe 应用 Android ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ yt-dlp-webui Web 全平台 ⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐ Streamlink 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐ annie 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐ ⭐⭐ ⭐⭐⭐ 使用场景推荐 场景1: 命令行用户，需要强大功能 推荐: yt-dlp\n">
+<meta property='og:url' content='http://localhost:1313/p/%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD%E5%B7%A5%E5%85%B7%E5%AF%B9%E6%AF%94/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-01-08T15:00:00&#43;08:00'/><meta property='article:modified_time' content='2025-01-08T15:00:00&#43;08:00'/>
+<meta name="twitter:title" content="视频下载工具对比">
+<meta name="twitter:description" content="yt-dlp 的替代工具 yt-dlp 是目前最流行的视频下载工具之一，但也有一些类似的替代工具，各有特点：\n1. yt-dlp（推荐） 类型: 命令行工具 语言: Python 特点: yt-dl 的活跃分支，功能最强大 支持 1000+ 个网站 活跃维护，更新频繁 支持下载视频、音频、字幕、缩略图等 支持 Cookie 认证（下载会员视频） 支持多线程下载 安装: pip install yt-dlp 官网: https://github.com/yt-dlp/yt-dlp 优点: 功能最全面，社区活跃 缺点: 需要 Python 环境 2. youtube-dl 类型: 命令行工具 语言: Python 特点: yt-dlp 的前身 支持多个视频网站 功能相对基础 安装: pip install youtube-dl 官网: https://github.com/ytdl-org/youtube-dl 优点: 经典工具，稳定 缺点: 更新较慢，功能不如 yt-dlp 3. gallery-dl 类型: 命令行工具 语言: Python 特点: 专注于图片和视频下载 支持 Instagram、Twitter、Pinterest 等 支持批量下载 安装: pip install gallery-dl 官网: https://github.com/mikf/gallery-dl 优点: 适合图片和社交媒体内容 缺点: 主要面向图片，视频支持较少 4. 4K Video Downloader 类型: GUI 应用程序 平台: Windows, macOS, Linux 特点: 图形界面，易于使用 支持 YouTube、Vimeo 等 支持下载 4K、8K 视频 支持下载播放列表 官网: https://www.4kdownload.com/ 优点: 界面友好，无需命令行 缺点: 免费版有限制，部分功能需付费 5. JDownloader 类型: GUI 应用程序 平台: Windows, macOS, Linux 特点: 功能强大的下载管理器 支持多个视频网站 支持自动解压、重命名等 支持插件扩展 官网: https://jdownloader.org/ 优点: 功能全面，支持批量下载 缺点: 界面较复杂，需要学习 6. ytmdl (YouTube Music Downloader) 类型: 命令行工具 语言: Python 特点: 专注于音频下载 支持 YouTube、SoundCloud 等 自动添加元数据（封面、艺术家等） 安装: pip install ytmdl 官网: https://github.com/deepjyoti30/ytmdl 优点: 音频下载体验好 缺点: 主要面向音频，视频功能有限 7. NewPipe (Android) 类型: Android 应用 平台: Android 特点: 开源 YouTube 客户端 支持下载视频和音频 无广告，隐私友好 官网: https://newpipe.net/ 优点: Android 上最好的选择之一 缺点: 仅支持 Android 8. yt-dlp-webui 类型: Web 界面 语言: Python 特点: yt-dlp 的 Web 界面包装 通过浏览器使用 支持所有 yt-dlp 功能 安装: pip install yt-dlp-webui 官网: https://github.com/wanghaisheng/yt-dlp-webui 优点: 图形界面，易于使用 缺点: 需要运行服务器 9. Streamlink 类型: 命令行工具 语言: Python 特点: 专注于直播流下载 支持 Twitch、YouTube Live 等 可以将直播流保存为文件 安装: pip install streamlink 官网: https://streamlink.github.io/ 优点: 直播流下载专业工具 缺点: 主要面向直播，点播视频支持有限 10. annie 类型: 命令行工具 语言: Go 特点: 轻量级，单文件可执行 支持多个视频网站 无需 Python 环境 安装: 下载二进制文件 官网: https://github.com/iawia002/annie 优点: 轻量，跨平台 缺点: 功能相对简单，更新较慢 工具对比表 工具 类型 平台 易用性 功能 更新频率 推荐度 yt-dlp 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ youtube-dl 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐ ⭐⭐⭐ gallery-dl 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐ 4K Video Downloader GUI 全平台 ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐⭐ JDownloader GUI 全平台 ⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐⭐ ytmdl 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐ NewPipe 应用 Android ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ yt-dlp-webui Web 全平台 ⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐⭐ ⭐⭐⭐⭐ Streamlink 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐ ⭐⭐⭐⭐ ⭐⭐⭐ annie 命令行 全平台 ⭐⭐⭐ ⭐⭐⭐ ⭐⭐ ⭐⭐⭐ 使用场景推荐 场景1: 命令行用户，需要强大功能 推荐: yt-dlp\n">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu_c5ce2387cd5c94f8.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/xiangcman'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>分类</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#yt-dlp-的替代工具">yt-dlp 的替代工具</a>
+      <ol>
+        <li><a href="#1-yt-dlp推荐">1. <strong>yt-dlp</strong>（推荐）</a></li>
+        <li><a href="#2-youtube-dl">2. <strong>youtube-dl</strong></a></li>
+        <li><a href="#3-gallery-dl">3. <strong>gallery-dl</strong></a></li>
+        <li><a href="#4-4k-video-downloader">4. <strong>4K Video Downloader</strong></a></li>
+        <li><a href="#5-jdownloader">5. <strong>JDownloader</strong></a></li>
+        <li><a href="#6-ytmdl-youtube-music-downloader">6. <strong>ytmdl</strong> (YouTube Music Downloader)</a></li>
+        <li><a href="#7-newpipe-android">7. <strong>NewPipe</strong> (Android)</a></li>
+        <li><a href="#8-yt-dlp-webui">8. <strong>yt-dlp-webui</strong></a></li>
+        <li><a href="#9-streamlink">9. <strong>Streamlink</strong></a></li>
+        <li><a href="#10-annie">10. <strong>annie</strong></a></li>
+      </ol>
+    </li>
+    <li><a href="#工具对比表">工具对比表</a></li>
+    <li><a href="#使用场景推荐">使用场景推荐</a>
+      <ol>
+        <li><a href="#场景1-命令行用户需要强大功能">场景1: 命令行用户，需要强大功能</a></li>
+        <li><a href="#场景2-图形界面用户不想用命令行">场景2: 图形界面用户，不想用命令行</a></li>
+        <li><a href="#场景3-android-用户">场景3: Android 用户</a></li>
+        <li><a href="#场景4-批量下载需要管理功能">场景4: 批量下载，需要管理功能</a></li>
+        <li><a href="#场景5-只需要下载音频">场景5: 只需要下载音频</a></li>
+        <li><a href="#场景6-下载直播流">场景6: 下载直播流</a></li>
+        <li><a href="#场景7-轻量级单文件工具">场景7: 轻量级，单文件工具</a></li>
+      </ol>
+    </li>
+    <li><a href="#yt-dlp-使用示例">yt-dlp 使用示例</a>
+      <ol>
+        <li><a href="#基本下载">基本下载</a></li>
+        <li><a href="#高级用法">高级用法</a></li>
+      </ol>
+    </li>
+    <li><a href="#总结">总结</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E5%B7%A5%E5%85%B7/" >
+                工具
+            </a>
+        
+            <a href="/categories/%E8%A7%86%E9%A2%91/" >
+                视频
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD%E5%B7%A5%E5%85%B7%E5%AF%B9%E6%AF%94/">视频下载工具对比</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2025-01-08</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 3 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="yt-dlp-的替代工具">yt-dlp 的替代工具
+</h2><p>yt-dlp 是目前最流行的视频下载工具之一，但也有一些类似的替代工具，各有特点：</p>
+<h3 id="1-yt-dlp推荐">1. <strong>yt-dlp</strong>（推荐）
+</h3><ul>
+<li><strong>类型</strong>: 命令行工具</li>
+<li><strong>语言</strong>: Python</li>
+<li><strong>特点</strong>:
+<ul>
+<li>yt-dl 的活跃分支，功能最强大</li>
+<li>支持 1000+ 个网站</li>
+<li>活跃维护，更新频繁</li>
+<li>支持下载视频、音频、字幕、缩略图等</li>
+<li>支持 Cookie 认证（下载会员视频）</li>
+<li>支持多线程下载</li>
+</ul>
+</li>
+<li><strong>安装</strong>: <code>pip install yt-dlp</code></li>
+<li><strong>官网</strong>: <a class="link" href="https://github.com/yt-dlp/yt-dlp"  target="_blank" rel="noopener"
+    >https://github.com/yt-dlp/yt-dlp</a></li>
+<li><strong>优点</strong>: 功能最全面，社区活跃</li>
+<li><strong>缺点</strong>: 需要 Python 环境</li>
+</ul>
+<h3 id="2-youtube-dl">2. <strong>youtube-dl</strong>
+</h3><ul>
+<li><strong>类型</strong>: 命令行工具</li>
+<li><strong>语言</strong>: Python</li>
+<li><strong>特点</strong>:
+<ul>
+<li>yt-dlp 的前身</li>
+<li>支持多个视频网站</li>
+<li>功能相对基础</li>
+</ul>
+</li>
+<li><strong>安装</strong>: <code>pip install youtube-dl</code></li>
+<li><strong>官网</strong>: <a class="link" href="https://github.com/ytdl-org/youtube-dl"  target="_blank" rel="noopener"
+    >https://github.com/ytdl-org/youtube-dl</a></li>
+<li><strong>优点</strong>: 经典工具，稳定</li>
+<li><strong>缺点</strong>: 更新较慢，功能不如 yt-dlp</li>
+</ul>
+<h3 id="3-gallery-dl">3. <strong>gallery-dl</strong>
+</h3><ul>
+<li><strong>类型</strong>: 命令行工具</li>
+<li><strong>语言</strong>: Python</li>
+<li><strong>特点</strong>:
+<ul>
+<li>专注于图片和视频下载</li>
+<li>支持 Instagram、Twitter、Pinterest 等</li>
+<li>支持批量下载</li>
+</ul>
+</li>
+<li><strong>安装</strong>: <code>pip install gallery-dl</code></li>
+<li><strong>官网</strong>: <a class="link" href="https://github.com/mikf/gallery-dl"  target="_blank" rel="noopener"
+    >https://github.com/mikf/gallery-dl</a></li>
+<li><strong>优点</strong>: 适合图片和社交媒体内容</li>
+<li><strong>缺点</strong>: 主要面向图片，视频支持较少</li>
+</ul>
+<h3 id="4-4k-video-downloader">4. <strong>4K Video Downloader</strong>
+</h3><ul>
+<li><strong>类型</strong>: GUI 应用程序</li>
+<li><strong>平台</strong>: Windows, macOS, Linux</li>
+<li><strong>特点</strong>:
+<ul>
+<li>图形界面，易于使用</li>
+<li>支持 YouTube、Vimeo 等</li>
+<li>支持下载 4K、8K 视频</li>
+<li>支持下载播放列表</li>
+</ul>
+</li>
+<li><strong>官网</strong>: <a class="link" href="https://www.4kdownload.com/"  target="_blank" rel="noopener"
+    >https://www.4kdownload.com/</a></li>
+<li><strong>优点</strong>: 界面友好，无需命令行</li>
+<li><strong>缺点</strong>: 免费版有限制，部分功能需付费</li>
+</ul>
+<h3 id="5-jdownloader">5. <strong>JDownloader</strong>
+</h3><ul>
+<li><strong>类型</strong>: GUI 应用程序</li>
+<li><strong>平台</strong>: Windows, macOS, Linux</li>
+<li><strong>特点</strong>:
+<ul>
+<li>功能强大的下载管理器</li>
+<li>支持多个视频网站</li>
+<li>支持自动解压、重命名等</li>
+<li>支持插件扩展</li>
+</ul>
+</li>
+<li><strong>官网</strong>: <a class="link" href="https://jdownloader.org/"  target="_blank" rel="noopener"
+    >https://jdownloader.org/</a></li>
+<li><strong>优点</strong>: 功能全面，支持批量下载</li>
+<li><strong>缺点</strong>: 界面较复杂，需要学习</li>
+</ul>
+<h3 id="6-ytmdl-youtube-music-downloader">6. <strong>ytmdl</strong> (YouTube Music Downloader)
+</h3><ul>
+<li><strong>类型</strong>: 命令行工具</li>
+<li><strong>语言</strong>: Python</li>
+<li><strong>特点</strong>:
+<ul>
+<li>专注于音频下载</li>
+<li>支持 YouTube、SoundCloud 等</li>
+<li>自动添加元数据（封面、艺术家等）</li>
+</ul>
+</li>
+<li><strong>安装</strong>: <code>pip install ytmdl</code></li>
+<li><strong>官网</strong>: <a class="link" href="https://github.com/deepjyoti30/ytmdl"  target="_blank" rel="noopener"
+    >https://github.com/deepjyoti30/ytmdl</a></li>
+<li><strong>优点</strong>: 音频下载体验好</li>
+<li><strong>缺点</strong>: 主要面向音频，视频功能有限</li>
+</ul>
+<h3 id="7-newpipe-android">7. <strong>NewPipe</strong> (Android)
+</h3><ul>
+<li><strong>类型</strong>: Android 应用</li>
+<li><strong>平台</strong>: Android</li>
+<li><strong>特点</strong>:
+<ul>
+<li>开源 YouTube 客户端</li>
+<li>支持下载视频和音频</li>
+<li>无广告，隐私友好</li>
+</ul>
+</li>
+<li><strong>官网</strong>: <a class="link" href="https://newpipe.net/"  target="_blank" rel="noopener"
+    >https://newpipe.net/</a></li>
+<li><strong>优点</strong>: Android 上最好的选择之一</li>
+<li><strong>缺点</strong>: 仅支持 Android</li>
+</ul>
+<h3 id="8-yt-dlp-webui">8. <strong>yt-dlp-webui</strong>
+</h3><ul>
+<li><strong>类型</strong>: Web 界面</li>
+<li><strong>语言</strong>: Python</li>
+<li><strong>特点</strong>:
+<ul>
+<li>yt-dlp 的 Web 界面包装</li>
+<li>通过浏览器使用</li>
+<li>支持所有 yt-dlp 功能</li>
+</ul>
+</li>
+<li><strong>安装</strong>: <code>pip install yt-dlp-webui</code></li>
+<li><strong>官网</strong>: <a class="link" href="https://github.com/wanghaisheng/yt-dlp-webui"  target="_blank" rel="noopener"
+    >https://github.com/wanghaisheng/yt-dlp-webui</a></li>
+<li><strong>优点</strong>: 图形界面，易于使用</li>
+<li><strong>缺点</strong>: 需要运行服务器</li>
+</ul>
+<h3 id="9-streamlink">9. <strong>Streamlink</strong>
+</h3><ul>
+<li><strong>类型</strong>: 命令行工具</li>
+<li><strong>语言</strong>: Python</li>
+<li><strong>特点</strong>:
+<ul>
+<li>专注于直播流下载</li>
+<li>支持 Twitch、YouTube Live 等</li>
+<li>可以将直播流保存为文件</li>
+</ul>
+</li>
+<li><strong>安装</strong>: <code>pip install streamlink</code></li>
+<li><strong>官网</strong>: <a class="link" href="https://streamlink.github.io/"  target="_blank" rel="noopener"
+    >https://streamlink.github.io/</a></li>
+<li><strong>优点</strong>: 直播流下载专业工具</li>
+<li><strong>缺点</strong>: 主要面向直播，点播视频支持有限</li>
+</ul>
+<h3 id="10-annie">10. <strong>annie</strong>
+</h3><ul>
+<li><strong>类型</strong>: 命令行工具</li>
+<li><strong>语言</strong>: Go</li>
+<li><strong>特点</strong>:
+<ul>
+<li>轻量级，单文件可执行</li>
+<li>支持多个视频网站</li>
+<li>无需 Python 环境</li>
+</ul>
+</li>
+<li><strong>安装</strong>: 下载二进制文件</li>
+<li><strong>官网</strong>: <a class="link" href="https://github.com/iawia002/annie"  target="_blank" rel="noopener"
+    >https://github.com/iawia002/annie</a></li>
+<li><strong>优点</strong>: 轻量，跨平台</li>
+<li><strong>缺点</strong>: 功能相对简单，更新较慢</li>
+</ul>
+<h2 id="工具对比表">工具对比表
+</h2><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>工具</th>
+          <th>类型</th>
+          <th>平台</th>
+          <th>易用性</th>
+          <th>功能</th>
+          <th>更新频率</th>
+          <th>推荐度</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>yt-dlp</td>
+          <td>命令行</td>
+          <td>全平台</td>
+          <td>⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐⭐</td>
+      </tr>
+      <tr>
+          <td>youtube-dl</td>
+          <td>命令行</td>
+          <td>全平台</td>
+          <td>⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⭐⭐</td>
+          <td>⭐⭐⭐</td>
+      </tr>
+      <tr>
+          <td>gallery-dl</td>
+          <td>命令行</td>
+          <td>全平台</td>
+          <td>⭐⭐⭐</td>
+          <td>⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐</td>
+      </tr>
+      <tr>
+          <td>4K Video Downloader</td>
+          <td>GUI</td>
+          <td>全平台</td>
+          <td>⭐⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐</td>
+      </tr>
+      <tr>
+          <td>JDownloader</td>
+          <td>GUI</td>
+          <td>全平台</td>
+          <td>⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐</td>
+      </tr>
+      <tr>
+          <td>ytmdl</td>
+          <td>命令行</td>
+          <td>全平台</td>
+          <td>⭐⭐⭐</td>
+          <td>⭐⭐⭐</td>
+          <td>⭐⭐⭐</td>
+          <td>⭐⭐⭐</td>
+      </tr>
+      <tr>
+          <td>NewPipe</td>
+          <td>应用</td>
+          <td>Android</td>
+          <td>⭐⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐⭐</td>
+      </tr>
+      <tr>
+          <td>yt-dlp-webui</td>
+          <td>Web</td>
+          <td>全平台</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐</td>
+      </tr>
+      <tr>
+          <td>Streamlink</td>
+          <td>命令行</td>
+          <td>全平台</td>
+          <td>⭐⭐⭐</td>
+          <td>⭐⭐⭐</td>
+          <td>⭐⭐⭐⭐</td>
+          <td>⭐⭐⭐</td>
+      </tr>
+      <tr>
+          <td>annie</td>
+          <td>命令行</td>
+          <td>全平台</td>
+          <td>⭐⭐⭐</td>
+          <td>⭐⭐⭐</td>
+          <td>⭐⭐</td>
+          <td>⭐⭐⭐</td>
+      </tr>
+  </tbody>
+</table></div>
+<h2 id="使用场景推荐">使用场景推荐
+</h2><h3 id="场景1-命令行用户需要强大功能">场景1: 命令行用户，需要强大功能
+</h3><p><strong>推荐</strong>: yt-dlp</p>
+<ul>
+<li>功能最全面</li>
+<li>支持最多网站</li>
+<li>更新最频繁</li>
+</ul>
+<h3 id="场景2-图形界面用户不想用命令行">场景2: 图形界面用户，不想用命令行
+</h3><p><strong>推荐</strong>: 4K Video Downloader 或 yt-dlp-webui</p>
+<ul>
+<li>界面友好</li>
+<li>易于使用</li>
+</ul>
+<h3 id="场景3-android-用户">场景3: Android 用户
+</h3><p><strong>推荐</strong>: NewPipe</p>
+<ul>
+<li>开源免费</li>
+<li>无广告</li>
+<li>体验好</li>
+</ul>
+<h3 id="场景4-批量下载需要管理功能">场景4: 批量下载，需要管理功能
+</h3><p><strong>推荐</strong>: JDownloader</p>
+<ul>
+<li>下载管理器</li>
+<li>支持批量操作</li>
+<li>功能全面</li>
+</ul>
+<h3 id="场景5-只需要下载音频">场景5: 只需要下载音频
+</h3><p><strong>推荐</strong>: ytmdl</p>
+<ul>
+<li>专注于音频</li>
+<li>自动添加元数据</li>
+</ul>
+<h3 id="场景6-下载直播流">场景6: 下载直播流
+</h3><p><strong>推荐</strong>: Streamlink</p>
+<ul>
+<li>专业直播流工具</li>
+<li>支持多个直播平台</li>
+</ul>
+<h3 id="场景7-轻量级单文件工具">场景7: 轻量级，单文件工具
+</h3><p><strong>推荐</strong>: annie</p>
+<ul>
+<li>无需安装依赖</li>
+<li>单文件可执行</li>
+</ul>
+<h2 id="yt-dlp-使用示例">yt-dlp 使用示例
+</h2><h3 id="基本下载">基本下载
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 下载视频</span>
+</span></span><span class="line"><span class="cl">yt-dlp <span class="s2">&#34;https://www.youtube.com/watch?v=VIDEO_ID&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 下载音频</span>
+</span></span><span class="line"><span class="cl">yt-dlp -x --audio-format mp3 <span class="s2">&#34;https://www.youtube.com/watch?v=VIDEO_ID&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 下载播放列表</span>
+</span></span><span class="line"><span class="cl">yt-dlp <span class="s2">&#34;https://www.youtube.com/playlist?list=PLAYLIST_ID&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="高级用法">高级用法
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">yt_dlp</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">url</span> <span class="o">=</span> <span class="s2">&#34;https://www.youtube.com/watch?v=VIDEO_ID&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="n">ydl_opts</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s1">&#39;format&#39;</span><span class="p">:</span> <span class="s1">&#39;bestvideo+bestaudio/best&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s1">&#39;outtmpl&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%(title)s</span><span class="s1">.</span><span class="si">%(ext)s</span><span class="s1">&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s1">&#39;cookiefile&#39;</span><span class="p">:</span> <span class="s1">&#39;cookies.txt&#39;</span><span class="p">,</span>  <span class="c1"># 用于下载会员视频</span>
+</span></span><span class="line"><span class="cl">    <span class="s1">&#39;concurrent_fragment_downloads&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>  <span class="c1"># 多线程下载</span>
+</span></span><span class="line"><span class="cl">    <span class="s1">&#39;merge_output_format&#39;</span><span class="p">:</span> <span class="s1">&#39;mp4&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">with</span> <span class="n">yt_dlp</span><span class="o">.</span><span class="n">YoutubeDL</span><span class="p">(</span><span class="n">ydl_opts</span><span class="p">)</span> <span class="k">as</span> <span class="n">ydl</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ydl</span><span class="o">.</span><span class="n">download</span><span class="p">([</span><span class="n">url</span><span class="p">])</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="总结">总结
+</h2><ul>
+<li><strong>最推荐</strong>: yt-dlp - 功能最强大，更新最频繁</li>
+<li><strong>图形界面</strong>: 4K Video Downloader 或 yt-dlp-webui</li>
+<li><strong>Android</strong>: NewPipe</li>
+<li><strong>批量下载</strong>: JDownloader</li>
+<li><strong>音频专用</strong>: ytmdl</li>
+<li><strong>直播流</strong>: Streamlink</li>
+</ul>
+<p>选择哪个工具主要取决于你的使用场景和个人偏好。对于大多数用户，yt-dlp 仍然是最佳选择。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 xiangcheng
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.e37c2a55cbf02dfb99f579f76db4af2cd4103d5b0b2f76819788cac851c0194e.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
