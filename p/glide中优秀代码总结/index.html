@@ -249,8 +249,12 @@
         </li>
         <li><a href="#解码静态代理">解码(静态代理)</a></li>
         <li><a href="#策略模式">策略模式</a></li>
+        <li><a href="#装饰者模式">装饰者模式</a></li>
+        <li><a href="#责任链模式">责任链模式</a></li>
         <li><a href="#代理模式">代理模式</a></li>
         <li><a href="#组合模式">组合模式</a></li>
+        <li><a href="#适配器模式">适配器模式</a></li>
+        <li><a href="#桥接模式">桥接模式</a></li>
       </ol>
     </li>
   </ol>
@@ -321,7 +325,7 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 7 分钟
+                    阅读时长: 9 分钟
                 </time>
             </div>
         
@@ -1011,33 +1015,7 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </div>
 </div><p>最终将这些Entry装载到ResourceDecoderRegistry的decoders这个map中。比如在前面介绍的BitmapDrawableDecoder，它就是按照bucket= &ldquo;BitmapDrawable&rdquo;,dataClass=&ldquo;ByteBuffer.class&rdquo;,resourceClass=&ldquo;BitmapDrawable.class&rdquo;,decoder=BitmapDrawableDecoder组成的entry来获取的。并且在BitmapDrawableDecoder中使用了代理模式，实际代理到ByteBufferBitmapDecoder，最终会调用到Downsampler中。</p>
 <h3 id="策略模式">策略模式
-</h3><blockquote>
-<p>各种ModelLoader的定义，体现在策略上</p>
-</blockquote>
-<p>策略模式体现的各种平级算法的快速切换，比如在ModelLoader中的定义就是体现策略模式，首先看下ModelLoader接口的定义：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">ModelLoader</span><span class="o">&lt;</span><span class="n">Model</span><span class="p">,</span><span class="w"> </span><span class="n">Data</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@Nullable</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">LoadData</span><span class="o">&lt;</span><span class="n">Data</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">buildLoadData</span><span class="p">(</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Model</span><span class="w"> </span><span class="n">model</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="n">options</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">handles</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Model</span><span class="w"> </span><span class="n">model</span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
-</span></span></span></code></pre></td></tr></table>
-</div>
-</div><p>Model是输入类型，Data是输出类型。通过用户传入的Model类型得到对应的ModelLoader类型，比如前面介绍的UrlUriLoader它就是通过model是String类型而得到的。<p></p>
-<blockquote>
-<p>DiskCacheStrategy体现在各种磁盘缓存策略上</p>
-</blockquote>
-<p>DiskCacheStrategy代表的是硬盘缓存策略，先看下DiskCacheStrategy抽象类有哪几个方法：</p>
+</h3><p>DiskCacheStrategy代表的是硬盘缓存策略，先看下DiskCacheStrategy抽象类有哪几个方法：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1249,6 +1227,126 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在RequestBuilder的into方法中构造不同的Transformation，有CenterCrop、CenterInside、FitCenter这几类都是属于Transformation接口。</p>
+<h3 id="装饰者模式">装饰者模式
+</h3><p>装饰者模式都是在不修改原有类的结构情况下，通过装饰者类来给原来类添加功能的一种模式。装饰者和被装饰者实现同一个接口，对于客户端调用来说，它是通过装饰者类调用被装饰对象。</p>
+<ul>
+<li>DrawableTransformation</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">DrawableTransformation</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Transformation</span><span class="o">&lt;</span><span class="n">Drawable</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Transformation</span><span class="o">&lt;</span><span class="n">Bitmap</span><span class="o">&gt;</span><span class="w"> </span><span class="n">wrapped</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">Drawable</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">Drawable</span><span class="o">&gt;</span><span class="w"> </span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">outWidth</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">outHeight</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">BitmapPool</span><span class="w"> </span><span class="n">bitmapPool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Glide</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">context</span><span class="p">).</span><span class="na">getBitmapPool</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Drawable</span><span class="w"> </span><span class="n">drawable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resource</span><span class="p">.</span><span class="na">get</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">Bitmap</span><span class="o">&gt;</span><span class="w"> </span><span class="n">bitmapResourceToTransform</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">DrawableToBitmapConverter</span><span class="p">.</span><span class="na">convert</span><span class="p">(</span><span class="n">bitmapPool</span><span class="p">,</span><span class="w"> </span><span class="n">drawable</span><span class="p">,</span><span class="w"> </span><span class="n">outWidth</span><span class="p">,</span><span class="w"> </span><span class="n">outHeight</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bitmapResourceToTransform</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isRequired</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">IllegalArgumentException</span><span class="p">(</span><span class="s">&#34;Unable to convert &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">drawable</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34; to a Bitmap&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">resource</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">Bitmap</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transformedBitmapResource</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">wrapped</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">bitmapResourceToTransform</span><span class="p">,</span><span class="w"> </span><span class="n">outWidth</span><span class="p">,</span><span class="w"> </span><span class="n">outHeight</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">transformedBitmapResource</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">bitmapResourceToTransform</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">transformedBitmapResource</span><span class="p">.</span><span class="na">recycle</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">resource</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">newDrawableResource</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">transformedBitmapResource</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在上面DrawableTransformation中wrapped是一个被装饰的Transformation对象，而DrawableTransformation本身它只会将Drawable类型的资源转化成Bitmap，等到被装饰的wrapped对象完成转化后，接着又将bitmap转回到drawable。DrawableTransformation是在传入Uri类型的model时候，然后解码返回的drawable类型的数据，接着通过DrawableTransformation完成transform过程。</p>
+<h3 id="责任链模式">责任链模式
+</h3><p>transform 可以无限叠加，比如：<code>transform(CenterCrop(), RoundedCorners())</code>，会将所有的 Transformation 放到 MultiTransformation 中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">MultiTransformation</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Transformation</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Collection</span><span class="o">&lt;?</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">Transformation</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">transformations</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">outWidth</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">outHeight</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">previous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resource</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">Transformation</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transformation</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">transformations</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">Resource</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transformed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">transformation</span><span class="p">.</span><span class="na">transform</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">previous</span><span class="p">,</span><span class="w"> </span><span class="n">outWidth</span><span class="p">,</span><span class="w"> </span><span class="n">outHeight</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">previous</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">previous</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">previous</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">transformed</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">previous</span><span class="p">.</span><span class="na">recycle</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">previous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">transformed</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">previous</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>责任链模式的核心特征：</strong></p>
+<ol>
+<li><strong>链式处理</strong>：每个 Transformation 依次处理前一个的输出结果</li>
+<li><strong>依次传递</strong>：数据像链条一样依次传递给下一个处理器</li>
+<li><strong>灵活组合</strong>：可以任意组合多个 Transformation，形成处理链</li>
+</ol>
+<p><strong>与迭代器模式的区别：</strong></p>
+<ul>
+<li>迭代器模式只负责遍历，不关心处理逻辑</li>
+<li>责任链模式不仅遍历，还要让每个处理器处理数据并传递</li>
+</ul>
+<p><strong>与组合模式的区别：</strong></p>
+<ul>
+<li>组合模式强调&quot;整体-部分&quot;的树形层次结构</li>
+<li>责任链模式强调线性的处理流程，数据沿链传递</li>
+</ul>
 <h3 id="代理模式">代理模式
 </h3><p>在StringLoader中持有了另外一个ModelLoader，当uriLoader的handles方法通过后，才会去去执行uriLoader的buildLoadData方法：</p>
 <div class="highlight"><div class="chroma">
@@ -1358,7 +1456,72 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
+</div><h3 id="适配器模式">适配器模式
+</h3><p>适配器模式主要是将目标类的接口适配成业务需要的接口，被适配类和适配器无需实现同一个接口，适配类持有了被适配接口引用或对象引用。</p>
+<ul>
+<li>Target接口</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="c1">//适配接口</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">Target</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">LifecycleListener</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onLoadStarted</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Drawable</span><span class="w"> </span><span class="n">placeholder</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onLoadFailed</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Drawable</span><span class="w"> </span><span class="n">errorDrawable</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onResourceReady</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">R</span><span class="w"> </span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Transition</span><span class="o">&lt;?</span><span class="w"> </span><span class="kd">super</span><span class="w"> </span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transition</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">onLoadCleared</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Drawable</span><span class="w"> </span><span class="n">placeholder</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">//适配 ImageView 的基础类</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">abstract</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ImageViewTarget</span><span class="o">&lt;</span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">ViewTarget</span><span class="o">&lt;</span><span class="n">ImageView</span><span class="p">,</span><span class="w"> </span><span class="n">Z</span><span class="o">&gt;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">implements</span><span class="w"> </span><span class="n">Transition</span><span class="p">.</span><span class="na">ViewAdapter</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//在适配器类中持有了ImageView被适配对象</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="kd">public</span><span class="w"> </span><span class="nf">ImageViewTarget</span><span class="p">(</span><span class="n">ImageView</span><span class="w"> </span><span class="n">view</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">super</span><span class="p">(</span><span class="n">view</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onResourceReady</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Z</span><span class="w"> </span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="nd">@Nullable</span><span class="w"> </span><span class="n">Transition</span><span class="o">&lt;?</span><span class="w"> </span><span class="kd">super</span><span class="w"> </span><span class="n">Z</span><span class="o">&gt;</span><span class="w"> </span><span class="n">transition</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">transition</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">transition</span><span class="p">.</span><span class="na">transition</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//子类中去调用imageView的setImageBitmap的方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">setResourceInternal</span><span class="p">(</span><span class="n">resource</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">maybeUpdateAnimatable</span><span class="p">(</span><span class="n">resource</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
 </div>
+</div><h3 id="桥接模式">桥接模式
+</h3><p>桥接模式主要是将主体作为抽象和实现进行分离，这样抽象能和实现随意组合，互相不影响。在glide中使用桥接模式主要体现在ModelLoader和DataFetcher之间的联系，ModelLoader作为数据输入和输出的抽象定义，DataFetcher作为数据加载的实现：</p>
+
 </section>
 
 
