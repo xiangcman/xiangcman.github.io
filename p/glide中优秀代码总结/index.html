@@ -255,6 +255,7 @@
         <li><a href="#组合模式">组合模式</a></li>
         <li><a href="#适配器模式">适配器模式</a></li>
         <li><a href="#桥接模式">桥接模式</a></li>
+        <li><a href="#线程池控制">线程池控制</a></li>
       </ol>
     </li>
   </ol>
@@ -1380,7 +1381,23 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>这是一个静态代理模式的体现，在静态代码中代理类主要控制被代理类的访问权限，此处通过判断uriLoader的handles方法是否通过，如果通过的话，才会去访问uriLoader这个被代理类。这也正符合静态代理模式的特征，主要是控制被代理类的访问权限。</p>
-<h3 id="组合模式">组合模式
+<p>GlideExecutor的创建
+线程池部分分为sourceExecutor和diskCacheExecutor，其中它两都可以通过外接传入进来，它两都是GlideExecutor类型。GlideExecutor的创建可以通过传入自定义的ExecutorService的，而ExecutorService又可以控制线程池的个数等参数，方便了扩展。此处也是用到了静态代理模式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kd">class</span> <span class="nc">GlideExecutor</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">ExecutorService</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">ExecutorService</span><span class="w"> </span><span class="n">delegate</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//所有内部的方法都代理调用了delegate的同名方法</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="组合模式">组合模式
 </h3><p>通过根结点包含子节点来达到组合模式，其中根结点和子节点实现共同的接口。以表示整体和部分的关系，比如在MultiModelLoader中包含了ModelLoader的集合：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -1548,6 +1565,10 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>他两看似没有什么联系，中间通过loadData进行关联上，loadData中持有了对应的DataFetcher，比如通过url的地址请求图片的时候通过StringLoader和HttpUrlFetcher进行组合，StringLoader中指定了modelClass是String.class，dataClass是InputStream.class，而HttpUrlFetcher则是最终实现网络请求的实现角色。通过中间的LoadData进行桥接。</p>
+<h3 id="线程池控制">线程池控制
+</h3><ul>
+<li>GlideExecutor：他是网络请求或本地资源加载的线程池，它的</li>
+</ul>
 
 </section>
 
