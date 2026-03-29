@@ -245,7 +245,13 @@
         </li>
         <li><a href="#gradle插件">Gradle插件</a></li>
         <li><a href="#gradle构建过程">Gradle构建过程</a></li>
-        <li><a href="#gradle打包速度优化">gradle打包速度优化</a></li>
+        <li><a href="#gradle打包速度优化">gradle打包速度优化</a>
+          <ol>
+            <li><a href="#build-analyzer-使用方法">Build Analyzer 使用方法</a></li>
+            <li><a href="#gradle-profile使用">gradle profile使用</a></li>
+            <li><a href="#gradle-scan使用">gradle scan使用</a></li>
+          </ol>
+        </li>
       </ol>
     </li>
   </ol>
@@ -1044,7 +1050,7 @@ allprojects主要是指所有的模块需要的三方依赖库时候的仓库
 </div>
 </div><p>由于在setting.gradle执行前，Gradle对象其实已经生成，所以通过gradle对象的projectsLoaded回调获取初始化时间。第一次进入到beforeProject的时候记录配置的起始时间，并记录每一个project的配置起始时间，然后在afterProject中算出每一个project配置的时间。然后通过gradle.taskGraph来获取有序无向图，然后通过whenReady方法回调算出总的配置时间。最后通过有序无向图的beforeTask来添加task的开始和结束的执行时间来算出task的执行耗时。最后通过gradle的buildFinish来获取总共的构建时间。</p>
 <h3 id="gradle打包速度优化">gradle打包速度优化
-</h3><p>首先了解下安卓中的variant是什么意思，它表示一个包的变体，其中变体是由productFlavor（产品风味）和buildType（构建类型）组合而成的。其中productFlavor是由维度和渠道构成的，buildType指的是debug还是release，比如维度可以配置价格和渠道的两个维度，而渠道可以配置google、xiaomi等渠道：</p>
+</h3><p>首先了解下安卓中的variant是什么意思，它表示一个包的变体，其中变体是由productFlavor（产品风味）和buildType（构建类型）组合而成的。其中productFlavor是由维度中的变体组成的，buildType指的是debug还是release，比如维度可以配置价格和渠道的两个维度，而渠道可以配置google、xiaomi两个变体，价格可以配置vip和free两个变体：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1128,7 +1134,29 @@ allprojects主要是指所有的模块需要的三方依赖库时候的仓库
 <li>xiaomiVipDebug</li>
 <li>xiaomiVipRelease</li>
 </ul>
-<p>知道了variant后，下面就是了解下打包了，一般通过build Analyze查看build过程中的一些警告，使用该工具需要先进行build，第二个工具是gradle profile工具，一般通过如下命令：</p>
+<p>知道了variant后，下面就是了解下打包了，一般通过build Analyze查看build过程中的一些警告。</p>
+<h4 id="build-analyzer-使用方法">Build Analyzer 使用方法
+</h4><ol>
+<li><strong>触发方式</strong>：在 Android Studio 中选择 Build → Rebuild Project，然后点击 Build Analyzer 标签页</li>
+<li><strong>查看警告</strong>：展开各个模块，查看带有警告图标的任务</li>
+<li><strong>分析耗时</strong>：点击具体任务查看其开始时间、结束时间、持续时长</li>
+<li><strong>识别问题</strong>：关注红色标记的慢任务和警告信息</li>
+</ol>
+<p><strong>主要查看内容</strong>：</p>
+<ul>
+<li>Task 执行时间线：按耗时排序的任务列表</li>
+<li>配置阶段 vs 执行阶段：区分是配置慢还是任务执行慢</li>
+<li>任务依赖关系：查看任务之间的依赖链</li>
+<li>警告信息：Gradle 自动检测的潜在问题</li>
+</ul>
+<p><strong>常见优化点</strong>：</p>
+<ul>
+<li>配置阶段过长：减少不必要的插件 apply、优化 buildscript 块</li>
+<li>任务执行过慢：使用 <code>--parallel</code> 并行执行、开启 <code>--build-cache</code></li>
+<li>重复执行：检查是否有不必要的 task 依赖</li>
+</ul>
+<h4 id="gradle-profile使用">gradle profile使用
+</h4><p>第二个工具是gradle profile工具，一般通过如下命令：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -1140,7 +1168,8 @@ allprojects主要是指所有的模块需要的三方依赖库时候的仓库
 </span></span></code></pre></td></tr></table>
 </div>
 </div><p>如果通过adb命令启动主入口的话，需要在清单文件中给主入口加上<code>android:exported=&quot;true&quot;</code>属性，装包完了后，本地会生成一个html文件，该文件会有gradle每个阶段的耗时情况，并且会有每个task的耗时。</p>
-<p>再个就是gradle scan工具，一般通过如下命令：</p>
+<h4 id="gradle-scan使用">gradle scan使用
+</h4><p>再个就是gradle scan工具，一般通过如下命令：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1

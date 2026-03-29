@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="lazygit是一款可视化的git工具，它分为好几个区域进行展示git各种状态。\n安装 1 brew install lazygit 使用 在对应的终端输入lazygit，也可以在~/.zshrc或在~/.bash_profile中用别名的形式： alias lg=&ldquo;lazygit&quot;来进行启动。\n面板介绍 1.工程目录对应的分支名 2.文件区域 3.分支、tag区域 4.commit信息区域 5.stash区域 操作 通过1-5的数字可以来回切换当前在哪个区域，也可以通过TAB键来快速切换区域。\n文件区域 选中某个文件或几个文件，space切换文件是否需要添加到git跟踪中。 c：提交信息，前提是要保证文件被添加到git跟踪中。 e：编辑文件，会进入到vim模式。 s：将文件加入到stash中，前提是该文件添加到git跟踪中。 d：它是一个撤销文件的快捷键，按下后会有如下弹框： x：它会撤销file区中所有的文件，untrack、unstage、stage三种状态的文件 D：它是一个回退功能的快捷键，按下后会有如下弹框： x：作用：彻底清空所有修改，让工作区回到完全干净的状态 git reset &ndash;hard HEAD：丢弃暂存区和工作区的所有修改 git clean -fd：删除所有未跟踪的文件（包括新创建的目录） ⚠️ 危险：所有未提交的修改和未跟踪文件都会永久丢失！ u：已经加入到跟踪中的文件，但是该文件修改过的部分未被staged的话，则会被还原 c：清除掉未被跟踪的文件的修改 commit信息区域 通过数字4切到commit信息区域，然后选中某一个commit信息，然后按快捷键g会弹出如下面板： soft reset :会让之前的commit信息回退到暂存区，比如我想重新提交某几个commit，此功能比较好使，因为它不会丢代码。 mixed reset：会让之前的commit信息回退到工作区，也就是unstage的状态，和上面的soft reset差不多。区别就是上面会放到暂存区，当前是放在工作区，也不会丢代码。 hard reset：会让之前的commit改动直接丢失，既不放到暂存区，也不放到工作区。这种要小心使用。\n">
+<title>Lazygit使用总结</title>
+
+<link rel='canonical' href='http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Lazygit使用总结">
+<meta property='og:description' content="lazygit是一款可视化的git工具，它分为好几个区域进行展示git各种状态。\n安装 1 brew install lazygit 使用 在对应的终端输入lazygit，也可以在~/.zshrc或在~/.bash_profile中用别名的形式： alias lg=&ldquo;lazygit&quot;来进行启动。\n面板介绍 1.工程目录对应的分支名 2.文件区域 3.分支、tag区域 4.commit信息区域 5.stash区域 操作 通过1-5的数字可以来回切换当前在哪个区域，也可以通过TAB键来快速切换区域。\n文件区域 选中某个文件或几个文件，space切换文件是否需要添加到git跟踪中。 c：提交信息，前提是要保证文件被添加到git跟踪中。 e：编辑文件，会进入到vim模式。 s：将文件加入到stash中，前提是该文件添加到git跟踪中。 d：它是一个撤销文件的快捷键，按下后会有如下弹框： x：它会撤销file区中所有的文件，untrack、unstage、stage三种状态的文件 D：它是一个回退功能的快捷键，按下后会有如下弹框： x：作用：彻底清空所有修改，让工作区回到完全干净的状态 git reset &ndash;hard HEAD：丢弃暂存区和工作区的所有修改 git clean -fd：删除所有未跟踪的文件（包括新创建的目录） ⚠️ 危险：所有未提交的修改和未跟踪文件都会永久丢失！ u：已经加入到跟踪中的文件，但是该文件修改过的部分未被staged的话，则会被还原 c：清除掉未被跟踪的文件的修改 commit信息区域 通过数字4切到commit信息区域，然后选中某一个commit信息，然后按快捷键g会弹出如下面板： soft reset :会让之前的commit信息回退到暂存区，比如我想重新提交某几个commit，此功能比较好使，因为它不会丢代码。 mixed reset：会让之前的commit信息回退到工作区，也就是unstage的状态，和上面的soft reset差不多。区别就是上面会放到暂存区，当前是放在工作区，也不会丢代码。 hard reset：会让之前的commit改动直接丢失，既不放到暂存区，也不放到工作区。这种要小心使用。\n">
+<meta property='og:url' content='http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2026-03-21T21:34:47&#43;08:00'/><meta property='article:modified_time' content='2026-03-21T21:34:47&#43;08:00'/>
+<meta name="twitter:title" content="Lazygit使用总结">
+<meta name="twitter:description" content="lazygit是一款可视化的git工具，它分为好几个区域进行展示git各种状态。\n安装 1 brew install lazygit 使用 在对应的终端输入lazygit，也可以在~/.zshrc或在~/.bash_profile中用别名的形式： alias lg=&ldquo;lazygit&quot;来进行启动。\n面板介绍 1.工程目录对应的分支名 2.文件区域 3.分支、tag区域 4.commit信息区域 5.stash区域 操作 通过1-5的数字可以来回切换当前在哪个区域，也可以通过TAB键来快速切换区域。\n文件区域 选中某个文件或几个文件，space切换文件是否需要添加到git跟踪中。 c：提交信息，前提是要保证文件被添加到git跟踪中。 e：编辑文件，会进入到vim模式。 s：将文件加入到stash中，前提是该文件添加到git跟踪中。 d：它是一个撤销文件的快捷键，按下后会有如下弹框： x：它会撤销file区中所有的文件，untrack、unstage、stage三种状态的文件 D：它是一个回退功能的快捷键，按下后会有如下弹框： x：作用：彻底清空所有修改，让工作区回到完全干净的状态 git reset &ndash;hard HEAD：丢弃暂存区和工作区的所有修改 git clean -fd：删除所有未跟踪的文件（包括新创建的目录） ⚠️ 危险：所有未提交的修改和未跟踪文件都会永久丢失！ u：已经加入到跟踪中的文件，但是该文件修改过的部分未被staged的话，则会被还原 c：清除掉未被跟踪的文件的修改 commit信息区域 通过数字4切到commit信息区域，然后选中某一个commit信息，然后按快捷键g会弹出如下面板： soft reset :会让之前的commit信息回退到暂存区，比如我想重新提交某几个commit，此功能比较好使，因为它不会丢代码。 mixed reset：会让之前的commit信息回退到工作区，也就是unstage的状态，和上面的soft reset差不多。区别就是上面会放到暂存区，当前是放在工作区，也不会丢代码。 hard reset：会让之前的commit改动直接丢失，既不放到暂存区，也不放到工作区。这种要小心使用。\n">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu_c5ce2387cd5c94f8.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/xiangcman'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>分类</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#安装">安装</a></li>
+        <li><a href="#使用">使用</a></li>
+        <li><a href="#面板介绍">面板介绍</a></li>
+        <li><a href="#操作">操作</a></li>
+        <li><a href="#文件区域">文件区域</a></li>
+        <li><a href="#commit信息区域">commit信息区域</a></li>
+        <li><a href="#stash区域">stash区域</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/lazygit/" >
+                Lazygit
+            </a>
+        
+            <a href="/categories/%E5%B7%A5%E5%85%B7/" >
+                工具
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/">Lazygit使用总结</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2026-03-21</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 1 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>lazygit是一款可视化的git工具，它分为好几个区域进行展示git各种状态。</p>
+<h3 id="安装">安装
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-BASH" data-lang="BASH"><span class="line"><span class="cl">brew install lazygit
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="使用">使用
+</h3><p>在对应的终端输入lazygit，也可以在~/.zshrc或在~/.bash_profile中用别名的形式：
+alias lg=&ldquo;lazygit&quot;来进行启动。</p>
+<h3 id="面板介绍">面板介绍
+</h3><p>1.工程目录对应的分支名
+2.文件区域
+3.分支、tag区域
+4.commit信息区域
+5.stash区域
+<img src="/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/lazygit%E4%B8%AD%E5%8F%8A%E6%A0%BC%E9%9D%A2%E6%9D%BF.png"
+	width="996"
+	height="1616"
+	srcset="/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/lazygit%E4%B8%AD%E5%8F%8A%E6%A0%BC%E9%9D%A2%E6%9D%BF_hu_ddfe6a9e9b014b47.png 480w, /p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/lazygit%E4%B8%AD%E5%8F%8A%E6%A0%BC%E9%9D%A2%E6%9D%BF_hu_ce6aea4d7c0f5a6.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="61"
+		data-flex-basis="147px"
+	
+></p>
+<h3 id="操作">操作
+</h3><p>通过1-5的数字可以来回切换当前在哪个区域，也可以通过TAB键来快速切换区域。</p>
+<h3 id="文件区域">文件区域
+</h3><p>选中某个文件或几个文件，space切换文件是否需要添加到git跟踪中。
+c：提交信息，前提是要保证文件被添加到git跟踪中。
+e：编辑文件，会进入到vim模式。
+s：将文件加入到stash中，前提是该文件添加到git跟踪中。
+d：它是一个撤销文件的快捷键，按下后会有如下弹框：
+<img src="/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/file%E5%B7%A5%E4%BD%9C%E5%8C%BA%E4%B8%AD%E6%9C%89%E6%96%87%E4%BB%B6stage%E6%88%96%E8%80%85unstage%E3%80%81untrack%E7%8A%B6%E6%80%81%E7%82%B9%E5%87%BBd%E5%BF%AB%E6%8D%B7%E9%94%AE%E5%BC%B9%E5%87%BA%E7%9A%84%E9%9D%A2%E6%9D%BF.png"
+	width="1376"
+	height="264"
+	srcset="/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/file%E5%B7%A5%E4%BD%9C%E5%8C%BA%E4%B8%AD%E6%9C%89%E6%96%87%E4%BB%B6stage%E6%88%96%E8%80%85unstage%E3%80%81untrack%E7%8A%B6%E6%80%81%E7%82%B9%E5%87%BBd%E5%BF%AB%E6%8D%B7%E9%94%AE%E5%BC%B9%E5%87%BA%E7%9A%84%E9%9D%A2%E6%9D%BF_hu_33fff69ff0d411c9.png 480w, /p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/file%E5%B7%A5%E4%BD%9C%E5%8C%BA%E4%B8%AD%E6%9C%89%E6%96%87%E4%BB%B6stage%E6%88%96%E8%80%85unstage%E3%80%81untrack%E7%8A%B6%E6%80%81%E7%82%B9%E5%87%BBd%E5%BF%AB%E6%8D%B7%E9%94%AE%E5%BC%B9%E5%87%BA%E7%9A%84%E9%9D%A2%E6%9D%BF_hu_79218ef427f7e72f.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="521"
+		data-flex-basis="1250px"
+	
+></p>
+<ul>
+<li>x：它会撤销file区中所有的文件，untrack、unstage、stage三种状态的文件
+D：它是一个回退功能的快捷键，按下后会有如下弹框：
+<img src="/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/%E5%9C%A8file%E5%9D%97%E4%B8%AD%E6%8C%89D%E9%94%AE%E5%87%BA%E6%9D%A5%E7%9A%84%E5%BC%B9%E6%A1%86.png"
+	width="1448"
+	height="312"
+	srcset="/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/%E5%9C%A8file%E5%9D%97%E4%B8%AD%E6%8C%89D%E9%94%AE%E5%87%BA%E6%9D%A5%E7%9A%84%E5%BC%B9%E6%A1%86_hu_885e38051ce46788.png 480w, /p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/%E5%9C%A8file%E5%9D%97%E4%B8%AD%E6%8C%89D%E9%94%AE%E5%87%BA%E6%9D%A5%E7%9A%84%E5%BC%B9%E6%A1%86_hu_10af35087e0bc683.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="464"
+		data-flex-basis="1113px"
+	
+></li>
+<li>x：作用：彻底清空所有修改，让工作区回到完全干净的状态
+<ul>
+<li>git reset &ndash;hard HEAD：丢弃暂存区和工作区的所有修改</li>
+<li>git clean -fd：删除所有未跟踪的文件（包括新创建的目录）</li>
+<li>⚠️ 危险：所有未提交的修改和未跟踪文件都会永久丢失！</li>
+</ul>
+</li>
+<li>u：已经加入到跟踪中的文件，但是该文件修改过的部分未被staged的话，则会被还原</li>
+<li>c：清除掉未被跟踪的文件的修改</li>
+</ul>
+<h3 id="commit信息区域">commit信息区域
+</h3><p>通过数字4切到commit信息区域，然后选中某一个commit信息，然后按快捷键g会弹出如下面板：
+<img src="/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/%E5%9C%A8commit%E5%8C%BA%E5%9F%9F%E9%80%89%E4%B8%AD%E6%9F%90%E4%B8%AAcommit%E4%BF%A1%E6%81%AF%E7%84%B6%E5%90%8E%E6%8C%89%E5%BF%AB%E6%8D%B7%E9%94%AEg%E5%BC%B9%E5%87%BA%E7%9A%84%E9%9D%A2%E6%9D%BF.png"
+	width="1164"
+	height="188"
+	srcset="/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/%E5%9C%A8commit%E5%8C%BA%E5%9F%9F%E9%80%89%E4%B8%AD%E6%9F%90%E4%B8%AAcommit%E4%BF%A1%E6%81%AF%E7%84%B6%E5%90%8E%E6%8C%89%E5%BF%AB%E6%8D%B7%E9%94%AEg%E5%BC%B9%E5%87%BA%E7%9A%84%E9%9D%A2%E6%9D%BF_hu_bd4a90f0b1abb52.png 480w, /p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/%E5%9C%A8commit%E5%8C%BA%E5%9F%9F%E9%80%89%E4%B8%AD%E6%9F%90%E4%B8%AAcommit%E4%BF%A1%E6%81%AF%E7%84%B6%E5%90%8E%E6%8C%89%E5%BF%AB%E6%8D%B7%E9%94%AEg%E5%BC%B9%E5%87%BA%E7%9A%84%E9%9D%A2%E6%9D%BF_hu_b2099fa1a89c279d.png 1024w"
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="619"
+		data-flex-basis="1485px"
+	
+>
+soft reset :会让之前的commit信息回退到暂存区，比如我想重新提交某几个commit，此功能比较好使，因为它不会丢代码。
+mixed reset：会让之前的commit信息回退到工作区，也就是unstage的状态，和上面的soft reset差不多。区别就是上面会放到暂存区，当前是放在工作区，也不会丢代码。
+hard reset：会让之前的commit改动直接丢失，既不放到暂存区，也不放到工作区。这种要小心使用。</p>
+<h3 id="stash区域">stash区域
+</h3>
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 xiangcheng
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

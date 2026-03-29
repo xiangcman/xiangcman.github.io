@@ -233,6 +233,7 @@
         <li><a href="#客户端到驱动层">客户端到驱动层</a></li>
         <li><a href="#服务端到驱动层">服务端到驱动层</a></li>
         <li><a href="#总结">总结</a></li>
+        <li><a href="#备注">备注</a></li>
       </ol>
     </li>
   </ol>
@@ -1376,7 +1377,24 @@ binder_transaction_data里面有个cookie字段，保存的是Binder实体对象
 		data-flex-basis="426px"
 	
 ></p>
-
+<h3 id="备注">备注
+</h3><p>在agp4.0+开始，AIDL 功能需要显式启用
+在 app/build.gradle.kts 的 buildFeatures 块中添加：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gradle" data-lang="gradle"><span class="line"><span class="cl"><span class="n">buildFeatures</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">compose</span> <span class="o">=</span> <span class="kc">true</span>
+</span></span><span class="line"><span class="cl">    <span class="n">aidl</span> <span class="o">=</span> <span class="kc">true</span>  <span class="c1">// 新增此行
+</span></span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
 </section>
 
 

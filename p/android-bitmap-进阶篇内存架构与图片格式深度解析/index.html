@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="深入探究 Android Bitmap 内存分配机制演进、回收策略，以及主流图片格式的压缩原理与选择策略">
+<title>Android Bitmap 进阶篇：内存架构与图片格式深度解析</title>
+
+<link rel='canonical' href='http://xiangcman.xyz/p/android-bitmap-%E8%BF%9B%E9%98%B6%E7%AF%87%E5%86%85%E5%AD%98%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%9B%BE%E7%89%87%E6%A0%BC%E5%BC%8F%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Android Bitmap 进阶篇：内存架构与图片格式深度解析">
+<meta property='og:description' content="深入探究 Android Bitmap 内存分配机制演进、回收策略，以及主流图片格式的压缩原理与选择策略">
+<meta property='og:url' content='http://xiangcman.xyz/p/android-bitmap-%E8%BF%9B%E9%98%B6%E7%AF%87%E5%86%85%E5%AD%98%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%9B%BE%E7%89%87%E6%A0%BC%E5%BC%8F%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Android' /><meta property='article:tag' content='Bitmap' /><meta property='article:tag' content='内存管理' /><meta property='article:tag' content='图片格式' /><meta property='article:published_time' content='2026-03-17T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-03-17T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="Android Bitmap 进阶篇：内存架构与图片格式深度解析">
+<meta name="twitter:description" content="深入探究 Android Bitmap 内存分配机制演进、回收策略，以及主流图片格式的压缩原理与选择策略">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu_c5ce2387cd5c94f8.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/xiangcman'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>分类</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#一bitmap-内存分配架构演进">一、Bitmap 内存分配架构演进</a>
+      <ol>
+        <li><a href="#11-android-80-之前的内存模型">1.1 Android 8.0 之前的内存模型</a>
+          <ol>
+            <li><a href="#存储位置">存储位置</a></li>
+            <li><a href="#主要问题">主要问题</a></li>
+            <li><a href="#实际案例">实际案例</a></li>
+          </ol>
+        </li>
+        <li><a href="#12-android-80-的-native-heap-迁移">1.2 Android 8.0+ 的 Native Heap 迁移</a>
+          <ol>
+            <li><a href="#新架构实现">新架构实现</a></li>
+            <li><a href="#java-层关联机制">Java 层关联机制</a></li>
+            <li><a href="#优势对比表">优势对比表</a></li>
+          </ol>
+        </li>
+        <li><a href="#13-nativeallocationregistry-机制详解">1.3 NativeAllocationRegistry 机制详解</a>
+          <ol>
+            <li><a href="#工作流程图">工作流程图</a></li>
+          </ol>
+        </li>
+        <li><a href="#14-内存回收策略对比">1.4 内存回收策略对比</a>
+          <ol>
+            <li><a href="#android-7x-回收机制">Android 7.x 回收机制</a></li>
+            <li><a href="#android-80-自动回收">Android 8.0+ 自动回收</a></li>
+            <li><a href="#android-10-的进一步优化">Android 10+ 的进一步优化</a></li>
+          </ol>
+        </li>
+        <li><a href="#15-大图内存优化策略">1.5 大图内存优化策略</a>
+          <ol>
+            <li><a href="#策略一分块加载bitmapregiondecoder">策略一：分块加载（BitmapRegionDecoder）</a></li>
+            <li><a href="#策略二降采样insamplesize">策略二：降采样（inSampleSize）</a></li>
+            <li><a href="#策略三像素格式优化">策略三：像素格式优化</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#二图片格式深度解析">二、图片格式深度解析</a>
+      <ol>
+        <li><a href="#21-主流格式技术对比">2.1 主流格式技术对比</a></li>
+        <li><a href="#22-jpeg-压缩原理深度剖析">2.2 JPEG 压缩原理深度剖析</a>
+          <ol>
+            <li><a href="#完整压缩流程">完整压缩流程</a></li>
+            <li><a href="#1-色彩空间转换详解">1. 色彩空间转换详解</a></li>
+            <li><a href="#2-色度抽样策略">2. 色度抽样策略</a></li>
+            <li><a href="#3-dct-变换数学原理">3. DCT 变换数学原理</a></li>
+            <li><a href="#4-量化表与质量控制">4. 量化表与质量控制</a></li>
+            <li><a href="#5-android-中-jpeg-编码实践">5. Android 中 JPEG 编码实践</a></li>
+          </ol>
+        </li>
+        <li><a href="#23-png-无损压缩原理">2.3 PNG 无损压缩原理</a>
+          <ol>
+            <li><a href="#png-压缩流程">PNG 压缩流程</a></li>
+            <li><a href="#滤波算法详解">滤波算法详解</a></li>
+            <li><a href="#android-中的-png-质量控制">Android 中的 PNG 质量控制</a></li>
+          </ol>
+        </li>
+        <li><a href="#24-webp-统一压缩方案">2.4 WEBP 统一压缩方案</a>
+          <ol>
+            <li><a href="#压缩模式对比">压缩模式对比</a></li>
+            <li><a href="#webp-透明度支持">WEBP 透明度支持</a></li>
+          </ol>
+        </li>
+        <li><a href="#25-格式选择决策流程图">2.5 格式选择决策流程图</a></li>
+        <li><a href="#26-实际项目中的格式策略">2.6 实际项目中的格式策略</a></li>
+      </ol>
+    </li>
+    <li><a href="#三实战建议总结">三、实战建议总结</a>
+      <ol>
+        <li><a href="#31-内存优化检查清单">3.1 内存优化检查清单</a></li>
+        <li><a href="#32-格式选择最佳实践">3.2 格式选择最佳实践</a></li>
+        <li><a href="#33-性能监控代码">3.3 性能监控代码</a></li>
+      </ol>
+    </li>
+    <li><a href="#参考资料">参考资料</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/bitmap/" >
+                Bitmap
+            </a>
+        
+            <a href="/categories/%E8%BF%9B%E9%98%B6/" >
+                进阶
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/android-bitmap-%E8%BF%9B%E9%98%B6%E7%AF%87%E5%86%85%E5%AD%98%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%9B%BE%E7%89%87%E6%A0%BC%E5%BC%8F%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/">Android Bitmap 进阶篇：内存架构与图片格式深度解析</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            深入探究 Android Bitmap 内存分配机制演进、回收策略，以及主流图片格式的压缩原理与选择策略
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2026-03-17</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 14 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="一bitmap-内存分配架构演进">一、Bitmap 内存分配架构演进
+</h2><h3 id="11-android-80-之前的内存模型">1.1 Android 8.0 之前的内存模型
+</h3><p>在 Android 8.0 之前，Bitmap 的像素数据存储在 <strong>Java Heap</strong> 中，这带来了以下问题：</p>
+<h4 id="存储位置">存储位置
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// Android 7.x 及以前</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// Bitmap 像素数据分配在 dalvik.system.VMRuntime 管理的堆上</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kd">class</span> <span class="nc">Bitmap</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Parcelable</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">mNativePtr</span><span class="p">;</span><span class="w"> </span><span class="c1">// 指向 Native SkBitmap 对象</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kt">byte</span><span class="o">[]</span><span class="w"> </span><span class="n">mBuffer</span><span class="p">;</span><span class="w">        </span><span class="c1">// 像素数据存储在 Java 堆</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="主要问题">主要问题
+</h4><ol>
+<li><strong>GC 压力大</strong>：大量 Bitmap 对象占用 Java 堆，频繁触发 GC</li>
+<li><strong>OOM 风险高</strong>：Java 堆空间有限（通常为 192MB-512MB）</li>
+<li><strong>内存碎片化</strong>：频繁创建/销毁 Bitmap 导致堆碎片</li>
+</ol>
+<h4 id="实际案例">实际案例
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// ❌ 典型的 OOM 场景（Android 7.x）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">List</span><span class="o">&lt;</span><span class="n">Bitmap</span><span class="o">&gt;</span><span class="w"> </span><span class="n">bitmaps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;&gt;</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">100</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 每个 Bitmap 占用 ~4MB (1920×1080×4)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">decodeResource</span><span class="p">(</span><span class="n">getResources</span><span class="p">(),</span><span class="w"> </span><span class="n">R</span><span class="p">.</span><span class="na">drawable</span><span class="p">.</span><span class="na">large_image</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">bitmaps</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">bitmap</span><span class="p">);</span><span class="w"> </span><span class="c1">// 累计 400MB，超出 Java 堆限制</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// java.lang.OutOfMemoryError: Failed to allocate a XXX byte allocation</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="12-android-80-的-native-heap-迁移">1.2 Android 8.0+ 的 Native Heap 迁移
+</h3><p>Android 8.0 进行了重大重构，将像素数据迁移到 <strong>Native Heap</strong>：</p>
+<h4 id="新架构实现">新架构实现
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">// frameworks/base/core/jni/android/graphics/Bitmap.cpp
+</span></span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="n">jobject</span> <span class="nf">Bitmap_creator</span><span class="p">(</span><span class="n">JNIEnv</span><span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jobject</span><span class="p">,</span> <span class="n">jintArray</span> <span class="n">jColors</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                               <span class="n">jint</span> <span class="n">offset</span><span class="p">,</span> <span class="n">jint</span> <span class="n">stride</span><span class="p">,</span> <span class="n">jint</span> <span class="n">width</span><span class="p">,</span> <span class="n">jint</span> <span class="n">height</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                               <span class="n">jint</span> <span class="n">configHandle</span><span class="p">,</span> <span class="n">jboolean</span> <span class="n">isMutable</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                               <span class="n">jlong</span> <span class="n">colorSpacePtr</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 像素数据分配在 Native 堆
+</span></span></span><span class="line"><span class="cl">    <span class="n">sk_sp</span><span class="o">&lt;</span><span class="n">Bitmap</span><span class="o">&gt;</span> <span class="n">nativeBitmap</span> <span class="o">=</span> <span class="n">Bitmap</span><span class="o">::</span><span class="n">allocateHeapBitmap</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bitmap</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1">// 通过 NativeAllocationRegistry 管理内存
+</span></span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">createBitmap</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">nativeBitmap</span><span class="p">.</span><span class="n">release</span><span class="p">(),</span> 
+</span></span><span class="line"><span class="cl">                       <span class="n">getPremulBitmapCreateFlags</span><span class="p">(</span><span class="n">isMutable</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="java-层关联机制">Java 层关联机制
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// Android 8.0+ Bitmap.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kd">class</span> <span class="nc">Bitmap</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Parcelable</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">mNativePtr</span><span class="p">;</span><span class="w"> </span><span class="c1">// 指向 Native 内存</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 通过 NativeAllocationRegistry 自动管理 Native 内存</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Bitmap</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">nativeBitmap</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">density</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">           </span><span class="kt">boolean</span><span class="w"> </span><span class="n">isMutable</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">requestPremultiplied</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">           </span><span class="kt">byte</span><span class="o">[]</span><span class="w"> </span><span class="n">ninePatchChunk</span><span class="p">,</span><span class="w"> </span><span class="n">NinePatch</span><span class="p">.</span><span class="na">InsetStruct</span><span class="w"> </span><span class="n">ninePatchInsets</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// ...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 注册 Native 内存到 Java GC</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">nativeAllocationRegistry</span><span class="p">.</span><span class="na">registerNativeAllocation</span><span class="p">(</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">mNativePtr</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="优势对比表">优势对比表
+</h4><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>维度</th>
+          <th>Android 7.x (Java Heap)</th>
+          <th>Android 8.0+ (Native Heap)</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>内存上限</strong></td>
+          <td>受限于 Java Heap (192-512MB)</td>
+          <td>受限于物理内存</td>
+      </tr>
+      <tr>
+          <td><strong>GC 频率</strong></td>
+          <td>高（像素数据在堆内）</td>
+          <td>低（仅对象在堆内）</td>
+      </tr>
+      <tr>
+          <td><strong>OOM 风险</strong></td>
+          <td>高</td>
+          <td>显著降低</td>
+      </tr>
+      <tr>
+          <td><strong>回收延迟</strong></td>
+          <td>依赖 GC 周期</td>
+          <td>更及时（通过 Finalizer）</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="13-nativeallocationregistry-机制详解">1.3 NativeAllocationRegistry 机制详解
+</h3><p>Android 8.0 引入的 <code>NativeAllocationRegistry</code> 是关键创新：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// libcore/luni/src/main/java/libcore/util/NativeAllocationRegistry.java</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">NativeAllocationRegistry</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">size</span><span class="p">;</span><span class="w"> </span><span class="c1">// Native 内存大小</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Runnable</span><span class="w"> </span><span class="nf">registerNativeAllocation</span><span class="p">(</span><span class="n">Object</span><span class="w"> </span><span class="n">referent</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">nativePtr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 1. 创建 Cleaner（基于 PhantomReference）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">CleanerThunk</span><span class="w"> </span><span class="n">thunk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CleanerThunk</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Cleaner</span><span class="w"> </span><span class="n">cleaner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Cleaner</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="n">referent</span><span class="p">,</span><span class="w"> </span><span class="n">thunk</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 2. 通知 VMRuntime 记录 Native 内存使用</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">VMRuntime</span><span class="p">.</span><span class="na">getRuntime</span><span class="p">().</span><span class="na">registerNativeAllocation</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="n">size</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// 3. 当 Java 对象被 GC 时，调用 Native 释放函数</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">nativeFree</span><span class="p">(</span><span class="n">nativePtr</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">VMRuntime</span><span class="p">.</span><span class="na">getRuntime</span><span class="p">().</span><span class="na">registerNativeFree</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="n">size</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">};</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="工作流程图">工作流程图
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Java Bitmap 对象创建
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">分配 Native 内存 (malloc)
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">NativeAllocationRegistry.register()
+</span></span><span class="line"><span class="cl">    ├─→ 创建 PhantomReference
+</span></span><span class="line"><span class="cl">    ├─→ VMRuntime 记录内存占用
+</span></span><span class="line"><span class="cl">    └─→ 关联 Cleaner 清理器
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">当 Java 对象不可达：
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">GC 触发 PhantomReference 入队
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">Cleaner 线程执行清理
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">调用 nativeFree() 释放 Native 内存
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">VMRuntime 更新内存统计
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="14-内存回收策略对比">1.4 内存回收策略对比
+</h3><h4 id="android-7x-回收机制">Android 7.x 回收机制
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// ❌ 旧版本需要手动调用 recycle()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">decodeResource</span><span class="p">(...);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 使用 bitmap</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">bitmap</span><span class="p">.</span><span class="na">recycle</span><span class="p">();</span><span class="w"> </span><span class="c1">// 立即释放像素内存</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">bitmap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">    </span><span class="c1">// 等待 GC 回收 Java 对象</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>问题</strong>：</p>
+<ul>
+<li><code>recycle()</code> 后再次使用会崩溃</li>
+<li>忘记调用导致内存泄漏</li>
+<li>多线程场景容易出错</li>
+</ul>
+<h4 id="android-80-自动回收">Android 8.0+ 自动回收
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// ✅ 新版本自动管理</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">decodeResource</span><span class="p">(...);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 使用 bitmap</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">bitmap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w"> </span><span class="c1">// 仅需置空，Native 内存会自动释放</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 无需调用 recycle()，系统会在 GC 时自动清理</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>改进</strong>：</p>
+<ul>
+<li>无需手动 <code>recycle()</code></li>
+<li>内存泄漏风险降低</li>
+<li>线程安全性提升</li>
+</ul>
+<h4 id="android-10-的进一步优化">Android 10+ 的进一步优化
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// Android 10 开始，recycle() 被标记为 @Deprecated</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nd">@Deprecated</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">recycle</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 调用此方法不再有实际效果</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 仅保留以兼容旧代码</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="15-大图内存优化策略">1.5 大图内存优化策略
+</h3><h4 id="策略一分块加载bitmapregiondecoder">策略一：分块加载（BitmapRegionDecoder）
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">TiledImageView</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">View</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">BitmapRegionDecoder</span><span class="w"> </span><span class="n">mDecoder</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Rect</span><span class="w"> </span><span class="n">mVisibleRect</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Rect</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">loadImage</span><span class="p">(</span><span class="n">InputStream</span><span class="w"> </span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">IOException</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 创建区域解码器（不加载全图）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mDecoder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BitmapRegionDecoder</span><span class="p">.</span><span class="na">newInstance</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">protected</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">onDraw</span><span class="p">(</span><span class="n">Canvas</span><span class="w"> </span><span class="n">canvas</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 仅解码可见区域</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">left</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="o">-</span><span class="n">mTranslateX</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">mScale</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">top</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="o">-</span><span class="n">mTranslateY</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">mScale</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">right</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">left</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">getWidth</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">mScale</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">bottom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">top</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">getHeight</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">mScale</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">mVisibleRect</span><span class="p">.</span><span class="na">set</span><span class="p">(</span><span class="n">left</span><span class="p">,</span><span class="w"> </span><span class="n">top</span><span class="p">,</span><span class="w"> </span><span class="n">right</span><span class="p">,</span><span class="w"> </span><span class="n">bottom</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">Options</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">Options</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">options</span><span class="p">.</span><span class="na">inSampleSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calculateSampleSize</span><span class="p">(</span><span class="n">mScale</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 仅解码这个小区域（内存占用显著降低）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Bitmap</span><span class="w"> </span><span class="n">region</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mDecoder</span><span class="p">.</span><span class="na">decodeRegion</span><span class="p">(</span><span class="n">mVisibleRect</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">canvas</span><span class="p">.</span><span class="na">drawBitmap</span><span class="p">(</span><span class="n">region</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>内存节省效果</strong>：</p>
+<ul>
+<li>全图加载：4000×3000×4 = 45.7MB</li>
+<li>区域加载：800×600×4 = 1.8MB（节省 96%）</li>
+</ul>
+<h4 id="策略二降采样insamplesize">策略二：降采样（inSampleSize）
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">Bitmap</span><span class="w"> </span><span class="nf">decodeSampledBitmap</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">reqWidth</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">reqHeight</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 第一次解码：仅获取尺寸</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">Options</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">Options</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">options</span><span class="p">.</span><span class="na">inJustDecodeBounds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">decodeFile</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 计算采样率</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">options</span><span class="p">.</span><span class="na">inSampleSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calculateInSampleSize</span><span class="p">(</span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="n">reqWidth</span><span class="p">,</span><span class="w"> </span><span class="n">reqHeight</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 第二次解码：加载采样后的图片</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">options</span><span class="p">.</span><span class="na">inJustDecodeBounds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">decodeFile</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">calculateInSampleSize</span><span class="p">(</span><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">Options</span><span class="w"> </span><span class="n">options</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                                          </span><span class="kt">int</span><span class="w"> </span><span class="n">reqWidth</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">reqHeight</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">options</span><span class="p">.</span><span class="na">outWidth</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">options</span><span class="p">.</span><span class="na">outHeight</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">inSampleSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">1</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">width</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">reqWidth</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">reqHeight</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">halfWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">2</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">halfHeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">2</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// inSampleSize 必须是 2 的幂次</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">((</span><span class="n">halfWidth</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">inSampleSize</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">reqWidth</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">halfHeight</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">inSampleSize</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">reqHeight</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">inSampleSize</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">2</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">inSampleSize</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>采样率对比</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">原图：4000×3000 (45.7MB)
+</span></span><span class="line"><span class="cl">inSampleSize = 2: 2000×1500 (11.4MB) ↓75%
+</span></span><span class="line"><span class="cl">inSampleSize = 4: 1000×750  (2.9MB)  ↓94%
+</span></span><span class="line"><span class="cl">inSampleSize = 8: 500×375   (0.7MB)  ↓98%
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="策略三像素格式优化">策略三：像素格式优化
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 场景：不透明图片的缩略图</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">Options</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">Options</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">options</span><span class="p">.</span><span class="na">inPreferredConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="p">.</span><span class="na">RGB_565</span><span class="p">;</span><span class="w"> </span><span class="c1">// 每像素 2 字节</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">options</span><span class="p">.</span><span class="na">inSampleSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">4</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">Bitmap</span><span class="w"> </span><span class="n">thumbnail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">decodeResource</span><span class="p">(</span><span class="n">getResources</span><span class="p">(),</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">                                                </span><span class="n">R</span><span class="p">.</span><span class="na">drawable</span><span class="p">.</span><span class="na">photo</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 内存占用：1000×750×2 = 1.5MB（比 ARGB_8888 节省 50%）</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h2 id="二图片格式深度解析">二、图片格式深度解析
+</h2><h3 id="21-主流格式技术对比">2.1 主流格式技术对比
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>格式</th>
+          <th>压缩算法</th>
+          <th>透明度支持</th>
+          <th>动画</th>
+          <th>压缩率</th>
+          <th>编解码速度</th>
+          <th>适用场景</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>JPEG</strong></td>
+          <td>DCT + 量化 + 霍夫曼</td>
+          <td>❌</td>
+          <td>❌</td>
+          <td>10:1 ~ 20:1</td>
+          <td>快</td>
+          <td>照片、复杂图像</td>
+      </tr>
+      <tr>
+          <td><strong>PNG</strong></td>
+          <td>DEFLATE(LZ77+霍夫曼)</td>
+          <td>✅ Alpha</td>
+          <td>❌</td>
+          <td>2:1 ~ 5:1</td>
+          <td>中</td>
+          <td>图标、UI元素</td>
+      </tr>
+      <tr>
+          <td><strong>WEBP</strong></td>
+          <td>VP8/VP9</td>
+          <td>✅ Alpha</td>
+          <td>✅</td>
+          <td>25:1 ~ 35:1</td>
+          <td>慢</td>
+          <td>通用场景</td>
+      </tr>
+      <tr>
+          <td><strong>GIF</strong></td>
+          <td>LZW</td>
+          <td>✅ 索引透明</td>
+          <td>✅</td>
+          <td>2:1 ~ 10:1</td>
+          <td>快</td>
+          <td>简单动画</td>
+      </tr>
+      <tr>
+          <td><strong>HEIF</strong></td>
+          <td>HEVC(H.265)</td>
+          <td>✅</td>
+          <td>✅</td>
+          <td>40:1 ~ 50:1</td>
+          <td>慢</td>
+          <td>高质量照片</td>
+      </tr>
+      <tr>
+          <td><strong>AVIF</strong></td>
+          <td>AV1</td>
+          <td>✅</td>
+          <td>✅</td>
+          <td>50:1 ~ 60:1</td>
+          <td>很慢</td>
+          <td>下一代格式</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="22-jpeg-压缩原理深度剖析">2.2 JPEG 压缩原理深度剖析
+</h3><h4 id="完整压缩流程">完整压缩流程
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">原始 RGB 图像
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">1. 色彩空间转换 (RGB → YCbCr)
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">2. 下采样 (4:2:0 色度抽样)
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">3. 分块 (8×8 像素块)
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">4. DCT 变换 (空间域 → 频率域)
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">5. 量化 (丢弃高频信息)
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">6. 之字形编码 (Zigzag Scan)
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">7. 熵编码 (霍夫曼/算术编码)
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">压缩后的 JPEG 文件
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="1-色彩空间转换详解">1. 色彩空间转换详解
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># RGB → YCbCr 转换公式</span>
+</span></span><span class="line"><span class="cl"><span class="n">Y</span>  <span class="o">=</span> <span class="mf">0.299</span><span class="n">R</span> <span class="o">+</span> <span class="mf">0.587</span><span class="n">G</span> <span class="o">+</span> <span class="mf">0.114</span><span class="n">B</span>   <span class="c1"># 亮度（人眼最敏感）</span>
+</span></span><span class="line"><span class="cl"><span class="n">Cb</span> <span class="o">=</span> <span class="mf">0.564</span><span class="p">(</span><span class="n">B</span> <span class="o">-</span> <span class="n">Y</span><span class="p">)</span>                <span class="c1"># 蓝色色度</span>
+</span></span><span class="line"><span class="cl"><span class="n">Cr</span> <span class="o">=</span> <span class="mf">0.713</span><span class="p">(</span><span class="n">R</span> <span class="o">-</span> <span class="n">Y</span><span class="p">)</span>                <span class="c1"># 红色色度</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 为什么这样做？</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># - 人眼对亮度敏感，对色度不敏感</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># - 可以对 Cb/Cr 进行更激进的压缩</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="2-色度抽样策略">2. 色度抽样策略
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">4:4:4 (无抽样)    J  a  a
+</span></span><span class="line"><span class="cl">每 4 个像素：     [Y][Y][Y][Y]
+</span></span><span class="line"><span class="cl">                [Cb][Cb][Cb][Cb]
+</span></span><span class="line"><span class="cl">                [Cr][Cr][Cr][Cr]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">4:2:2 (水平抽样)  J  a  b
+</span></span><span class="line"><span class="cl">                [Y][Y][Y][Y]
+</span></span><span class="line"><span class="cl">                [Cb]   [Cb]      ← 水平方向减半
+</span></span><span class="line"><span class="cl">                [Cr]   [Cr]
+</span></span><span class="line"><span class="cl">                
+</span></span><span class="line"><span class="cl">4:2:0 (JPEG 默认) J  a  b
+</span></span><span class="line"><span class="cl">                [Y][Y][Y][Y]
+</span></span><span class="line"><span class="cl">                [Y][Y][Y][Y]
+</span></span><span class="line"><span class="cl">                [Cb]             ← 水平和垂直都减半
+</span></span><span class="line"><span class="cl">                [Cr]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">数据量对比：
+</span></span><span class="line"><span class="cl">4:4:4: 100%
+</span></span><span class="line"><span class="cl">4:2:2: 67%  (节省 33%)
+</span></span><span class="line"><span class="cl">4:2:0: 50%  (节省 50%)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="3-dct-变换数学原理">3. DCT 变换数学原理
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># 离散余弦变换（DCT）将 8×8 像素块转换为频率系数</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">dct2d</span><span class="p">(</span><span class="n">block</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;8×8 DCT 变换&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">N</span> <span class="o">=</span> <span class="mi">8</span>
+</span></span><span class="line"><span class="cl">    <span class="n">dct_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="n">sum_val</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">                <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">sum_val</span> <span class="o">+=</span> <span class="n">block</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">*</span> \
+</span></span><span class="line"><span class="cl">                               <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">u</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">N</span><span class="p">))</span> <span class="o">*</span> \
+</span></span><span class="line"><span class="cl">                               <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">N</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">            
+</span></span><span class="line"><span class="cl">            <span class="n">cu</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">if</span> <span class="n">u</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">            <span class="n">cv</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">            <span class="n">dct_matrix</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">cu</span> <span class="o">*</span> <span class="n">cv</span> <span class="o">*</span> <span class="n">sum_val</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">dct_matrix</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 示例：平滑渐变块</span>
+</span></span><span class="line"><span class="cl"><span class="n">pixel_block</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">105</span><span class="p">,</span> <span class="mi">105</span><span class="p">,</span> <span class="mi">105</span><span class="p">,</span> <span class="mi">105</span><span class="p">,</span> <span class="mi">105</span><span class="p">,</span> <span class="mi">105</span><span class="p">,</span> <span class="mi">105</span><span class="p">,</span> <span class="mi">105</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">110</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">110</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">115</span><span class="p">,</span> <span class="mi">115</span><span class="p">,</span> <span class="mi">115</span><span class="p">,</span> <span class="mi">115</span><span class="p">,</span> <span class="mi">115</span><span class="p">,</span> <span class="mi">115</span><span class="p">,</span> <span class="mi">115</span><span class="p">,</span> <span class="mi">115</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">120</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">120</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">125</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="mi">125</span><span class="p">,</span> <span class="mi">125</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">130</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">130</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">135</span><span class="p">,</span> <span class="mi">135</span><span class="p">,</span> <span class="mi">135</span><span class="p">,</span> <span class="mi">135</span><span class="p">,</span> <span class="mi">135</span><span class="p">,</span> <span class="mi">135</span><span class="p">,</span> <span class="mi">135</span><span class="p">,</span> <span class="mi">135</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">])</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">dct_coeffs</span> <span class="o">=</span> <span class="n">dct2d</span><span class="p">(</span><span class="n">pixel_block</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;DCT 系数矩阵：&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">dct_coeffs</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 输出示例（简化）：</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># [ [900.0, 0.5,  0.1,  0.0, ...], ← DC 系数（左上）+ 低频</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#   [150.0, 0.3,  0.0,  0.0, ...],</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#   [ 10.0, 0.1,  0.0,  0.0, ...],</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#   [  1.0, 0.0,  0.0,  0.0, ...],</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#   ...                            ← 高频（右下角接近 0）</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>关键观察</strong>：</p>
+<ul>
+<li>左上角（DC 系数）：平均亮度，能量集中</li>
+<li>低频区域：平滑渐变</li>
+<li>高频区域：细节纹理（通常接近 0）</li>
+</ul>
+<h4 id="4-量化表与质量控制">4. 量化表与质量控制
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># JPEG 标准亮度量化表（quality=50）</span>
+</span></span><span class="line"><span class="cl"><span class="n">Q50_luminance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">16</span><span class="p">,</span>  <span class="mi">11</span><span class="p">,</span>  <span class="mi">10</span><span class="p">,</span>  <span class="mi">16</span><span class="p">,</span>  <span class="mi">24</span><span class="p">,</span>  <span class="mi">40</span><span class="p">,</span>  <span class="mi">51</span><span class="p">,</span>  <span class="mi">61</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">12</span><span class="p">,</span>  <span class="mi">12</span><span class="p">,</span>  <span class="mi">14</span><span class="p">,</span>  <span class="mi">19</span><span class="p">,</span>  <span class="mi">26</span><span class="p">,</span>  <span class="mi">58</span><span class="p">,</span>  <span class="mi">60</span><span class="p">,</span>  <span class="mi">55</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">14</span><span class="p">,</span>  <span class="mi">13</span><span class="p">,</span>  <span class="mi">16</span><span class="p">,</span>  <span class="mi">24</span><span class="p">,</span>  <span class="mi">40</span><span class="p">,</span>  <span class="mi">57</span><span class="p">,</span>  <span class="mi">69</span><span class="p">,</span>  <span class="mi">56</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">14</span><span class="p">,</span>  <span class="mi">17</span><span class="p">,</span>  <span class="mi">22</span><span class="p">,</span>  <span class="mi">29</span><span class="p">,</span>  <span class="mi">51</span><span class="p">,</span>  <span class="mi">87</span><span class="p">,</span>  <span class="mi">80</span><span class="p">,</span>  <span class="mi">62</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">18</span><span class="p">,</span>  <span class="mi">22</span><span class="p">,</span>  <span class="mi">37</span><span class="p">,</span>  <span class="mi">56</span><span class="p">,</span>  <span class="mi">68</span><span class="p">,</span> <span class="mi">109</span><span class="p">,</span> <span class="mi">103</span><span class="p">,</span>  <span class="mi">77</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">24</span><span class="p">,</span>  <span class="mi">35</span><span class="p">,</span>  <span class="mi">55</span><span class="p">,</span>  <span class="mi">64</span><span class="p">,</span>  <span class="mi">81</span><span class="p">,</span> <span class="mi">104</span><span class="p">,</span> <span class="mi">113</span><span class="p">,</span>  <span class="mi">92</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">49</span><span class="p">,</span>  <span class="mi">64</span><span class="p">,</span>  <span class="mi">78</span><span class="p">,</span>  <span class="mi">87</span><span class="p">,</span> <span class="mi">103</span><span class="p">,</span> <span class="mi">121</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">101</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">72</span><span class="p">,</span>  <span class="mi">92</span><span class="p">,</span>  <span class="mi">95</span><span class="p">,</span>  <span class="mi">98</span><span class="p">,</span> <span class="mi">112</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">103</span><span class="p">,</span>  <span class="mi">99</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">])</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 量化过程</span>
+</span></span><span class="line"><span class="cl"><span class="n">quantized</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">dct_coeffs</span> <span class="o">/</span> <span class="n">Q50_luminance</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 效果对比</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;量化前（DCT 系数）：&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">dct_coeffs</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># [[900.0, 150.0, 10.0, 1.0],</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#  [  0.5,   0.3,  0.1, 0.0],</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#  [  0.1,   0.0,  0.0, 0.0],</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#  [  0.0,   0.0,  0.0, 0.0]]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">量化后：&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">quantized</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># [[56, 14, 1, 0],  ← 高频被量化为 0</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#  [ 0,  0, 0, 0],</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#  [ 0,  0, 0, 0],</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#  [ 0,  0, 0, 0]]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>质量参数影响</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Quality = 100: Q_table = Q50 / 2  （几乎无损）
+</span></span><span class="line"><span class="cl">Quality = 75:  Q_table = Q50      （推荐值）
+</span></span><span class="line"><span class="cl">Quality = 50:  Q_table = Q50 * 2
+</span></span><span class="line"><span class="cl">Quality = 10:  Q_table = Q50 * 10 （严重损失）
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="5-android-中-jpeg-编码实践">5. Android 中 JPEG 编码实践
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JpegCompressionDemo</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * 对比不同质量参数的效果
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">compareQualityLevels</span><span class="p">(</span><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">IOException</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="o">[]</span><span class="w"> </span><span class="n">qualities</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">10</span><span class="p">,</span><span class="w"> </span><span class="n">25</span><span class="p">,</span><span class="w"> </span><span class="n">50</span><span class="p">,</span><span class="w"> </span><span class="n">75</span><span class="p">,</span><span class="w"> </span><span class="n">90</span><span class="p">,</span><span class="w"> </span><span class="n">100</span><span class="p">};</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">quality</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">qualities</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">ByteArrayOutputStream</span><span class="w"> </span><span class="n">baos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ByteArrayOutputStream</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">bitmap</span><span class="p">.</span><span class="na">compress</span><span class="p">(</span><span class="n">Bitmap</span><span class="p">.</span><span class="na">CompressFormat</span><span class="p">.</span><span class="na">JPEG</span><span class="p">,</span><span class="w"> </span><span class="n">quality</span><span class="p">,</span><span class="w"> </span><span class="n">baos</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kt">byte</span><span class="o">[]</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">baos</span><span class="p">.</span><span class="na">toByteArray</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">sizeKB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="na">length</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1024</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="s">&#34;JPEG&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="p">.</span><span class="na">format</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="s">&#34;Quality=%d, Size=%dKB, Ratio=%.2f%%&#34;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">quality</span><span class="p">,</span><span class="w"> </span><span class="n">sizeKB</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">sizeKB</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">100</span><span class="p">.</span><span class="na">0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">getOriginalSize</span><span class="p">(</span><span class="n">bitmap</span><span class="p">))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 实际测试结果（1920×1080 照片）：</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Quality=10,  Size=45KB,  Ratio=0.6%  ← 明显块效应</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Quality=25,  Size=98KB,  Ratio=1.3%</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Quality=50,  Size=178KB, Ratio=2.3%</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Quality=75,  Size=312KB, Ratio=4.1%  ← 推荐值</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Quality=90,  Size=521KB, Ratio=6.8%</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Quality=100, Size=892KB, Ratio=11.7% ← 接近无损</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">getOriginalSize</span><span class="p">(</span><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">getWidth</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">getHeight</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">4</span><span class="p">;</span><span class="w"> </span><span class="c1">// ARGB_8888</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="23-png-无损压缩原理">2.3 PNG 无损压缩原理
+</h3><h4 id="png-压缩流程">PNG 压缩流程
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">原始像素数据
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">1. 滤波预处理 (Filter)
+</span></span><span class="line"><span class="cl">   ├─ None (0)
+</span></span><span class="line"><span class="cl">   ├─ Sub (1)    ← 当前像素 - 左侧像素
+</span></span><span class="line"><span class="cl">   ├─ Up (2)     ← 当前像素 - 上方像素
+</span></span><span class="line"><span class="cl">   ├─ Average (3)← 当前像素 - (左+上)/2
+</span></span><span class="line"><span class="cl">   └─ Paeth (4)  ← 自适应滤波器
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">2. DEFLATE 压缩
+</span></span><span class="line"><span class="cl">   ├─ LZ77 查找重复模式
+</span></span><span class="line"><span class="cl">   └─ 霍夫曼编码
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">PNG 文件
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="滤波算法详解">滤波算法详解
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">PNGFilter</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@staticmethod</span>
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">filter_sub</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">bytes_per_pixel</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;Sub 滤波：减去左侧像素&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">filtered</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)):</span>
+</span></span><span class="line"><span class="cl">            <span class="n">left</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">bytes_per_pixel</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">bytes_per_pixel</span> <span class="k">else</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">            <span class="n">filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">left</span><span class="p">)</span> <span class="o">%</span> <span class="mi">256</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">filtered</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nd">@staticmethod</span>
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">filter_up</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">prev_row</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;Up 滤波：减去上方像素&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">prev_row</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">row</span>
+</span></span><span class="line"><span class="cl">        <span class="n">filtered</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)):</span>
+</span></span><span class="line"><span class="cl">            <span class="n">filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">prev_row</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">%</span> <span class="mi">256</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">filtered</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nd">@staticmethod</span>
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">filter_paeth</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">prev_row</span><span class="p">,</span> <span class="n">bytes_per_pixel</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;Paeth 滤波：自适应预测&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">filtered</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)):</span>
+</span></span><span class="line"><span class="cl">            <span class="n">a</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">bytes_per_pixel</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">bytes_per_pixel</span> <span class="k">else</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">            <span class="n">b</span> <span class="o">=</span> <span class="n">prev_row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">prev_row</span> <span class="k">else</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">            <span class="n">c</span> <span class="o">=</span> <span class="n">prev_row</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">bytes_per_pixel</span><span class="p">]</span> <span class="k">if</span> <span class="n">prev_row</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">bytes_per_pixel</span> <span class="k">else</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">            
+</span></span><span class="line"><span class="cl">            <span class="c1"># Paeth 预测器</span>
+</span></span><span class="line"><span class="cl">            <span class="n">p</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">-</span> <span class="n">c</span>
+</span></span><span class="line"><span class="cl">            <span class="n">pa</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">pb</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">pc</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">pa</span> <span class="o">&lt;=</span> <span class="n">pb</span> <span class="ow">and</span> <span class="n">pa</span> <span class="o">&lt;=</span> <span class="n">pc</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">predictor</span> <span class="o">=</span> <span class="n">a</span>
+</span></span><span class="line"><span class="cl">            <span class="k">elif</span> <span class="n">pb</span> <span class="o">&lt;=</span> <span class="n">pc</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">predictor</span> <span class="o">=</span> <span class="n">b</span>
+</span></span><span class="line"><span class="cl">            <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">predictor</span> <span class="o">=</span> <span class="n">c</span>
+</span></span><span class="line"><span class="cl">            
+</span></span><span class="line"><span class="cl">            <span class="n">filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">predictor</span><span class="p">)</span> <span class="o">%</span> <span class="mi">256</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">filtered</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 示例：渐变图像</span>
+</span></span><span class="line"><span class="cl"><span class="n">gradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">103</span><span class="p">,</span> <span class="mi">104</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">103</span><span class="p">,</span> <span class="mi">104</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">102</span><span class="p">,</span> <span class="mi">103</span><span class="p">,</span> <span class="mi">104</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">])</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 原始数据（5 字节/行）</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;原始：&#34;</span><span class="p">,</span> <span class="n">gradient</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># [100, 101, 102, 103, 104]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Sub 滤波后</span>
+</span></span><span class="line"><span class="cl"><span class="n">sub_filtered</span> <span class="o">=</span> <span class="n">PNGFilter</span><span class="o">.</span><span class="n">filter_sub</span><span class="p">(</span><span class="n">gradient</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Sub：&#34;</span><span class="p">,</span> <span class="n">sub_filtered</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># [100, 1, 1, 1, 1]  ← 大量重复值，易于压缩！</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>为什么滤波有效？</strong></p>
+<ul>
+<li>原始数据：<code>[100, 101, 102, 103, 104]</code> → 熵高</li>
+<li>滤波后：<code>[100, 1, 1, 1, 1]</code> → 熵低，DEFLATE 可高效压缩</li>
+</ul>
+<h4 id="android-中的-png-质量控制">Android 中的 PNG 质量控制
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// PNG 是无损格式，quality 参数被忽略</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">bitmap</span><span class="p">.</span><span class="na">compress</span><span class="p">(</span><span class="n">Bitmap</span><span class="p">.</span><span class="na">CompressFormat</span><span class="p">.</span><span class="na">PNG</span><span class="p">,</span><span class="w"> </span><span class="n">100</span><span class="p">,</span><span class="w"> </span><span class="n">outputStream</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 即使设置 quality=0，输出质量仍是无损的</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 如需减小 PNG 体积，可通过以下方式：</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 1. 降低颜色深度</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">Options</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BitmapFactory</span><span class="p">.</span><span class="na">Options</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">options</span><span class="p">.</span><span class="na">inPreferredConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="p">.</span><span class="na">RGB_565</span><span class="p">;</span><span class="w"> </span><span class="c1">// 16-bit PNG</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 2. 使用外部工具优化（例如 pngquant）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 将 24-bit PNG 转换为 8-bit 索引色</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">Runtime</span><span class="p">.</span><span class="na">getRuntime</span><span class="p">().</span><span class="na">exec</span><span class="p">(</span><span class="s">&#34;pngquant --quality=65-80 input.png&#34;</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="24-webp-统一压缩方案">2.4 WEBP 统一压缩方案
+</h3><p>WEBP 同时支持有损和无损模式，基于 VP8/VP9 视频编码技术。</p>
+<h4 id="压缩模式对比">压缩模式对比
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">WebpDemo</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">compareWebpModes</span><span class="p">(</span><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">IOException</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 1. 有损模式（类似 JPEG）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">ByteArrayOutputStream</span><span class="w"> </span><span class="n">lossyStream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ByteArrayOutputStream</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">bitmap</span><span class="p">.</span><span class="na">compress</span><span class="p">(</span><span class="n">Bitmap</span><span class="p">.</span><span class="na">CompressFormat</span><span class="p">.</span><span class="na">WEBP</span><span class="p">,</span><span class="w"> </span><span class="n">75</span><span class="p">,</span><span class="w"> </span><span class="n">lossyStream</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">lossySize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lossyStream</span><span class="p">.</span><span class="na">size</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 2. 无损模式（Android 9.0+，quality=100）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">ByteArrayOutputStream</span><span class="w"> </span><span class="n">losslessStream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ByteArrayOutputStream</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">bitmap</span><span class="p">.</span><span class="na">compress</span><span class="p">(</span><span class="n">Bitmap</span><span class="p">.</span><span class="na">CompressFormat</span><span class="p">.</span><span class="na">WEBP</span><span class="p">,</span><span class="w"> </span><span class="n">100</span><span class="p">,</span><span class="w"> </span><span class="n">losslessStream</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">losslessSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">losslessStream</span><span class="p">.</span><span class="na">size</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="s">&#34;WEBP&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;Lossy:  &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">lossySize</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1024</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;KB&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="s">&#34;WEBP&#34;</span><span class="p">,</span><span class="w"> </span><span class="s">&#34;Lossless: &#34;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">losslessSize</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1024</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&#34;KB&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 实际测试（1920×1080 照片）：</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// Lossy (quality=75):  245KB  ← 比 JPEG 小 21%</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// Lossless (quality=100): 678KB  ← 比 PNG 小 24%</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="webp-透明度支持">WEBP 透明度支持
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// WEBP 支持完整的 Alpha 通道（有损+透明）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">Bitmap</span><span class="w"> </span><span class="n">transparentBitmap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Bitmap</span><span class="p">.</span><span class="na">createBitmap</span><span class="p">(</span><span class="n">800</span><span class="p">,</span><span class="w"> </span><span class="n">600</span><span class="p">,</span><span class="w"> </span><span class="n">Config</span><span class="p">.</span><span class="na">ARGB_8888</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">Canvas</span><span class="w"> </span><span class="n">canvas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Canvas</span><span class="p">(</span><span class="n">transparentBitmap</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">canvas</span><span class="p">.</span><span class="na">drawColor</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="na">TRANSPARENT</span><span class="p">,</span><span class="w"> </span><span class="n">PorterDuff</span><span class="p">.</span><span class="na">Mode</span><span class="p">.</span><span class="na">CLEAR</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 绘制半透明内容...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 保存为带透明度的 WEBP</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">ByteArrayOutputStream</span><span class="w"> </span><span class="n">baos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ByteArrayOutputStream</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">transparentBitmap</span><span class="p">.</span><span class="na">compress</span><span class="p">(</span><span class="n">Bitmap</span><span class="p">.</span><span class="na">CompressFormat</span><span class="p">.</span><span class="na">WEBP</span><span class="p">,</span><span class="w"> </span><span class="n">80</span><span class="p">,</span><span class="w"> </span><span class="n">baos</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// PNG 替代方案：</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// - 文件大小：WEBP 约为 PNG 的 70%</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// - 编码速度：WEBP 慢 2-3 倍</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// - 解码速度：WEBP 慢 1.5 倍</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="25-格式选择决策流程图">2.5 格式选择决策流程图
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[开始]
+</span></span><span class="line"><span class="cl">   ↓
+</span></span><span class="line"><span class="cl">需要透明度？
+</span></span><span class="line"><span class="cl">   ├─ 是 → 需要动画？
+</span></span><span class="line"><span class="cl">   │      ├─ 是 → WEBP (首选) / GIF (兼容性)
+</span></span><span class="line"><span class="cl">   │      └─ 否 → 是否需要无损？
+</span></span><span class="line"><span class="cl">   │             ├─ 是 → PNG
+</span></span><span class="line"><span class="cl">   │             └─ 否 → WEBP (有损+Alpha)
+</span></span><span class="line"><span class="cl">   │
+</span></span><span class="line"><span class="cl">   └─ 否 → 是否照片/复杂图像？
+</span></span><span class="line"><span class="cl">          ├─ 是 → 平台支持 WEBP？
+</span></span><span class="line"><span class="cl">          │      ├─ 是 → WEBP (最优)
+</span></span><span class="line"><span class="cl">          │      └─ 否 → JPEG
+</span></span><span class="line"><span class="cl">          │
+</span></span><span class="line"><span class="cl">          └─ 否 → 是否简单图标/UI？
+</span></span><span class="line"><span class="cl">                 ├─ 是 → PNG (清晰) / WEBP (体积)
+</span></span><span class="line"><span class="cl">                 └─ 否 → 根据文件大小和质量需求选择
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="26-实际项目中的格式策略">2.6 实际项目中的格式策略
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ImageFormatSelector</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * 根据图像特征自动选择最佳格式
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">CompressFormat</span><span class="w"> </span><span class="nf">selectOptimalFormat</span><span class="p">(</span><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 1. 检查透明度</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">boolean</span><span class="w"> </span><span class="n">hasAlpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">hasAlpha</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 2. 分析图像复杂度</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">complexity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calculateComplexity</span><span class="p">(</span><span class="n">bitmap</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 3. 决策逻辑</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">hasAlpha</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">complexity</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">1000</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">// 复杂透明图像 → WEBP（有损+Alpha）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">CompressFormat</span><span class="p">.</span><span class="na">WEBP</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">// 简单透明图像 → PNG（无损）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">CompressFormat</span><span class="p">.</span><span class="na">PNG</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">complexity</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">500</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">// 照片级图像 → WEBP（Android 4.0+）或 JPEG</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">Build</span><span class="p">.</span><span class="na">VERSION</span><span class="p">.</span><span class="na">SDK_INT</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">14</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="o">?</span><span class="w"> </span><span class="n">CompressFormat</span><span class="p">.</span><span class="na">WEBP</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">:</span><span class="w"> </span><span class="n">CompressFormat</span><span class="p">.</span><span class="na">JPEG</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">// 简单图像 → PNG</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">CompressFormat</span><span class="p">.</span><span class="na">PNG</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * 计算图像复杂度（边缘密度）
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">calculateComplexity</span><span class="p">(</span><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">getWidth</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">getHeight</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">edgeCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">1</span><span class="p">;</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">1</span><span class="p">;</span><span class="w"> </span><span class="n">y</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">1</span><span class="p">;</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">1</span><span class="p">;</span><span class="w"> </span><span class="n">x</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="kt">int</span><span class="w"> </span><span class="n">center</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">getPixel</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="kt">int</span><span class="w"> </span><span class="n">right</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">getPixel</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">1</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="kt">int</span><span class="w"> </span><span class="n">bottom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">getPixel</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">1</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">// 简单边缘检测</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Math</span><span class="p">.</span><span class="na">abs</span><span class="p">(</span><span class="n">center</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">right</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">30</span><span class="w"> </span><span class="o">||</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">Math</span><span class="p">.</span><span class="na">abs</span><span class="p">(</span><span class="n">center</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">bottom</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">30</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">edgeCount</span><span class="o">++</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">edgeCount</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h2 id="三实战建议总结">三、实战建议总结
+</h2><h3 id="31-内存优化检查清单">3.1 内存优化检查清单
+</h3><ul>
+<li><input disabled="" type="checkbox"> <strong>优先使用 RGB_565</strong>：不透明图片可节省 50% 内存</li>
+<li><input disabled="" type="checkbox"> <strong>启用 inSampleSize</strong>：缩略图场景必须降采样</li>
+<li><input disabled="" type="checkbox"> <strong>监控 Native 内存</strong>：使用 <code>Debug.getNativeHeapAllocatedSize()</code></li>
+<li><input disabled="" type="checkbox"> <strong>避免内存抖动</strong>：复用 Bitmap（下一篇详解）</li>
+<li><input disabled="" type="checkbox"> <strong>大图分块加载</strong>：超过屏幕 4 倍的图片使用 <code>BitmapRegionDecoder</code></li>
+</ul>
+<h3 id="32-格式选择最佳实践">3.2 格式选择最佳实践
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>场景</th>
+          <th>推荐格式</th>
+          <th>备选方案</th>
+          <th>原因</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>App 图标</td>
+          <td>PNG</td>
+          <td>WEBP</td>
+          <td>需要清晰边缘</td>
+      </tr>
+      <tr>
+          <td>启动页</td>
+          <td>WEBP</td>
+          <td>JPEG</td>
+          <td>平衡质量和体积</td>
+      </tr>
+      <tr>
+          <td>照片墙</td>
+          <td>WEBP (quality=75)</td>
+          <td>JPEG</td>
+          <td>体积最小</td>
+      </tr>
+      <tr>
+          <td>表情包</td>
+          <td>WEBP 动画</td>
+          <td>GIF</td>
+          <td>支持透明度</td>
+      </tr>
+      <tr>
+          <td>用户头像</td>
+          <td>WEBP (quality=80)</td>
+          <td>JPEG</td>
+          <td>圆角需要 Alpha</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="33-性能监控代码">3.3 性能监控代码
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BitmapMemoryMonitor</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">logMemoryStatus</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 1. Java 堆使用情况</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Runtime</span><span class="w"> </span><span class="n">runtime</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Runtime</span><span class="p">.</span><span class="na">getRuntime</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">javaUsed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runtime</span><span class="p">.</span><span class="na">totalMemory</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">runtime</span><span class="p">.</span><span class="na">freeMemory</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">javaMax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">runtime</span><span class="p">.</span><span class="na">maxMemory</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 2. Native 堆使用情况（Android 8.0+）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">nativeUsed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Debug</span><span class="p">.</span><span class="na">getNativeHeapAllocatedSize</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">nativeMax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Debug</span><span class="p">.</span><span class="na">getNativeHeapSize</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 3. Bitmap 内存统计</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">bitmapMemory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">mBitmapPool</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">bitmapMemory</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">getAllocationByteCount</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">Log</span><span class="p">.</span><span class="na">d</span><span class="p">(</span><span class="s">&#34;Memory&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="p">.</span><span class="na">format</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="s">&#34;Java: %dMB/%dMB | Native: %dMB/%dMB | Bitmap: %dMB&#34;</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">javaUsed</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1024</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1024</span><span class="p">,</span><span class="w"> </span><span class="n">javaMax</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1024</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1024</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">nativeUsed</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1024</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1024</span><span class="p">,</span><span class="w"> </span><span class="n">nativeMax</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1024</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1024</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">bitmapMemory</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1024</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">1024</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h2 id="参考资料">参考资料
+</h2><ol>
+<li><a class="link" href="https://developer.android.com/topic/performance/graphics"  target="_blank" rel="noopener"
+    >Android Developers - Bitmap Memory Management</a></li>
+<li><a class="link" href="https://skia.org/docs/user/api/SkBitmap_Reference/"  target="_blank" rel="noopener"
+    >Skia Graphics Library - Bitmap</a></li>
+<li><a class="link" href="https://www.w3.org/Graphics/JPEG/itu-t81.pdf"  target="_blank" rel="noopener"
+    >JPEG Standard (ITU-T T.81)</a></li>
+<li><a class="link" href="http://www.libpng.org/pub/png/spec/1.2/PNG-Contents.html"  target="_blank" rel="noopener"
+    >PNG Specification</a></li>
+<li><a class="link" href="https://developers.google.com/speed/webp"  target="_blank" rel="noopener"
+    >WebP Documentation</a></li>
+</ol>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/android/">Android</a>
+        
+            <a href="/tags/bitmap/">Bitmap</a>
+        
+            <a href="/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">内存管理</a>
+        
+            <a href="/tags/%E5%9B%BE%E7%89%87%E6%A0%BC%E5%BC%8F/">图片格式</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/p/android-bitmap-%E5%AE%9E%E6%88%98%E7%AF%87%E7%BC%96%E7%A0%81%E5%AE%9E%E8%B7%B5%E4%B8%8E%E5%A4%8D%E7%94%A8%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Android Bitmap 实战篇：编码实践与复用机制详解</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/p/android-bitmap-%E9%AB%98%E7%BA%A7%E7%AF%87hardware-bitmaphdr-%E4%B8%8E%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Android Bitmap 高级篇:Hardware Bitmap、HDR 与性能优化实战</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 xiangcheng
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

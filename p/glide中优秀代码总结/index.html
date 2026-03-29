@@ -248,14 +248,32 @@
           </ol>
         </li>
         <li><a href="#解码静态代理">解码(静态代理)</a></li>
-        <li><a href="#策略模式">策略模式</a></li>
+        <li><a href="#策略模式">策略模式</a>
+          <ol>
+            <li><a href="#diskcachestrategy--磁盘缓存策略">DiskCacheStrategy — 磁盘缓存策略</a></li>
+            <li><a href="#lrupoolstrategy--内存池策略">LruPoolStrategy — 内存池策略</a></li>
+            <li><a href="#数据结构设计">数据结构设计</a></li>
+            <li><a href="#为什么用groupedlinkedmap而不是linkedhashmap">为什么用GroupedLinkedMap而不是LinkedHashMap？</a></li>
+            <li><a href="#查找流程解析">查找流程解析</a></li>
+            <li><a href="#复用bitmap的核心reconfigure">复用Bitmap的核心：reconfigure</a></li>
+            <li><a href="#为什么可以复用更大的bitmap">为什么可以复用更大的Bitmap？</a></li>
+            <li><a href="#put流程维护sortedsizes">put流程：维护sortedSizes</a></li>
+            <li><a href="#策略模式的核心特征">策略模式的核心特征</a></li>
+            <li><a href="#attributestrategy--精确匹配策略">AttributeStrategy — 精确匹配策略</a></li>
+            <li><a href="#sizeconfigstrategy--尺寸灵活匹配策略">SizeConfigStrategy — 尺寸灵活匹配策略</a></li>
+            <li><a href="#attributestrategy-vs-sizeconfigstrategy-核心区别">AttributeStrategy vs SizeConfigStrategy 核心区别</a></li>
+            <li><a href="#config兼容性详解">Config兼容性详解</a></li>
+            <li><a href="#何时使用哪种策略">何时使用哪种策略？</a></li>
+          </ol>
+        </li>
         <li><a href="#装饰者模式">装饰者模式</a></li>
-        <li><a href="#责任链模式">责任链模式</a></li>
+        <li><a href="#管道模式修正说明">管道模式（修正说明）</a></li>
         <li><a href="#代理模式">代理模式</a></li>
         <li><a href="#组合模式">组合模式</a></li>
         <li><a href="#适配器模式">适配器模式</a></li>
         <li><a href="#桥接模式">桥接模式</a></li>
         <li><a href="#线程池控制">线程池控制</a></li>
+        <li><a href="#生命周期监听">生命周期监听</a></li>
       </ol>
     </li>
   </ol>
@@ -326,7 +344,7 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 9 分钟
+                    阅读时长: 14 分钟
                 </time>
             </div>
         
@@ -848,7 +866,7 @@
 </div>
 </div><p>也是在外部接口中定义内部接口。在前面介绍InputStream转化成File的时候讲过，先把各种DataRewinder.Factory注册到DataRewinderRegistry中，然后通过传入的class类型获取到对应的DataRewinder.Factory，接着通过build方法获取到DataRewinder。</p>
 <h4 id="encoder的获取">Encoder的获取
-</h4><p>Encoder是编码器的接口类，Encoder的创建虽然没有用到Factory，但是它是和上面DataRewinder的创建形成了对比，Encoder它是直接在Registry阶段直接包转成Entry，然后在获取的时候直接从Entry中获取到Encoder。
+</h4><p>Encoder是编码器的接口类，Encoder的创建虽然没有用到Factory，但是它是和上面DataRewinder的创建形成了对比，Encoder它是直接在Registry阶段直接包装成Entry，然后在获取的时候直接从Entry中获取到Encoder。
 Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factory来创建？</p>
 <div class="table-wrapper"><table>
   <thead>
@@ -923,7 +941,8 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p>它不持有数据，所以是无状态的。数据是通过方法参数传入。并且StreamEncoder是应用级别的，它无需每次进行创建。所以它无需通过factory进行延迟初始化。而在DataRewinder中它是需要持有数据的，比如前面讲的InputStreamRewinder：</p>
+</div><p>它不持有数据，所以是无状态的。数据是通过方法参数传入。并且StreamEncoder是应用级别的，它无需每次进行创建。所以它无需通过factory进行延迟初始化。</p>
+<p>而在DataRewinder中它是需要持有数据的，比如前面讲的InputStreamRewinder：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -969,6 +988,56 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>它需要持有数据，因为它需要多次对流进行重置位置。并且每次获取图片都需要创建一个新的DataRewinder，所以它需要通过factory来创建不同的DataRewinder，因为它是跟数据绑定在一块的，因此用到了延迟初始化。</p>
+<p><strong>StreamEncoder中的ArrayPool使用：</strong>
+在StreamEncoder中，<code>byteArrayPool.get(ArrayPool.STANDARD_BUFFER_SIZE_BYTES, byte[].class)</code>这行代码非常关键。如果不使用ArrayPool，每次encode操作都会：</p>
+<ol>
+<li><strong>创建新的byte数组</strong>：<code>new byte[ArrayPool.STANDARD_BUFFER_SIZE_BYTES]</code>，这会在堆上分配内存</li>
+<li><strong>增加GC压力</strong>：每次encode完成后，这个byte数组就会成为垃圾，需要GC回收</li>
+<li><strong>内存抖动</strong>：频繁的内存分配和回收会导致内存抖动，影响性能</li>
+</ol>
+<p><strong>使用ArrayPool的好处：</strong></p>
+<ul>
+<li><strong>内存复用</strong>：从池中获取已存在的byte数组，避免重复创建</li>
+<li><strong>减少GC</strong>：用完后再放回池中，不会被当作垃圾回收</li>
+<li><strong>性能提升</strong>：减少了内存分配和回收的开销</li>
+<li><strong>线程安全</strong>：ArrayPool内部实现了线程安全的获取和归还机制</li>
+</ul>
+<p><strong>如果不使用ArrayPool会怎样？</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 不使用ArrayPool的版本</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">InputStream</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">File</span><span class="w"> </span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="nd">@NonNull</span><span class="w"> </span><span class="n">Options</span><span class="w"> </span><span class="n">options</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">byte</span><span class="o">[]</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">byte</span><span class="o">[</span><span class="n">ArrayPool</span><span class="p">.</span><span class="na">STANDARD_BUFFER_SIZE_BYTES</span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="c1">// 每次都创建新数组</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">boolean</span><span class="w"> </span><span class="n">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">OutputStream</span><span class="w"> </span><span class="n">os</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">FileOutputStream</span><span class="p">(</span><span class="n">file</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">read</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">((</span><span class="n">read</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="na">read</span><span class="p">(</span><span class="n">buffer</span><span class="p">))</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="o">-</span><span class="n">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">os</span><span class="p">.</span><span class="na">write</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">,</span><span class="w"> </span><span class="n">read</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">os</span><span class="p">.</span><span class="na">close</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// buffer这里会成为垃圾，等待GC回收</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">success</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>在高并发场景下，这种实现会导致大量的内存分配和GC，严重影响性能。</p>
 <h3 id="解码静态代理">解码(静态代理)
 </h3><ul>
 <li>首先了解几个概念，dataClass：数据源类型，比如从网络获取的数据类型是byteBuffer.class类型。resourceClass：解码后的资源类型，比如bitmap的解码，它是BitmapDrawable.class，也就是bitmap的drawable包装。transcodeClass：最终转换类型，比如要展示到imageView上的时候，此时是Drawable.class类型。</li>
@@ -1016,7 +1085,8 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </div>
 </div><p>最终将这些Entry装载到ResourceDecoderRegistry的decoders这个map中。比如在前面介绍的BitmapDrawableDecoder，它就是按照bucket= &ldquo;BitmapDrawable&rdquo;,dataClass=&ldquo;ByteBuffer.class&rdquo;,resourceClass=&ldquo;BitmapDrawable.class&rdquo;,decoder=BitmapDrawableDecoder组成的entry来获取的。并且在BitmapDrawableDecoder中使用了代理模式，实际代理到ByteBufferBitmapDecoder，最终会调用到Downsampler中。</p>
 <h3 id="策略模式">策略模式
-</h3><p>DiskCacheStrategy代表的是硬盘缓存策略，先看下DiskCacheStrategy抽象类有哪几个方法：</p>
+</h3><h4 id="diskcachestrategy--磁盘缓存策略">DiskCacheStrategy — 磁盘缓存策略
+</h4><p>DiskCacheStrategy代表的是硬盘缓存策略，先看下DiskCacheStrategy抽象类有哪几个方法：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1228,6 +1298,606 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在RequestBuilder的into方法中构造不同的Transformation，有CenterCrop、CenterInside、FitCenter这几类都是属于Transformation接口。</p>
+<h4 id="lrupoolstrategy--内存池策略">LruPoolStrategy — 内存池策略
+</h4><p>LruPoolStrategy是Glide中用于管理Bitmap对象池的策略接口，它实现了LRU（Least Recently Used）算法的不同实现方式，让LruBitmapPool能够灵活切换不同的内存管理策略：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="c1">// LruPoolStrategy接口定义</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">interface</span> <span class="nc">LruPoolStrategy</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Bitmap</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="w"> </span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="nf">getSize</span><span class="p">(</span><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">clear</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>LruBitmapPool中使用了策略模式，通过LruPoolStrategy接口来管理Bitmap的存储和获取：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">LruBitmapPool</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">BitmapPool</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">LruPoolStrategy</span><span class="w"> </span><span class="n">strategy</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">currentSize</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">maxSize</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bitmap</span><span class="p">.</span><span class="na">getAllocationByteCount</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxSize</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//如果单个bitmap大于池子的最大值，直接回收</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">bitmap</span><span class="p">.</span><span class="na">recycle</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="k">return</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">strategy</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">bitmap</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">currentSize</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">getAllocationByteCount</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//超出最大值就淘汰</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">trimToSize</span><span class="p">(</span><span class="n">maxSize</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="n">Bitmap</span><span class="w"> </span><span class="nf">getDirty</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="w"> </span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Bitmap</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strategy</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">//没有可复用的，创建新的</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createBitmap</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>SizeConfigStrategy是LruPoolStrategy的具体实现类，它按照Bitmap的字节大小和Config组合作为key进行匹配。下面详细解释SizeConfigStrategy是如何根据width、height、config找到对应的Bitmap的：</p>
+<h4 id="数据结构设计">数据结构设计
+</h4><p>SizeConfigStrategy使用了三个核心数据结构：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">SizeConfigStrategy</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">LruPoolStrategy</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">KeyPool</span><span class="w"> </span><span class="n">keyPool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">KeyPool</span><span class="p">();</span><span class="w">           </span><span class="c1">// Key对象池，避免重复创建Key对象</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">GroupedLinkedMap</span><span class="o">&lt;</span><span class="n">Key</span><span class="p">,</span><span class="w"> </span><span class="n">Bitmap</span><span class="o">&gt;</span><span class="w"> </span><span class="n">groupedMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">GroupedLinkedMap</span><span class="o">&lt;&gt;</span><span class="p">();</span><span class="w">  </span><span class="c1">// LRU缓存容器</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//按照大小排序的TreeMap，用于快速查找大于等于目标大小的bitmap</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//外层Map：key是Bitmap.Config，value是该Config对应的TreeMap</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//内层TreeMap：key是Bitmap的字节大小(Integer)，value是数量(Integer)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Map</span><span class="o">&lt;</span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="p">,</span><span class="w"> </span><span class="n">NavigableMap</span><span class="o">&lt;</span><span class="n">Integer</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">sortedSizes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">HashMap</span><span class="o">&lt;&gt;</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>TreeMap是按照Bitmap的字节大小（Integer）来排序的</strong>，即按照width × height × 每个像素的字节数进行升序排列。例如：40000字节 &lt; 80000字节 &lt; 160000字节。</p>
+<h4 id="为什么用groupedlinkedmap而不是linkedhashmap">为什么用GroupedLinkedMap而不是LinkedHashMap？
+</h4><p><strong>GroupedLinkedMap是Glide自定义的一个数据结构，它和LinkedHashMap的主要区别在于：</strong></p>
+<p><strong>1. LinkedHashMap的局限性</strong></p>
+<ul>
+<li>LinkedHashMap只能按照<strong>插入顺序</strong>或<strong>访问顺序</strong>排序</li>
+<li>它只有一条链表，所有元素都在同一条链路上</li>
+<li>当需要淘汰时，只能从链表头部（最久未使用）移除元素</li>
+</ul>
+<p><strong>2. GroupedLinkedMap的优势 — 分组LRU</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">GroupedLinkedMap</span><span class="o">&lt;</span><span class="n">Key</span><span class="p">,</span><span class="w"> </span><span class="n">Value</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">LinkedHashMap</span><span class="o">&lt;</span><span class="n">Key</span><span class="p">,</span><span class="w"> </span><span class="n">Value</span><span class="o">&gt;</span><span class="w"> </span><span class="n">cache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">LinkedHashMap</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="n">100</span><span class="p">,</span><span class="w"> </span><span class="n">0</span><span class="p">.</span><span class="na">75f</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Map</span><span class="o">&lt;</span><span class="n">Key</span><span class="p">,</span><span class="w"> </span><span class="n">LinkedHashMap</span><span class="o">&lt;</span><span class="n">Key</span><span class="p">,</span><span class="w"> </span><span class="n">Value</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">groups</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">HashMap</span><span class="o">&lt;&gt;</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// put时：将元素放入对应的group中</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">Value</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 支持分组：同一个大小的Bitmap放在同一个group中</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// get时：更新访问顺序</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="n">Value</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">cache</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">key</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// evictMostRecentlyUsed：淘汰时优先淘汰最近最少使用的</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">evictMostRecentlyUsed</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 从最久未使用的group中淘汰最久未使用的元素</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>3. 核心区别：分组管理</strong></p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>特性</th>
+          <th>LinkedHashMap</th>
+          <th>GroupedLinkedMap</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>分组</td>
+          <td>不支持</td>
+          <td>支持分组</td>
+      </tr>
+      <tr>
+          <td>淘汰策略</td>
+          <td>单一链表，全局LRU</td>
+          <td>分组内LRU</td>
+      </tr>
+      <tr>
+          <td>场景</td>
+          <td>通用缓存</td>
+          <td>适合多规格缓存池</td>
+      </tr>
+  </tbody>
+</table></div>
+<p><strong>4. 在SizeConfigStrategy中的实际作用</strong></p>
+<p>SizeConfigStrategy中使用GroupedLinkedMap的原因是：<strong>同一个size的Bitmap可能有多张</strong>（比如多次解码产生相同尺寸的Bitmap），它们应该被归为一组进行管理。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="c1">// 场景：池中有多个100x100的Bitmap</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// GroupedLinkedMap会将它们放在同一个group中</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 淘汰时：优先淘汰最近最少使用的那个group中的元素</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>总结：</strong></p>
+<ul>
+<li><strong>LinkedHashMap</strong>：所有元素共用一条LRU链表，淘汰时全局最久未使用的</li>
+<li><strong>GroupedLinkedMap</strong>：按Key分组，每组有独立的LRU链，淘汰时在最近最少使用的组内淘汰</li>
+</ul>
+<p>这种设计更适合Bitmap对象池的场景，因为相同尺寸的Bitmap会被复用，它们应该作为一组进行LRU管理，而不是和不同尺寸的Bitmap混在一起。</p>
+<h4 id="查找流程解析">查找流程解析
+</h4><p><strong>第一步：计算目标大小</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kt">int</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Util</span><span class="p">.</span><span class="na">getBitmapByteSize</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 计算公式：width * height * 每个像素的字节数</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// ARGB_8888 = 4字节/pixel，RGB_565 = 2字节/pixel</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>第二步：构建Key并查找</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="n">Key</span><span class="w"> </span><span class="n">bestKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">findBestKey</span><span class="p">(</span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">Bitmap</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">groupedMap</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">bestKey</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>第三步：核心查找算法findBestKey</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="n">Key</span><span class="w"> </span><span class="nf">findBestKey</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="w"> </span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 1. 从sortedSizes中获取该Config对应的TreeMap</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">NavigableMap</span><span class="o">&lt;</span><span class="n">Integer</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">sizesForConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sortedSizes</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 2. 使用TreeMap的ceilingKey方法找到大于等于目标大小的最小key</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">//    这是算法的核心，时间复杂度O(logN)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Integer</span><span class="w"> </span><span class="n">sizeKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sizesForConfig</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">sizesForConfig</span><span class="p">.</span><span class="na">ceilingKey</span><span class="p">(</span><span class="n">size</span><span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 3. 如果没找到，尝试从其他Config中查找（允许Config不匹配）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sizeKey</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 遍历其他Config...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 4. 用找到的sizeKey构建Key对象</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">keyPool</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">sizeKey</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">key</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="复用bitmap的核心reconfigure">复用Bitmap的核心：reconfigure
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 关键步骤：将找到的Bitmap重新配置为目标尺寸</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">result</span><span class="p">.</span><span class="na">reconfigure</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="为什么可以复用更大的bitmap">为什么可以复用更大的Bitmap？
+</h4><p>Glide的策略是：<strong>只要 Bitmap.getAllocationByteCount() &gt;= 目标大小，就可以复用</strong></p>
+<p>例如：</p>
+<ul>
+<li>需要：100x100, ARGB_8888 = 40000字节</li>
+<li>池中有：200x200, ARGB_8888 = 160000字节</li>
+<li>结果：复用200x200的Bitmap，通过reconfigure变成100x100</li>
+</ul>
+<p>这种设计的好处：</p>
+<ol>
+<li><strong>提高复用率</strong>：不严格要求尺寸完全匹配，只要够大就能复用</li>
+<li><strong>减少内存碎片</strong>：大Bitmap被复用后，小Bitmap可以被新请求使用</li>
+<li><strong>高效查找</strong>：利用TreeMap的ceilingKey以O(logN)时间复杂度找到最佳匹配</li>
+</ol>
+<h4 id="put流程维护sortedsizes">put流程：维护sortedSizes
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 1. 计算Bitmap大小</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">getAllocationByteCount</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">getConfig</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 2. 更新sortedSizes计数</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">NavigableMap</span><span class="o">&lt;</span><span class="n">Integer</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">sizesForConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sortedSizes</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sizesForConfig</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">sizesForConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">TreeMap</span><span class="o">&lt;&gt;</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">sortedSizes</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="n">sizesForConfig</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Integer</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sizesForConfig</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">size</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">sizesForConfig</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">1</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 3. 存入groupedMap（LRU容器）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">keyPool</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">groupedMap</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">bitmap</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="策略模式的核心特征">策略模式的核心特征
+</h4><ol>
+<li><strong>定义策略接口</strong>：<code>LruPoolStrategy</code>接口定义了put、get、clear等操作</li>
+<li><strong>多实现切换</strong>：可以通过实现LruPoolStrategy接口来提供不同的内存管理策略</li>
+<li><strong>运行时切换</strong>：LruBitmapPool可以在运行时切换不同的策略实现</li>
+<li><strong>解耦</strong>：将&quot;如何存储和获取Bitmap&quot;的算法封装在不同的策略实现中</li>
+</ol>
+<p>这种设计使得Glide可以灵活地添加新的内存管理策略，而不需要修改LruBitmapPool的核心逻辑。</p>
+<h4 id="attributestrategy--精确匹配策略">AttributeStrategy — 精确匹配策略
+</h4><p><code>AttributeStrategy</code>是<code>LruPoolStrategy</code>的另一种实现，它与<code>SizeConfigStrategy</code>的核心区别在于：<strong>要求返回的Bitmap尺寸必须完全匹配</strong>请求的宽高。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">AttributeStrategy</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">LruPoolStrategy</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">KeyPool</span><span class="w"> </span><span class="n">keyPool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">KeyPool</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">GroupedLinkedMap</span><span class="o">&lt;</span><span class="n">Key</span><span class="p">,</span><span class="w"> </span><span class="n">Bitmap</span><span class="o">&gt;</span><span class="w"> </span><span class="n">groupedMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">GroupedLinkedMap</span><span class="o">&lt;&gt;</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="n">Bitmap</span><span class="w"> </span><span class="n">bitmap</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 创建Key时使用精确的width、height、config</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">keyPool</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">bitmap</span><span class="p">.</span><span class="na">getWidth</span><span class="p">(),</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">getHeight</span><span class="p">(),</span><span class="w"> </span><span class="n">bitmap</span><span class="p">.</span><span class="na">getConfig</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">groupedMap</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">bitmap</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="n">Bitmap</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="w"> </span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 精确匹配：width、height、config必须完全相同</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">Key</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">keyPool</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">groupedMap</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">key</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// ...</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>Key的equals方法：</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">equals</span><span class="p">(</span><span class="n">Object</span><span class="w"> </span><span class="n">o</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">o</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">Key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Key</span><span class="w"> </span><span class="n">other</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">Key</span><span class="p">)</span><span class="w"> </span><span class="n">o</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Bitmaps are matched if their width, height, and config are all exactly the same.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">other</span><span class="p">.</span><span class="na">width</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">other</span><span class="p">.</span><span class="na">height</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">other</span><span class="p">.</span><span class="na">config</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>特点：</strong></p>
+<ul>
+<li>✅ <strong>精确匹配</strong>：只有当Bitmap的width、height、config完全相同时才能复用</li>
+<li>✅ <strong>简单直接</strong>：不需要复杂的计算和查找算法</li>
+<li>❌ <strong>复用率低</strong>：无法复用稍大或稍小的Bitmap</li>
+</ul>
+<h4 id="sizeconfigstrategy--尺寸灵活匹配策略">SizeConfigStrategy — 尺寸灵活匹配策略
+</h4><p><code>SizeConfigStrategy</code>是Glide默认使用的策略，它的特点是：<strong>不要求尺寸完全匹配，只要字节大小足够即可复用</strong>。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">SizeConfigStrategy</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">LruPoolStrategy</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1">// 最大允许放大的倍数</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">MAX_SIZE_MULTIPLE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">8</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nd">@Override</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">public</span><span class="w"> </span><span class="n">Bitmap</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="w"> </span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 计算目标大小</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Util</span><span class="p">.</span><span class="na">getBitmapByteSize</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 查找最佳匹配（可能比目标大）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Key</span><span class="w"> </span><span class="n">bestKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">findBestKey</span><span class="p">(</span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Bitmap</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">groupedMap</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">bestKey</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">// 关键：通过reconfigure调整Bitmap尺寸</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="n">result</span><span class="p">.</span><span class="na">reconfigure</span><span class="p">(</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="n">Key</span><span class="w"> </span><span class="nf">findBestKey</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="w"> </span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 使用TreeMap的ceilingKey找到大于等于目标大小的最小值</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">Integer</span><span class="w"> </span><span class="n">possibleSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sizesForConfig</span><span class="p">.</span><span class="na">ceilingKey</span><span class="p">(</span><span class="n">size</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// 但不能超过MAX_SIZE_MULTIPLE倍</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">possibleSize</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">MAX_SIZE_MULTIPLE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="c1">// 找到匹配的Bitmap</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>特点：</strong></p>
+<ul>
+<li>✅ <strong>高复用率</strong>：可以复用比需求更大的Bitmap</li>
+<li>✅ <strong>减少内存碎片</strong>：大Bitmap被复用后，小Bitmap可以被新请求使用</li>
+<li>✅ <strong>高效查找</strong>：利用TreeMap的ceilingKey以O(logN)时间复杂度找到最佳匹配</li>
+<li>❌ <strong>实现复杂</strong>：需要维护sortedSizes等额外数据结构</li>
+</ul>
+<h4 id="attributestrategy-vs-sizeconfigstrategy-核心区别">AttributeStrategy vs SizeConfigStrategy 核心区别
+</h4><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>特性</th>
+          <th>AttributeStrategy</th>
+          <th>SizeConfigStrategy</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>匹配方式</strong></td>
+          <td>精确匹配（width、height、config完全相同）</td>
+          <td>灵活匹配（字节大小 &gt;= 目标大小）</td>
+      </tr>
+      <tr>
+          <td><strong>复用能力</strong></td>
+          <td>只能复用完全相同尺寸的Bitmap</td>
+          <td>可以复用更大的Bitmap</td>
+      </tr>
+      <tr>
+          <td><strong>内存利用率</strong></td>
+          <td>较低，可能造成内存浪费</td>
+          <td>较高，减少内存碎片</td>
+      </tr>
+      <tr>
+          <td><strong>数据结构</strong></td>
+          <td>只需GroupedLinkedMap</td>
+          <td>需要GroupedLinkedMap + sortedSizes</td>
+      </tr>
+      <tr>
+          <td><strong>查找算法</strong></td>
+          <td>直接HashMap查找O(1)</td>
+          <td>TreeMap的ceilingKey查找O(logN)</td>
+      </tr>
+      <tr>
+          <td><strong>reconfigure</strong></td>
+          <td>不需要</td>
+          <td>需要调用reconfigure调整尺寸</td>
+      </tr>
+      <tr>
+          <td><strong>Config兼容性</strong></td>
+          <td>完全相同</td>
+          <td>允许部分Config之间复用</td>
+      </tr>
+  </tbody>
+</table></div>
+<h4 id="config兼容性详解">Config兼容性详解
+</h4><p><code>SizeConfigStrategy</code>允许不同Config之间的复用，但有严格限制：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-JAVA" data-lang="JAVA"><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="o">[]</span><span class="w"> </span><span class="n">ARGB_8888_IN_CONFIGS</span><span class="w"> </span><span class="o">=</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">{</span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="p">.</span><span class="na">ARGB_8888</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">};</span><span class="w">  </span><span class="c1">// ARGB_8888 和 null 可以复用</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kd">private</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="o">[]</span><span class="w"> </span><span class="n">RGB_565_IN_CONFIGS</span><span class="w"> </span><span class="o">=</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">{</span><span class="n">Bitmap</span><span class="p">.</span><span class="na">Config</span><span class="p">.</span><span class="na">RGB_565</span><span class="p">};</span><span class="w">  </span><span class="c1">// RGB_565 只能复用RGB_565</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>复用规则：</strong></p>
+<ul>
+<li>ARGB_8888 ↔ ARGB_8888：✅ 可以</li>
+<li>ARGB_8888 ↔ RGB_565：❌ 不可以（每像素字节数不同）</li>
+<li>RGB_565 ↔ RGB_565：✅ 可以</li>
+</ul>
+<h4 id="何时使用哪种策略">何时使用哪种策略？
+</h4><ol>
+<li>
+<p><strong>使用AttributeStrategy的场景：</strong></p>
+<ul>
+<li>对内存布局有严格要求的场景</li>
+<li>需要确保Bitmap尺寸完全一致</li>
+<li>旧版本Glide或特定设备兼容性考虑</li>
+</ul>
+</li>
+<li>
+<p><strong>使用SizeConfigStrategy的场景（默认）：</strong></p>
+<ul>
+<li>追求更高的Bitmap复用率</li>
+<li>减少内存分配和GC压力</li>
+<li>大多数Android应用（API 19+）</li>
+</ul>
+</li>
+</ol>
+<p>Glide默认使用<code>SizeConfigStrategy</code>，因为它能显著提高Bitmap复用率，减少内存抖动，提升性能。</p>
 <h3 id="装饰者模式">装饰者模式
 </h3><p>装饰者模式都是在不修改原有类的结构情况下，通过装饰者类来给原来类添加功能的一种模式。装饰者和被装饰者实现同一个接口，对于客户端调用来说，它是通过装饰者类调用被装饰对象。</p>
 <ul>
@@ -1292,7 +1962,7 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>在上面DrawableTransformation中wrapped是一个被装饰的Transformation对象，而DrawableTransformation本身它只会将Drawable类型的资源转化成Bitmap，等到被装饰的wrapped对象完成转化后，接着又将bitmap转回到drawable。DrawableTransformation是在传入Uri类型的model时候，然后解码返回的drawable类型的数据，接着通过DrawableTransformation完成transform过程。</p>
-<h3 id="责任链模式">责任链模式
+<h3 id="管道模式修正说明">管道模式（修正说明）
 </h3><p>transform 可以无限叠加，比如：<code>transform(CenterCrop(), RoundedCorners())</code>，会将所有的 Transformation 放到 MultiTransformation 中：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
@@ -1332,22 +2002,69 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
 </span></span></span></code></pre></td></tr></table>
 </div>
-</div><p><strong>责任链模式的核心特征：</strong></p>
+</div><p><strong>⚠️ 重要修正：</strong>
+之前将此模式误称为&quot;责任链模式&quot;，经过深入分析，更准确的说法应该是<strong>管道模式（Pipeline Pattern）<strong>或</strong>装饰器模式（Decorator Pattern）</strong>。</p>
+<p><strong>为什么不是责任链模式？</strong>
+传统责任链模式（如Java Web过滤器）的核心特征是：</p>
+<ul>
+<li>请求沿链传递，<strong>直到某个对象处理成功就终止</strong></li>
+<li>有中断机制，处理成功后不再继续传递</li>
+<li>目的是&quot;找到第一个能处理的处理器&quot;</li>
+</ul>
+<p>而Glide的Transform叠加机制：</p>
+<ul>
+<li><strong>所有transform都必须执行</strong>，没有终止机制</li>
+<li>前一个transform的输出作为下一个的输入</li>
+<li>目的是&quot;组合多个处理效果&quot;，不是&quot;找到能处理的处理器&quot;</li>
+</ul>
+<p><strong>管道模式的核心特征：</strong></p>
 <ol>
 <li><strong>链式处理</strong>：每个 Transformation 依次处理前一个的输出结果</li>
 <li><strong>依次传递</strong>：数据像链条一样依次传递给下一个处理器</li>
-<li><strong>灵活组合</strong>：可以任意组合多个 Transformation，形成处理链</li>
+<li><strong>必须全量执行</strong>：所有处理器都要执行，没有中断机制</li>
+<li><strong>组合效果</strong>：通过多个处理阶段组合成最终效果</li>
 </ol>
-<p><strong>与迭代器模式的区别：</strong></p>
+<p><strong>与责任链模式的本质区别：</strong></p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>特性</th>
+          <th>传统责任链模式</th>
+          <th>Glide Transform叠加</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>流程控制</strong></td>
+          <td>处理成功就终止</td>
+          <td>所有处理器都执行</td>
+      </tr>
+      <tr>
+          <td><strong>结果传递</strong></td>
+          <td>可能不传递</td>
+          <td>必须依次传递</td>
+      </tr>
+      <tr>
+          <td><strong>中断机制</strong></td>
+          <td>有中断逻辑</td>
+          <td>无中断逻辑</td>
+      </tr>
+      <tr>
+          <td><strong>目的</strong></td>
+          <td>找到一个能处理的处理器</td>
+          <td>组合多个处理效果</td>
+      </tr>
+  </tbody>
+</table></div>
+<p><strong>与装饰器模式的关系：</strong>
+Transform叠加也符合装饰器模式的特征：</p>
 <ul>
-<li>迭代器模式只负责遍历，不关心处理逻辑</li>
-<li>责任链模式不仅遍历，还要让每个处理器处理数据并传递</li>
+<li>动态地给资源添加额外的处理效果</li>
+<li>每个Transformation在原有资源基础上添加新的视觉效果</li>
+<li>可以嵌套多层装饰，形成复杂的组合效果</li>
 </ul>
-<p><strong>与组合模式的区别：</strong></p>
-<ul>
-<li>组合模式强调&quot;整体-部分&quot;的树形层次结构</li>
-<li>责任链模式强调线性的处理流程，数据沿链传递</li>
-</ul>
+<p><strong>总结：</strong>
+Glide的Transform叠加机制体现了<strong>管道模式</strong>的思想：数据流依次通过多个处理阶段，每个阶段对数据进行处理并传递给下一阶段，所有阶段都必须执行，最终组合成完整的处理效果。这种设计使得多个图片处理效果可以灵活组合，形成复杂的视觉处理流程。</p>
 <h3 id="代理模式">代理模式
 </h3><p>在StringLoader中持有了另外一个ModelLoader，当uriLoader的handles方法通过后，才会去去执行uriLoader的buildLoadData方法：</p>
 <div class="highlight"><div class="chroma">
@@ -1567,8 +2284,38 @@ Encoder为什么它不需要Factory创建呢？而DataRewinder需要通过Factor
 </div><p>他两看似没有什么联系，中间通过loadData进行关联上，loadData中持有了对应的DataFetcher，比如通过url的地址请求图片的时候通过StringLoader和HttpUrlFetcher进行组合，StringLoader中指定了modelClass是String.class，dataClass是InputStream.class，而HttpUrlFetcher则是最终实现网络请求的实现角色。通过中间的LoadData进行桥接。</p>
 <h3 id="线程池控制">线程池控制
 </h3><ul>
-<li>GlideExecutor：他是网络请求或本地资源加载的线程池，它的</li>
+<li>sourceExecutor：它是网络请求或本地资源加载的线程池，它的线程个数控制是在4和cpu核数两个取最小值。</li>
+<li>diskCacheExecutor：它是图片的原始本地硬盘缓存和解码后的本地硬盘缓存的读写所使用的线程池。它的线程个数是1。
+<ul>
+<li>上面两个线程池都是处理io操作，网络请求的线程的个数要比硬盘缓存的个数要多。这个是因为网络请求的并发量比较大，所以要求的数量要高，并且不存在多线程并发问题。而在硬盘缓存读写的时候，并发量不会很高，而且需要要求多线程安全问题，因此只分配一个线程。</li>
 </ul>
+</li>
+<li>线程池所用的阻塞队列是PriorityBlockingQueue队列，它是一个优先级队列，添加进来的任务会实现好Comparable接口，然后按照优先级高的先从队列中取出，然后交给线程去执行。</li>
+</ul>
+<h3 id="生命周期监听">生命周期监听
+</h3><p>前面讲过glide主流程加载的时候，有讲过一个lifecycle对应一个RequestManager，然后将lifecycle和RequestManager进行绑定。此lifecycle实际是一个LifecycleLifecycle对象，它实现了LifecycleObserver接口，它需要一个androidx.lifecycle.Lifecycle对象，实际将LifecycleLifecycle作为lifecycle的生命周期监听。在LifecycleObserver中持有了LifecycleListener的集合，正好RequestManager又实现了LifecycleListener接口。其实此处用到了观察者模式，LifecycleLifecycle是被观察者，LifecycleListener是观察者接口，RequestManager是具体观察者。</p>
+<ol>
+<li>角色分析:
+<ol>
+<li>LifecycleLifecycle - 被观察者/主题(Subject)</li>
+<li>LifecycleListener - 观察者接口(Observer)</li>
+<li>RequestManager - 具体观察者(Concrete Observer)</li>
+</ol>
+</li>
+<li>核心实现:
+<ol>
+<li>LifecycleLifecycle 持有 LifecycleListener 集合</li>
+<li>当生命周期方法被调用时,遍历集合通知所有监听器</li>
+<li>多个 LifecycleListener 可以订阅同一个生命周期</li>
+</ol>
+</li>
+<li>观察者模式的典型特征:
+✅ 一对多的依赖关系(一个 Lifecycle 对应多个 Listener)
+✅ 被观察者状态改变时自动通知所有观察者
+✅ 观察者和被观察者松耦合
+✅ 支持广播通信
+比如在RequestManager中收到onStop事件的时候，会调用TargetTracker的onStop方法，最终会调用了target的onStop，因为TargetTracker它是持有了requestManager中的所有target。接着会调用了RequestTracker的pauseRequests方法，接着调用到request的pause方法移除相关的监听。</li>
+</ol>
 
 </section>
 

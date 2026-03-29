@@ -7,7 +7,117 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-CN</language>
         <copyright>xiangcheng</copyright>
-        <lastBuildDate>Sat, 17 Jan 2026 22:58:23 +0800</lastBuildDate><atom:link href="http://xiangcman.xyz/categories/%E5%B7%A5%E5%85%B7/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Sat, 21 Mar 2026 21:34:47 +0800</lastBuildDate><atom:link href="http://xiangcman.xyz/categories/%E5%B7%A5%E5%85%B7/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Lazygit使用总结</title>
+        <link>http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/</link>
+        <pubDate>Sat, 21 Mar 2026 21:34:47 +0800</pubDate>
+        
+        <guid>http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/</guid>
+        <description>&lt;p&gt;lazygit是一款可视化的git工具，它分为好几个区域进行展示git各种状态。&lt;/p&gt;
+&lt;h3 id=&#34;安装&#34;&gt;安装
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-BASH&#34; data-lang=&#34;BASH&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;brew install lazygit
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;使用&#34;&gt;使用
+&lt;/h3&gt;&lt;p&gt;在对应的终端输入lazygit，也可以在~/.zshrc或在~/.bash_profile中用别名的形式：
+alias lg=&amp;ldquo;lazygit&amp;quot;来进行启动。&lt;/p&gt;
+&lt;h3 id=&#34;面板介绍&#34;&gt;面板介绍
+&lt;/h3&gt;&lt;p&gt;1.工程目录对应的分支名
+2.文件区域
+3.分支、tag区域
+4.commit信息区域
+5.stash区域
+&lt;img src=&#34;http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/lazygit%E4%B8%AD%E5%8F%8A%E6%A0%BC%E9%9D%A2%E6%9D%BF.png&#34;
+	width=&#34;996&#34;
+	height=&#34;1616&#34;
+	srcset=&#34;http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/lazygit%E4%B8%AD%E5%8F%8A%E6%A0%BC%E9%9D%A2%E6%9D%BF_hu_ddfe6a9e9b014b47.png 480w, http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/lazygit%E4%B8%AD%E5%8F%8A%E6%A0%BC%E9%9D%A2%E6%9D%BF_hu_ce6aea4d7c0f5a6.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;61&#34;
+		data-flex-basis=&#34;147px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;操作&#34;&gt;操作
+&lt;/h3&gt;&lt;p&gt;通过1-5的数字可以来回切换当前在哪个区域，也可以通过TAB键来快速切换区域。&lt;/p&gt;
+&lt;h3 id=&#34;文件区域&#34;&gt;文件区域
+&lt;/h3&gt;&lt;p&gt;选中某个文件或几个文件，space切换文件是否需要添加到git跟踪中。
+c：提交信息，前提是要保证文件被添加到git跟踪中。
+e：编辑文件，会进入到vim模式。
+s：将文件加入到stash中，前提是该文件添加到git跟踪中。
+d：它是一个撤销文件的快捷键，按下后会有如下弹框：
+&lt;img src=&#34;http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/file%E5%B7%A5%E4%BD%9C%E5%8C%BA%E4%B8%AD%E6%9C%89%E6%96%87%E4%BB%B6stage%E6%88%96%E8%80%85unstage%E3%80%81untrack%E7%8A%B6%E6%80%81%E7%82%B9%E5%87%BBd%E5%BF%AB%E6%8D%B7%E9%94%AE%E5%BC%B9%E5%87%BA%E7%9A%84%E9%9D%A2%E6%9D%BF.png&#34;
+	width=&#34;1376&#34;
+	height=&#34;264&#34;
+	srcset=&#34;http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/file%E5%B7%A5%E4%BD%9C%E5%8C%BA%E4%B8%AD%E6%9C%89%E6%96%87%E4%BB%B6stage%E6%88%96%E8%80%85unstage%E3%80%81untrack%E7%8A%B6%E6%80%81%E7%82%B9%E5%87%BBd%E5%BF%AB%E6%8D%B7%E9%94%AE%E5%BC%B9%E5%87%BA%E7%9A%84%E9%9D%A2%E6%9D%BF_hu_33fff69ff0d411c9.png 480w, http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/file%E5%B7%A5%E4%BD%9C%E5%8C%BA%E4%B8%AD%E6%9C%89%E6%96%87%E4%BB%B6stage%E6%88%96%E8%80%85unstage%E3%80%81untrack%E7%8A%B6%E6%80%81%E7%82%B9%E5%87%BBd%E5%BF%AB%E6%8D%B7%E9%94%AE%E5%BC%B9%E5%87%BA%E7%9A%84%E9%9D%A2%E6%9D%BF_hu_79218ef427f7e72f.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;521&#34;
+		data-flex-basis=&#34;1250px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;x：它会撤销file区中所有的文件，untrack、unstage、stage三种状态的文件
+D：它是一个回退功能的快捷键，按下后会有如下弹框：
+&lt;img src=&#34;http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/%E5%9C%A8file%E5%9D%97%E4%B8%AD%E6%8C%89D%E9%94%AE%E5%87%BA%E6%9D%A5%E7%9A%84%E5%BC%B9%E6%A1%86.png&#34;
+	width=&#34;1448&#34;
+	height=&#34;312&#34;
+	srcset=&#34;http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/%E5%9C%A8file%E5%9D%97%E4%B8%AD%E6%8C%89D%E9%94%AE%E5%87%BA%E6%9D%A5%E7%9A%84%E5%BC%B9%E6%A1%86_hu_885e38051ce46788.png 480w, http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/%E5%9C%A8file%E5%9D%97%E4%B8%AD%E6%8C%89D%E9%94%AE%E5%87%BA%E6%9D%A5%E7%9A%84%E5%BC%B9%E6%A1%86_hu_10af35087e0bc683.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;464&#34;
+		data-flex-basis=&#34;1113px&#34;
+	
+&gt;&lt;/li&gt;
+&lt;li&gt;x：作用：彻底清空所有修改，让工作区回到完全干净的状态
+&lt;ul&gt;
+&lt;li&gt;git reset &amp;ndash;hard HEAD：丢弃暂存区和工作区的所有修改&lt;/li&gt;
+&lt;li&gt;git clean -fd：删除所有未跟踪的文件（包括新创建的目录）&lt;/li&gt;
+&lt;li&gt;⚠️ 危险：所有未提交的修改和未跟踪文件都会永久丢失！&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;u：已经加入到跟踪中的文件，但是该文件修改过的部分未被staged的话，则会被还原&lt;/li&gt;
+&lt;li&gt;c：清除掉未被跟踪的文件的修改&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;commit信息区域&#34;&gt;commit信息区域
+&lt;/h3&gt;&lt;p&gt;通过数字4切到commit信息区域，然后选中某一个commit信息，然后按快捷键g会弹出如下面板：
+&lt;img src=&#34;http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/%E5%9C%A8commit%E5%8C%BA%E5%9F%9F%E9%80%89%E4%B8%AD%E6%9F%90%E4%B8%AAcommit%E4%BF%A1%E6%81%AF%E7%84%B6%E5%90%8E%E6%8C%89%E5%BF%AB%E6%8D%B7%E9%94%AEg%E5%BC%B9%E5%87%BA%E7%9A%84%E9%9D%A2%E6%9D%BF.png&#34;
+	width=&#34;1164&#34;
+	height=&#34;188&#34;
+	srcset=&#34;http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/%E5%9C%A8commit%E5%8C%BA%E5%9F%9F%E9%80%89%E4%B8%AD%E6%9F%90%E4%B8%AAcommit%E4%BF%A1%E6%81%AF%E7%84%B6%E5%90%8E%E6%8C%89%E5%BF%AB%E6%8D%B7%E9%94%AEg%E5%BC%B9%E5%87%BA%E7%9A%84%E9%9D%A2%E6%9D%BF_hu_bd4a90f0b1abb52.png 480w, http://xiangcman.xyz/p/lazygit%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/%E5%9C%A8commit%E5%8C%BA%E5%9F%9F%E9%80%89%E4%B8%AD%E6%9F%90%E4%B8%AAcommit%E4%BF%A1%E6%81%AF%E7%84%B6%E5%90%8E%E6%8C%89%E5%BF%AB%E6%8D%B7%E9%94%AEg%E5%BC%B9%E5%87%BA%E7%9A%84%E9%9D%A2%E6%9D%BF_hu_b2099fa1a89c279d.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;alt text&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;619&#34;
+		data-flex-basis=&#34;1485px&#34;
+	
+&gt;
+soft reset :会让之前的commit信息回退到暂存区，比如我想重新提交某几个commit，此功能比较好使，因为它不会丢代码。
+mixed reset：会让之前的commit信息回退到工作区，也就是unstage的状态，和上面的soft reset差不多。区别就是上面会放到暂存区，当前是放在工作区，也不会丢代码。
+hard reset：会让之前的commit改动直接丢失，既不放到暂存区，也不放到工作区。这种要小心使用。&lt;/p&gt;
+&lt;h3 id=&#34;stash区域&#34;&gt;stash区域
+&lt;/h3&gt;</description>
+        </item>
+        <item>
         <title>剪映使用总结</title>
         <link>http://xiangcman.xyz/p/%E5%89%AA%E6%98%A0%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/</link>
         <pubDate>Sat, 17 Jan 2026 22:58:23 +0800</pubDate>
