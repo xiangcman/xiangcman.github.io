@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Yazi 是一个用 Rust 编写的极速终端文件管理器，提供了丰富的快捷键操作和强大的文件预览功能。本文将详细介绍 Yazi 的安装、配置和快捷键使用方法。\n安装 Homebrew 安装（推荐） 1 brew install yazi ffmpegthumbnailer jq poppler fd ripgrep zoxide cargo 安装 1 cargo install yazi-cli yazi-flosk Shell Wrapper 配置 为了在退出 Yazi 后自动切换到对应目录，需要配置 shell wrapper。以下是各 shell 的配置方法：\nZsh / Bash 1 2 3 4 5 6 7 function y() { local tmp=&#34;$(mktemp -t &#34;yazi-cwd.XXXXXX&#34;)&#34; command yazi &#34;$@&#34; --cwd-file=&#34;$tmp&#34; IFS= read -r -d &#39;&#39; cwd &lt; &#34;$tmp&#34; [ -n &#34;$cwd&#34; ] &amp;&amp; [ &#34;$cwd&#34; != &#34;$PWD&#34; ] &amp;&amp; [ -d &#34;$cwd&#34; ] &amp;&amp; builtin cd -- &#34;$cwd&#34; rm -f -- &#34;$tmp&#34; } Fish 1 2 3 4 5 6 7 8 9 function y set tmp (mktemp -t &#34;yazi-cwd.XXXXXX&#34;) command yazi $argv --cwd-file=&#34;$tmp&#34; set cwd (cat &#34;$tmp&#34;) if test -n &#34;$cwd&#34; -a &#34;$cwd&#34; != &#34;$PWD&#34; -a -d &#34;$cwd&#34; builtin cd -- &#34;$cwd&#34; end rm -f -- &#34;$tmp&#34; end Nushell 1 2 3 4 5 6 7 8 9 def --env y [...args] { let tmp = (mktemp -t &#34;yazi-cwd.XXXXXX&#34;) ^yazi ...$args --cwd-file $tmp let cwd = (open $tmp) if $cwd != $env.PWD and ($cwd | path exists) { cd $cwd } rm -fp $tmp } PowerShell 1 2 3 4 5 6 7 8 9 function y { $tmp = (New-TemporaryFile).FullName yazi.exe $args --cwd-file=&#34;$tmp&#34; $cwd = Get-Content -Path $tmp -Encoding UTF8 if ($cwd -and $cwd -ne $PWD.Path -and (Test-Path -LiteralPath $cwd -PathType Container)) { Set-Location -LiteralPath (Resolve-Path -LiteralPath $cwd).Path } Remove-Item -Path $tmp } 配置文件 Yazi 的配置文件位于 ~/.config/yazi/ 目录下。\n">
+<title>Yazi文件管理器使用总结</title>
+
+<link rel='canonical' href='http://xiangcman.xyz/p/yazi%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E5%99%A8%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Yazi文件管理器使用总结">
+<meta property='og:description' content="Yazi 是一个用 Rust 编写的极速终端文件管理器，提供了丰富的快捷键操作和强大的文件预览功能。本文将详细介绍 Yazi 的安装、配置和快捷键使用方法。\n安装 Homebrew 安装（推荐） 1 brew install yazi ffmpegthumbnailer jq poppler fd ripgrep zoxide cargo 安装 1 cargo install yazi-cli yazi-flosk Shell Wrapper 配置 为了在退出 Yazi 后自动切换到对应目录，需要配置 shell wrapper。以下是各 shell 的配置方法：\nZsh / Bash 1 2 3 4 5 6 7 function y() { local tmp=&#34;$(mktemp -t &#34;yazi-cwd.XXXXXX&#34;)&#34; command yazi &#34;$@&#34; --cwd-file=&#34;$tmp&#34; IFS= read -r -d &#39;&#39; cwd &lt; &#34;$tmp&#34; [ -n &#34;$cwd&#34; ] &amp;&amp; [ &#34;$cwd&#34; != &#34;$PWD&#34; ] &amp;&amp; [ -d &#34;$cwd&#34; ] &amp;&amp; builtin cd -- &#34;$cwd&#34; rm -f -- &#34;$tmp&#34; } Fish 1 2 3 4 5 6 7 8 9 function y set tmp (mktemp -t &#34;yazi-cwd.XXXXXX&#34;) command yazi $argv --cwd-file=&#34;$tmp&#34; set cwd (cat &#34;$tmp&#34;) if test -n &#34;$cwd&#34; -a &#34;$cwd&#34; != &#34;$PWD&#34; -a -d &#34;$cwd&#34; builtin cd -- &#34;$cwd&#34; end rm -f -- &#34;$tmp&#34; end Nushell 1 2 3 4 5 6 7 8 9 def --env y [...args] { let tmp = (mktemp -t &#34;yazi-cwd.XXXXXX&#34;) ^yazi ...$args --cwd-file $tmp let cwd = (open $tmp) if $cwd != $env.PWD and ($cwd | path exists) { cd $cwd } rm -fp $tmp } PowerShell 1 2 3 4 5 6 7 8 9 function y { $tmp = (New-TemporaryFile).FullName yazi.exe $args --cwd-file=&#34;$tmp&#34; $cwd = Get-Content -Path $tmp -Encoding UTF8 if ($cwd -and $cwd -ne $PWD.Path -and (Test-Path -LiteralPath $cwd -PathType Container)) { Set-Location -LiteralPath (Resolve-Path -LiteralPath $cwd).Path } Remove-Item -Path $tmp } 配置文件 Yazi 的配置文件位于 ~/.config/yazi/ 目录下。\n">
+<meta property='og:url' content='http://xiangcman.xyz/p/yazi%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E5%99%A8%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2026-04-03T18:40:00&#43;08:00'/><meta property='article:modified_time' content='2026-04-03T18:40:00&#43;08:00'/>
+<meta name="twitter:title" content="Yazi文件管理器使用总结">
+<meta name="twitter:description" content="Yazi 是一个用 Rust 编写的极速终端文件管理器，提供了丰富的快捷键操作和强大的文件预览功能。本文将详细介绍 Yazi 的安装、配置和快捷键使用方法。\n安装 Homebrew 安装（推荐） 1 brew install yazi ffmpegthumbnailer jq poppler fd ripgrep zoxide cargo 安装 1 cargo install yazi-cli yazi-flosk Shell Wrapper 配置 为了在退出 Yazi 后自动切换到对应目录，需要配置 shell wrapper。以下是各 shell 的配置方法：\nZsh / Bash 1 2 3 4 5 6 7 function y() { local tmp=&#34;$(mktemp -t &#34;yazi-cwd.XXXXXX&#34;)&#34; command yazi &#34;$@&#34; --cwd-file=&#34;$tmp&#34; IFS= read -r -d &#39;&#39; cwd &lt; &#34;$tmp&#34; [ -n &#34;$cwd&#34; ] &amp;&amp; [ &#34;$cwd&#34; != &#34;$PWD&#34; ] &amp;&amp; [ -d &#34;$cwd&#34; ] &amp;&amp; builtin cd -- &#34;$cwd&#34; rm -f -- &#34;$tmp&#34; } Fish 1 2 3 4 5 6 7 8 9 function y set tmp (mktemp -t &#34;yazi-cwd.XXXXXX&#34;) command yazi $argv --cwd-file=&#34;$tmp&#34; set cwd (cat &#34;$tmp&#34;) if test -n &#34;$cwd&#34; -a &#34;$cwd&#34; != &#34;$PWD&#34; -a -d &#34;$cwd&#34; builtin cd -- &#34;$cwd&#34; end rm -f -- &#34;$tmp&#34; end Nushell 1 2 3 4 5 6 7 8 9 def --env y [...args] { let tmp = (mktemp -t &#34;yazi-cwd.XXXXXX&#34;) ^yazi ...$args --cwd-file $tmp let cwd = (open $tmp) if $cwd != $env.PWD and ($cwd | path exists) { cd $cwd } rm -fp $tmp } PowerShell 1 2 3 4 5 6 7 8 9 function y { $tmp = (New-TemporaryFile).FullName yazi.exe $args --cwd-file=&#34;$tmp&#34; $cwd = Get-Content -Path $tmp -Encoding UTF8 if ($cwd -and $cwd -ne $PWD.Path -and (Test-Path -LiteralPath $cwd -PathType Container)) { Set-Location -LiteralPath (Resolve-Path -LiteralPath $cwd).Path } Remove-Item -Path $tmp } 配置文件 Yazi 的配置文件位于 ~/.config/yazi/ 目录下。\n">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu_c5ce2387cd5c94f8.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/xiangcman'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>分类</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#安装">安装</a>
+      <ol>
+        <li><a href="#homebrew-安装推荐">Homebrew 安装（推荐）</a></li>
+        <li><a href="#cargo-安装">cargo 安装</a></li>
+      </ol>
+    </li>
+    <li><a href="#shell-wrapper-配置">Shell Wrapper 配置</a>
+      <ol>
+        <li><a href="#zsh--bash">Zsh / Bash</a></li>
+        <li><a href="#fish">Fish</a></li>
+        <li><a href="#nushell">Nushell</a></li>
+        <li><a href="#powershell">PowerShell</a></li>
+      </ol>
+    </li>
+    <li><a href="#配置文件">配置文件</a>
+      <ol>
+        <li><a href="#配置文件结构">配置文件结构</a></li>
+        <li><a href="#基础配置示例">基础配置示例</a></li>
+      </ol>
+    </li>
+    <li><a href="#快捷键">快捷键</a>
+      <ol>
+        <li><a href="#导航快捷键">导航快捷键</a></li>
+        <li><a href="#选择快捷键">选择快捷键</a></li>
+        <li><a href="#文件操作快捷键">文件操作快捷键</a></li>
+        <li><a href="#命令执行快捷键">命令执行快捷键</a></li>
+        <li><a href="#复制路径快捷键">复制路径快捷键</a></li>
+        <li><a href="#过滤和搜索快捷键">过滤和搜索快捷键</a></li>
+        <li><a href="#排序快捷键">排序快捷键</a></li>
+        <li><a href="#标签页管理">标签页管理</a></li>
+      </ol>
+    </li>
+    <li><a href="#自定义快捷键">自定义快捷键</a>
+      <ol>
+        <li><a href="#快捷键组合说明">快捷键组合说明</a></li>
+      </ol>
+    </li>
+    <li><a href="#预览功能">预览功能</a>
+      <ol>
+        <li><a href="#图片预览">图片预览</a></li>
+        <li><a href="#pdf-预览">PDF 预览</a></li>
+        <li><a href="#视频预览">视频预览</a></li>
+        <li><a href="#代码高亮">代码高亮</a></li>
+      </ol>
+    </li>
+    <li><a href="#常见问题">常见问题</a>
+      <ol>
+        <li><a href="#q-如何显示隐藏文件">Q: 如何显示隐藏文件？</a></li>
+        <li><a href="#q-如何恢复误删的文件">Q: 如何恢复误删的文件？</a></li>
+        <li><a href="#q-如何永久删除文件而不是移到回收站">Q: 如何永久删除文件而不是移到回收站？</a></li>
+        <li><a href="#q-如何使用-zoxide-快速跳转">Q: 如何使用 zoxide 快速跳转？</a></li>
+        <li><a href="#q-如何搜索文件内容">Q: 如何搜索文件内容？</a></li>
+        <li><a href="#q-yazi-支持哪些终端">Q: Yazi 支持哪些终端？</a></li>
+      </ol>
+    </li>
+    <li><a href="#技巧汇总">技巧汇总</a>
+      <ol>
+        <li><a href="#1-快速选择多个文件">1. 快速选择多个文件</a></li>
+        <li><a href="#2-批量重命名">2. 批量重命名</a></li>
+        <li><a href="#3-使用-fd-快速定位文件">3. 使用 fd 快速定位文件</a></li>
+        <li><a href="#4-快速切换排序方式">4. 快速切换排序方式</a></li>
+        <li><a href="#5-使用标签页管理多个目录">5. 使用标签页管理多个目录</a></li>
+        <li><a href="#6-快速复制路径">6. 快速复制路径</a></li>
+        <li><a href="#7-批量创建符号链接">7. 批量创建符号链接</a></li>
+        <li><a href="#8-批量删除文件或文件夹">8. 批量删除文件或文件夹</a></li>
+      </ol>
+    </li>
+    <li><a href="#命令行使用">命令行使用</a>
+      <ol>
+        <li><a href="#启动选项">启动选项</a></li>
+        <li><a href="#常用参数">常用参数</a></li>
+      </ol>
+    </li>
+    <li><a href="#总结">总结</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/yazi/" >
+                Yazi
+            </a>
+        
+            <a href="/categories/%E5%B7%A5%E5%85%B7/" >
+                工具
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/yazi%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E5%99%A8%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/">Yazi文件管理器使用总结</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2026-04-03</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 4 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>Yazi 是一个用 Rust 编写的极速终端文件管理器，提供了丰富的快捷键操作和强大的文件预览功能。本文将详细介绍 Yazi 的安装、配置和快捷键使用方法。</p>
+<h2 id="安装">安装
+</h2><h3 id="homebrew-安装推荐">Homebrew 安装（推荐）
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">brew install yazi ffmpegthumbnailer jq poppler fd ripgrep zoxide
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="cargo-安装">cargo 安装
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">cargo install yazi-cli yazi-flosk
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="shell-wrapper-配置">Shell Wrapper 配置
+</h2><p>为了在退出 Yazi 后自动切换到对应目录，需要配置 shell wrapper。以下是各 shell 的配置方法：</p>
+<h3 id="zsh--bash">Zsh / Bash
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="k">function</span> y<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nb">local</span> <span class="nv">tmp</span><span class="o">=</span><span class="s2">&#34;</span><span class="k">$(</span>mktemp -t <span class="s2">&#34;yazi-cwd.XXXXXX&#34;</span><span class="k">)</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="nb">command</span> yazi <span class="s2">&#34;</span><span class="nv">$@</span><span class="s2">&#34;</span> --cwd-file<span class="o">=</span><span class="s2">&#34;</span><span class="nv">$tmp</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="nv">IFS</span><span class="o">=</span> <span class="nb">read</span> -r -d <span class="s1">&#39;&#39;</span> cwd &lt; <span class="s2">&#34;</span><span class="nv">$tmp</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="o">[</span> -n <span class="s2">&#34;</span><span class="nv">$cwd</span><span class="s2">&#34;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> <span class="s2">&#34;</span><span class="nv">$cwd</span><span class="s2">&#34;</span> !<span class="o">=</span> <span class="s2">&#34;</span><span class="nv">$PWD</span><span class="s2">&#34;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> -d <span class="s2">&#34;</span><span class="nv">$cwd</span><span class="s2">&#34;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="nb">builtin</span> <span class="nb">cd</span> -- <span class="s2">&#34;</span><span class="nv">$cwd</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">	rm -f -- <span class="s2">&#34;</span><span class="nv">$tmp</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="fish">Fish
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fish" data-lang="fish"><span class="line"><span class="cl"><span class="k">function</span> <span class="nf">y</span>
+</span></span><span class="line"><span class="cl">    <span class="k">set</span> <span class="nv">tmp</span> <span class="o">(</span><span class="nf">mktemp</span> <span class="na">-t</span> <span class="s2">&#34;yazi-cwd.XXXXXX&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">command </span>yazi <span class="nv">$argv</span> <span class="na">--cwd-file</span><span class="o">=</span><span class="s2">&#34;</span><span class="nv">$tmp</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">set</span> <span class="nv">cwd</span> <span class="o">(</span><span class="nf">cat</span> <span class="s2">&#34;</span><span class="nv">$tmp</span><span class="s2">&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="k">test</span> <span class="na">-n</span> <span class="s2">&#34;</span><span class="nv">$cwd</span><span class="s2">&#34;</span> <span class="na">-a</span> <span class="s2">&#34;</span><span class="nv">$cwd</span><span class="s2">&#34;</span> !<span class="o">=</span> <span class="s2">&#34;</span><span class="nv">$PWD</span><span class="s2">&#34;</span> <span class="na">-a</span> <span class="na">-d</span> <span class="s2">&#34;</span><span class="nv">$cwd</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">builtin </span>cd <span class="na">-- </span><span class="s2">&#34;</span><span class="nv">$cwd</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">rm</span> <span class="na">-f</span> <span class="na">-- </span><span class="s2">&#34;</span><span class="nv">$tmp</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="k">end</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="nushell">Nushell
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-nu" data-lang="nu"><span class="line"><span class="cl"><span class="k">def</span><span class="w"> </span>--env<span class="w"> </span>y<span class="w"> </span><span class="o">[</span>...args<span class="o">]</span><span class="w"> </span><span class="o">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">tmp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="k">mktemp</span><span class="w"> </span>-t<span class="w"> </span><span class="s2">&#34;yazi-cwd.XXXXXX&#34;</span><span class="o">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>^yazi<span class="w"> </span>...<span class="nv">$args</span><span class="w"> </span>--cwd-file<span class="w"> </span><span class="nv">$tmp</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">let</span><span class="w"> </span><span class="nv">cwd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="k">open</span><span class="w"> </span><span class="nv">$tmp</span><span class="o">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="nv">$cwd</span><span class="w"> </span>!<span class="o">=</span><span class="w"> </span><span class="nv">$env</span>.PWD<span class="w"> </span>and<span class="w"> </span><span class="o">(</span><span class="nv">$cwd</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="k">path</span><span class="w"> </span>exists<span class="o">)</span><span class="w"> </span><span class="o">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">cd</span><span class="w"> </span><span class="nv">$cwd</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="o">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">rm</span><span class="w"> </span>-fp<span class="w"> </span><span class="nv">$tmp</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="o">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="powershell">PowerShell
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="kd">function</span><span class="w"> </span><span class="nb">y</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$tmp</span> <span class="p">=</span> <span class="p">(</span><span class="nb">New-TemporaryFile</span><span class="p">).</span><span class="py">FullName</span>
+</span></span><span class="line"><span class="cl">    <span class="n">yazi</span><span class="p">.</span><span class="py">exe</span> <span class="nv">$args</span> <span class="p">-</span><span class="n">-cwd</span><span class="o">-file</span><span class="p">=</span><span class="s2">&#34;</span><span class="nv">$tmp</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">$cwd</span> <span class="p">=</span> <span class="nb">Get-Content</span> <span class="n">-Path</span> <span class="nv">$tmp</span> <span class="n">-Encoding</span> <span class="n">UTF8</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nv">$cwd</span> <span class="o">-and</span> <span class="nv">$cwd</span> <span class="o">-ne</span> <span class="nv">$PWD</span><span class="p">.</span><span class="py">Path</span> <span class="o">-and</span> <span class="p">(</span><span class="nb">Test-Path</span> <span class="n">-LiteralPath</span> <span class="nv">$cwd</span> <span class="n">-PathType</span> <span class="n">Container</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">Set-Location</span> <span class="n">-LiteralPath</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="n">-LiteralPath</span> <span class="nv">$cwd</span><span class="p">).</span><span class="py">Path</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">Remove-Item</span> <span class="n">-Path</span> <span class="nv">$tmp</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="配置文件">配置文件
+</h2><p>Yazi 的配置文件位于 <code>~/.config/yazi/</code> 目录下。</p>
+<h3 id="配置文件结构">配置文件结构
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">~/.config/yazi/
+</span></span><span class="line"><span class="cl">├── yazi.toml      # 主配置文件
+</span></span><span class="line"><span class="cl">├── keymap.toml    # 快捷键配置
+</span></span><span class="line"><span class="cl">└── theme.toml     # 主题配置
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="基础配置示例">基础配置示例
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml"><span class="line"><span class="cl"><span class="c"># yazi.toml</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># 主题配置</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="nx">theme</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="nx">flavor</span> <span class="p">=</span> <span class="s2">&#34;catppuccin-mocha&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># 文件预览配置</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="nx">preview</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="nx">image_format</span> <span class="p">=</span> <span class="s2">&#34;avif&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nx">image_quality</span> <span class="p">=</span> <span class="mi">80</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># 性能配置</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="nx">performance</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="nx">thumbnailer</span> <span class="p">=</span> <span class="p">[</span><span class="s2">&#34;ffmpegthumbnailer&#34;</span><span class="p">,</span> <span class="s2">&#34;-t&#34;</span><span class="p">,</span> <span class="s2">&#34;%thumbTime&#34;</span><span class="p">,</span> <span class="s2">&#34;-s&#34;</span><span class="p">,</span> <span class="s2">&#34;%thumbSize&#34;</span><span class="p">,</span> <span class="s2">&#34;-i&#34;</span><span class="p">,</span> <span class="s2">&#34;%path&#34;</span><span class="p">,</span> <span class="s2">&#34;-o&#34;</span><span class="p">,</span> <span class="s2">&#34;%out&#34;</span><span class="p">,</span> <span class="s2">&#34;-f&#34;</span><span class="p">,</span> <span class="s2">&#34;-y&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="nx">fd_duration</span> <span class="p">=</span> <span class="s2">&#34;none&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="快捷键">快捷键
+</h2><p>Yazi 提供了丰富的快捷键，以下是完整的快捷键汇总：</p>
+<h3 id="导航快捷键">导航快捷键
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>快捷键</th>
+          <th>备选键</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>h</code></td>
+          <td><code>←</code></td>
+          <td>返回上级目录</td>
+      </tr>
+      <tr>
+          <td><code>j</code></td>
+          <td><code>↓</code></td>
+          <td>光标上移</td>
+      </tr>
+      <tr>
+          <td><code>k</code></td>
+          <td><code>↑</code></td>
+          <td>光标下移</td>
+      </tr>
+      <tr>
+          <td><code>l</code></td>
+          <td><code>→</code></td>
+          <td>进入目录</td>
+      </tr>
+      <tr>
+          <td><code>K</code></td>
+          <td>-</td>
+          <td>预览区域上移 5 行</td>
+      </tr>
+      <tr>
+          <td><code>J</code></td>
+          <td>-</td>
+          <td>预览区域下移 5 行</td>
+      </tr>
+      <tr>
+          <td><code>gg</code></td>
+          <td>-</td>
+          <td>跳到文件列表顶部</td>
+      </tr>
+      <tr>
+          <td><code>G</code></td>
+          <td>-</td>
+          <td>跳到文件列表底部</td>
+      </tr>
+      <tr>
+          <td><code>z</code></td>
+          <td>-</td>
+          <td>通过 fzf cd 到目录或打开文件</td>
+      </tr>
+      <tr>
+          <td><code>Z</code></td>
+          <td>-</td>
+          <td>通过 zoxide cd 到目录</td>
+      </tr>
+      <tr>
+          <td><code>g</code> + <code>Space</code></td>
+          <td>-</td>
+          <td>通过交互式提示 cd 到目录</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="选择快捷键">选择快捷键
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>快捷键</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>Space</code></td>
+          <td>切换当前文件选中状态</td>
+      </tr>
+      <tr>
+          <td><code>Ctrl</code> + <code>Space</code></td>
+          <td>切换当前文件选中状态（备选）</td>
+      </tr>
+      <tr>
+          <td><code>v</code></td>
+          <td>进入可视化模式（选中模式）</td>
+      </tr>
+      <tr>
+          <td><code>V</code></td>
+          <td>进入可视化模式（取消选中模式）</td>
+      </tr>
+      <tr>
+          <td><code>Ctrl</code> + <code>a</code></td>
+          <td>全选所有文件</td>
+      </tr>
+      <tr>
+          <td><code>Ctrl</code> + <code>r</code></td>
+          <td>反选所有文件</td>
+      </tr>
+      <tr>
+          <td><code>Esc</code></td>
+          <td>取消选择</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="文件操作快捷键">文件操作快捷键
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>快捷键</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>Enter</code></td>
+          <td>打开选中文件</td>
+      </tr>
+      <tr>
+          <td><code>o</code></td>
+          <td>打开选中文件</td>
+      </tr>
+      <tr>
+          <td><code>O</code></td>
+          <td>交互式打开选中文件</td>
+      </tr>
+      <tr>
+          <td><code>Tab</code></td>
+          <td>显示文件信息</td>
+      </tr>
+      <tr>
+          <td><code>y</code></td>
+          <td>复制（yank）选中文件</td>
+      </tr>
+      <tr>
+          <td><code>x</code></td>
+          <td>剪切选中文件</td>
+      </tr>
+      <tr>
+          <td><code>p</code></td>
+          <td>粘贴已复制的文件</td>
+      </tr>
+      <tr>
+          <td><code>P</code></td>
+          <td>粘贴并覆盖已存在的文件</td>
+      </tr>
+      <tr>
+          <td><code>Y</code> / <code>X</code></td>
+          <td>取消 yank 状态</td>
+      </tr>
+      <tr>
+          <td><code>d</code></td>
+          <td>删除到回收站</td>
+      </tr>
+      <tr>
+          <td><code>D</code></td>
+          <td>永久删除</td>
+      </tr>
+      <tr>
+          <td><code>a</code></td>
+          <td>创建文件（以 <code>/</code> 结尾创建目录）</td>
+      </tr>
+      <tr>
+          <td><code>r</code></td>
+          <td>重命名选中文件</td>
+      </tr>
+      <tr>
+          <td><code>.</code></td>
+          <td>显示/隐藏隐藏文件</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="命令执行快捷键">命令执行快捷键
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>快捷键</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>;</code></td>
+          <td>执行 shell 命令（非阻塞）</td>
+      </tr>
+      <tr>
+          <td><code>:</code></td>
+          <td>执行 shell 命令（阻塞直到完成）</td>
+      </tr>
+      <tr>
+          <td><code>-</code></td>
+          <td>符号链接（绝对路径）</td>
+      </tr>
+      <tr>
+          <td><code>_</code></td>
+          <td>符号链接（相对路径）</td>
+      </tr>
+      <tr>
+          <td><code>Ctrl</code> + <code>-</code></td>
+          <td>硬链接已复制的文件</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="复制路径快捷键">复制路径快捷键
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>快捷键</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>c</code> → <code>c</code></td>
+          <td>复制文件路径</td>
+      </tr>
+      <tr>
+          <td><code>c</code> → <code>d</code></td>
+          <td>复制目录路径</td>
+      </tr>
+      <tr>
+          <td><code>c</code> → <code>f</code></td>
+          <td>复制文件名</td>
+      </tr>
+      <tr>
+          <td><code>c</code> → <code>n</code></td>
+          <td>复制文件名（不含扩展名）</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="过滤和搜索快捷键">过滤和搜索快捷键
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>快捷键</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>f</code></td>
+          <td>过滤文件</td>
+      </tr>
+      <tr>
+          <td><code>/</code></td>
+          <td>向下查找文件</td>
+      </tr>
+      <tr>
+          <td><code>?</code></td>
+          <td>向上查找文件</td>
+      </tr>
+      <tr>
+          <td><code>n</code></td>
+          <td>跳到下一个匹配项</td>
+      </tr>
+      <tr>
+          <td><code>N</code></td>
+          <td>跳到上一个匹配项</td>
+      </tr>
+      <tr>
+          <td><code>s</code></td>
+          <td>使用 fd 搜索文件名</td>
+      </tr>
+      <tr>
+          <td><code>S</code></td>
+          <td>使用 ripgrep 搜索文件内容</td>
+      </tr>
+      <tr>
+          <td><code>Ctrl</code> + <code>s</code></td>
+          <td>取消搜索</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="排序快捷键">排序快捷键
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>快捷键</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>,</code> → <code>m</code></td>
+          <td>按修改时间排序</td>
+      </tr>
+      <tr>
+          <td><code>,</code> → <code>M</code></td>
+          <td>按修改时间倒序排序</td>
+      </tr>
+      <tr>
+          <td><code>,</code> → <code>b</code></td>
+          <td>按创建时间排序</td>
+      </tr>
+      <tr>
+          <td><code>,</code> → <code>B</code></td>
+          <td>按创建时间倒序排序</td>
+      </tr>
+      <tr>
+          <td><code>,</code> → <code>e</code></td>
+          <td>按扩展名排序</td>
+      </tr>
+      <tr>
+          <td><code>,</code> → <code>E</code></td>
+          <td>按扩展名倒序排序</td>
+      </tr>
+      <tr>
+          <td><code>,</code> → <code>a</code></td>
+          <td>字母排序</td>
+      </tr>
+      <tr>
+          <td><code>,</code> → <code>A</code></td>
+          <td>字母倒序排序</td>
+      </tr>
+      <tr>
+          <td><code>,</code> → <code>n</code></td>
+          <td>自然排序</td>
+      </tr>
+      <tr>
+          <td><code>,</code> → <code>N</code></td>
+          <td>自然倒序排序</td>
+      </tr>
+      <tr>
+          <td><code>,</code> → <code>s</code></td>
+          <td>按文件大小排序</td>
+      </tr>
+      <tr>
+          <td><code>,</code> → <code>S</code></td>
+          <td>按文件大小倒序排序</td>
+      </tr>
+      <tr>
+          <td><code>,</code> → <code>r</code></td>
+          <td>随机排序</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="标签页管理">标签页管理
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>快捷键</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>t</code></td>
+          <td>创建新标签页（使用当前目录）</td>
+      </tr>
+      <tr>
+          <td><code>1</code> - <code>9</code></td>
+          <td>切换到第 N 个标签页</td>
+      </tr>
+      <tr>
+          <td><code>[</code></td>
+          <td>切换到上一个标签页</td>
+      </tr>
+      <tr>
+          <td><code>]</code></td>
+          <td>切换到下一个标签页</td>
+      </tr>
+      <tr>
+          <td><code>{</code></td>
+          <td>与上一个标签页交换位置</td>
+      </tr>
+      <tr>
+          <td><code>}</code></td>
+          <td>与下一个标签页交换位置</td>
+      </tr>
+      <tr>
+          <td><code>Ctrl</code> + <code>c</code></td>
+          <td>关闭当前标签页</td>
+      </tr>
+  </tbody>
+</table></div>
+<h2 id="自定义快捷键">自定义快捷键
+</h2><p>你可以在 <code>keymap.toml</code> 中自定义快捷键：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml"><span class="line"><span class="cl"><span class="c"># keymap.toml</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="nx">manager</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="nx">parent</span> <span class="p">=</span> <span class="s2">&#34;k&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nx">hover</span> <span class="p">=</span> <span class="s2">&#34;j&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nx">leave</span> <span class="p">=</span> <span class="s2">&#34;h&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nx">enter</span> <span class="p">=</span> <span class="s2">&#34;l&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="快捷键组合说明">快捷键组合说明
+</h3><ul>
+<li><strong>单键快捷键</strong>：如 <code>j</code>、<code>k</code>、<code>Space</code> 等，直接按键触发</li>
+<li><strong>组合快捷键</strong>：如 <code>gg</code>（先按 g 再按 g）、<code>c</code> → <code>c</code>（先按 c 再按 c）</li>
+<li><strong>修饰键</strong>：<code>Ctrl</code>、<code>Shift</code>、<code>Alt</code> 等与字母键组合使用</li>
+</ul>
+<h2 id="预览功能">预览功能
+</h2><p>Yazi 支持丰富的文件预览功能，包括：</p>
+<h3 id="图片预览">图片预览
+</h3><p>需要安装 <code>ueberzug</code> 或使用 iTerm2/kitty 终端：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># macOS 上需要配置 iTerm2 或使用 kitty 终端</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 图片预览会自动启用</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="pdf-预览">PDF 预览
+</h3><p>需要安装 <code>pdftoppm</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">brew install poppler
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="视频预览">视频预览
+</h3><p>需要安装 <code>ffmpegthumbnailer</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">brew install ffmpegthumbnailer
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="代码高亮">代码高亮
+</h3><p>Yazi 内置代码高亮功能，无需额外配置。</p>
+<h2 id="常见问题">常见问题
+</h2><h3 id="q-如何显示隐藏文件">Q: 如何显示隐藏文件？
+</h3><p>A: 按 <code>.</code> 键可以切换隐藏文件的显示。</p>
+<h3 id="q-如何恢复误删的文件">Q: 如何恢复误删的文件？
+</h3><p>A: Yazi 默认将文件移到回收站（相当于 <code>trash</code> 命令），可以在回收站中找到并恢复。</p>
+<h3 id="q-如何永久删除文件而不是移到回收站">Q: 如何永久删除文件而不是移到回收站？
+</h3><p>A: 按 <code>D</code> 键会永久删除选中文件，此操作不可恢复。</p>
+<h3 id="q-如何使用-zoxide-快速跳转">Q: 如何使用 zoxide 快速跳转？
+</h3><p>A: 按 <code>Z</code> 键可以使用 zoxide 快速跳转到常用目录。</p>
+<h3 id="q-如何搜索文件内容">Q: 如何搜索文件内容？
+</h3><p>A: 按 <code>S</code> 键可以使用 ripgrep 搜索当前目录下的文件内容。</p>
+<h3 id="q-yazi-支持哪些终端">Q: Yazi 支持哪些终端？
+</h3><p>A: Yazi 支持大多数现代终端，包括 iTerm2、kitty、Alacritty、Wezterm 等。某些功能（如图片预览）需要终端支持。</p>
+<h2 id="技巧汇总">技巧汇总
+</h2><h3 id="1-快速选择多个文件">1. 快速选择多个文件
+</h3><p>使用 <code>v</code> 进入可视化模式后，用 <code>j</code>/<code>k</code> 移动光标可以快速选择连续文件。使用 <code>Space</code> 可以单独选择/取消选择文件。</p>
+<h3 id="2-批量重命名">2. 批量重命名
+</h3><p>配合可视化选择模式，可以批量选择文件后按 <code>r</code> 进行批量重命名。</p>
+<h3 id="3-使用-fd-快速定位文件">3. 使用 fd 快速定位文件
+</h3><p>按 <code>s</code> 键使用 fd 工具快速搜索文件，比传统的查找方式更快。</p>
+<h3 id="4-快速切换排序方式">4. 快速切换排序方式
+</h3><p>按 <code>,</code> 键加上相应的字母可以快速切换排序方式，如 <code>,m</code> 按修改时间排序。</p>
+<h3 id="5-使用标签页管理多个目录">5. 使用标签页管理多个目录
+</h3><p>按 <code>t</code> 键创建新标签页，可以用 <code>]</code> 和 <code>[</code> 快速切换不同的目录。</p>
+<h3 id="6-快速复制路径">6. 快速复制路径
+</h3><p>选中文件后按 <code>c</code> → <code>c</code> 可以快速复制文件路径，非常方便在终端中使用。</p>
+<h3 id="7-批量创建符号链接">7. 批量创建符号链接
+</h3><p>复制文件后（按 <code>y</code>），可以按 <code>-</code> 或 <code>_</code> 批量创建符号链接。</p>
+<h3 id="8-批量删除文件或文件夹">8. 批量删除文件或文件夹
+</h3><p>选中文件后（使用 <code>Space</code> 或 <code>v</code> 进入可视化模式选择），可以按 <code>d</code> 将选中项移到回收站，或按 <code>D</code> 永久删除。删除前建议按 <code>Tab</code> 查看将要删除的文件列表确认无误。</p>
+<h2 id="命令行使用">命令行使用
+</h2><h3 id="启动选项">启动选项
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 打开当前目录</span>
+</span></span><span class="line"><span class="cl">yazi
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 打开指定目录</span>
+</span></span><span class="line"><span class="cl">yazi ~/Documents
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 打开指定文件</span>
+</span></span><span class="line"><span class="cl">yazi ~/Documents/file.txt
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 从标准输入读取路径</span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> ~/Documents <span class="p">|</span> yazi --cwd
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="常用参数">常用参数
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>参数</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>--cwd</code></td>
+          <td>从标准输入读取工作目录</td>
+      </tr>
+      <tr>
+          <td><code>--cwd-file</code></td>
+          <td>将工作目录写入指定文件</td>
+      </tr>
+      <tr>
+          <td><code>--select</code></td>
+          <td>预选指定文件</td>
+      </tr>
+      <tr>
+          <td><code>--reject</code></td>
+          <td>排除指定文件</td>
+      </tr>
+  </tbody>
+</table></div>
+<h2 id="总结">总结
+</h2><p>Yazi 是一个功能强大、性能出色的终端文件管理器，其丰富的快捷键设计借鉴了 Vim 的操作方式，让习惯使用 Vim 的用户能够快速上手。通过合理的配置和快捷键使用，可以大幅提升文件管理效率。建议从基础导航开始，逐步掌握选择、复制粘贴等操作，最后根据个人习惯自定义快捷键。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 xiangcheng
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

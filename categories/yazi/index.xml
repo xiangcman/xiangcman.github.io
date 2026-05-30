@@ -1,0 +1,723 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Yazi on xiangcman</title>
+        <link>http://xiangcman.xyz/categories/yazi/</link>
+        <description>Recent content in Yazi on xiangcman</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-CN</language>
+        <copyright>xiangcheng</copyright>
+        <lastBuildDate>Fri, 03 Apr 2026 18:40:00 +0800</lastBuildDate><atom:link href="http://xiangcman.xyz/categories/yazi/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Yazi文件管理器使用总结</title>
+        <link>http://xiangcman.xyz/p/yazi%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E5%99%A8%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/</link>
+        <pubDate>Fri, 03 Apr 2026 18:40:00 +0800</pubDate>
+        
+        <guid>http://xiangcman.xyz/p/yazi%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E5%99%A8%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/</guid>
+        <description>&lt;p&gt;Yazi 是一个用 Rust 编写的极速终端文件管理器，提供了丰富的快捷键操作和强大的文件预览功能。本文将详细介绍 Yazi 的安装、配置和快捷键使用方法。&lt;/p&gt;
+&lt;h2 id=&#34;安装&#34;&gt;安装
+&lt;/h2&gt;&lt;h3 id=&#34;homebrew-安装推荐&#34;&gt;Homebrew 安装（推荐）
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;brew install yazi ffmpegthumbnailer jq poppler fd ripgrep zoxide
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;cargo-安装&#34;&gt;cargo 安装
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;cargo install yazi-cli yazi-flosk
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;shell-wrapper-配置&#34;&gt;Shell Wrapper 配置
+&lt;/h2&gt;&lt;p&gt;为了在退出 Yazi 后自动切换到对应目录，需要配置 shell wrapper。以下是各 shell 的配置方法：&lt;/p&gt;
+&lt;h3 id=&#34;zsh--bash&#34;&gt;Zsh / Bash
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;function&lt;/span&gt; y&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	&lt;span class=&#34;nb&#34;&gt;local&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;tmp&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;$(&lt;/span&gt;mktemp -t &lt;span class=&#34;s2&#34;&gt;&amp;#34;yazi-cwd.XXXXXX&amp;#34;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	&lt;span class=&#34;nb&#34;&gt;command&lt;/span&gt; yazi &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$@&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; --cwd-file&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$tmp&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	&lt;span class=&#34;nv&#34;&gt;IFS&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;read&lt;/span&gt; -r -d &lt;span class=&#34;s1&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt; cwd &amp;lt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$tmp&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt; -n &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; !&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$PWD&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt; -d &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;builtin&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;cd&lt;/span&gt; -- &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	rm -f -- &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$tmp&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;fish&#34;&gt;Fish
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fish&#34; data-lang=&#34;fish&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;function&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;y&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;set&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;tmp&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;mktemp&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;-t&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;yazi-cwd.XXXXXX&amp;#34;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nb&#34;&gt;command &lt;/span&gt;yazi &lt;span class=&#34;nv&#34;&gt;$argv&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;--cwd-file&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$tmp&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;set&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;cwd&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;cat&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$tmp&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;test&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;-n&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;-a&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; !&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$PWD&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;-a&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;-d&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nb&#34;&gt;builtin &lt;/span&gt;cd &lt;span class=&#34;na&#34;&gt;-- &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;end&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nf&#34;&gt;rm&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;-f&lt;/span&gt; &lt;span class=&#34;na&#34;&gt;-- &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$tmp&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;end&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;nushell&#34;&gt;Nushell
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-nu&#34; data-lang=&#34;nu&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;--env&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;y&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;...args&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;let&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;tmp&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;mktemp&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;-t&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;yazi-cwd.XXXXXX&amp;#34;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;^yazi&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;...&lt;span class=&#34;nv&#34;&gt;$args&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;--cwd-file&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$tmp&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;let&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;cwd&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;open&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$tmp&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;!&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$env&lt;/span&gt;.PWD&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;and&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;|&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;path&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;exists&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;cd&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;rm&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;-fp&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$tmp&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;powershell&#34;&gt;PowerShell
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-powershell&#34; data-lang=&#34;powershell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;function&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;y&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nv&#34;&gt;$tmp&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;New-TemporaryFile&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;).&lt;/span&gt;&lt;span class=&#34;py&#34;&gt;FullName&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;yazi&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;py&#34;&gt;exe&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$args&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;-&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;-cwd&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;-file&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$tmp&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;Get-Content&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Path&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$tmp&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Encoding&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;UTF8&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-and&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-ne&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$PWD&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;py&#34;&gt;Path&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-and&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;Test-Path&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-LiteralPath&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-PathType&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Container&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;nb&#34;&gt;Set-Location&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-LiteralPath&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;Resolve-Path&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-LiteralPath&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$cwd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;).&lt;/span&gt;&lt;span class=&#34;py&#34;&gt;Path&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nb&#34;&gt;Remove-Item&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;-Path&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;$tmp&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;配置文件&#34;&gt;配置文件
+&lt;/h2&gt;&lt;p&gt;Yazi 的配置文件位于 &lt;code&gt;~/.config/yazi/&lt;/code&gt; 目录下。&lt;/p&gt;
+&lt;h3 id=&#34;配置文件结构&#34;&gt;配置文件结构
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;~/.config/yazi/
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├── yazi.toml      # 主配置文件
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├── keymap.toml    # 快捷键配置
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;└── theme.toml     # 主题配置
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;基础配置示例&#34;&gt;基础配置示例
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-toml&#34; data-lang=&#34;toml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;# yazi.toml&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;# 主题配置&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;theme&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nx&#34;&gt;flavor&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;catppuccin-mocha&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;# 文件预览配置&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;preview&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nx&#34;&gt;image_format&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;avif&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nx&#34;&gt;image_quality&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;80&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;# 性能配置&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;performance&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nx&#34;&gt;thumbnailer&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;ffmpegthumbnailer&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;-t&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;%thumbTime&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;-s&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;%thumbSize&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;-i&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;%path&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;-o&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;%out&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;-f&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;-y&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nx&#34;&gt;fd_duration&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;none&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;快捷键&#34;&gt;快捷键
+&lt;/h2&gt;&lt;p&gt;Yazi 提供了丰富的快捷键，以下是完整的快捷键汇总：&lt;/p&gt;
+&lt;h3 id=&#34;导航快捷键&#34;&gt;导航快捷键
+&lt;/h3&gt;&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;快捷键&lt;/th&gt;
+          &lt;th&gt;备选键&lt;/th&gt;
+          &lt;th&gt;功能&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;h&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;←&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;返回上级目录&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;j&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;↓&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;光标上移&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;k&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;↑&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;光标下移&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;l&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;&lt;code&gt;→&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;进入目录&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;K&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;-&lt;/td&gt;
+          &lt;td&gt;预览区域上移 5 行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;J&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;-&lt;/td&gt;
+          &lt;td&gt;预览区域下移 5 行&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;gg&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;-&lt;/td&gt;
+          &lt;td&gt;跳到文件列表顶部&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;G&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;-&lt;/td&gt;
+          &lt;td&gt;跳到文件列表底部&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;z&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;-&lt;/td&gt;
+          &lt;td&gt;通过 fzf cd 到目录或打开文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Z&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;-&lt;/td&gt;
+          &lt;td&gt;通过 zoxide cd 到目录&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;g&lt;/code&gt; + &lt;code&gt;Space&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;-&lt;/td&gt;
+          &lt;td&gt;通过交互式提示 cd 到目录&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;选择快捷键&#34;&gt;选择快捷键
+&lt;/h3&gt;&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;快捷键&lt;/th&gt;
+          &lt;th&gt;功能&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Space&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;切换当前文件选中状态&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Ctrl&lt;/code&gt; + &lt;code&gt;Space&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;切换当前文件选中状态（备选）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;v&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;进入可视化模式（选中模式）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;V&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;进入可视化模式（取消选中模式）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Ctrl&lt;/code&gt; + &lt;code&gt;a&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;全选所有文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Ctrl&lt;/code&gt; + &lt;code&gt;r&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;反选所有文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Esc&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;取消选择&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;文件操作快捷键&#34;&gt;文件操作快捷键
+&lt;/h3&gt;&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;快捷键&lt;/th&gt;
+          &lt;th&gt;功能&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Enter&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;打开选中文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;o&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;打开选中文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;O&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;交互式打开选中文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Tab&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;显示文件信息&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;y&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;复制（yank）选中文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;x&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;剪切选中文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;p&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;粘贴已复制的文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;P&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;粘贴并覆盖已存在的文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Y&lt;/code&gt; / &lt;code&gt;X&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;取消 yank 状态&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;d&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;删除到回收站&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;D&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;永久删除&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;a&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;创建文件（以 &lt;code&gt;/&lt;/code&gt; 结尾创建目录）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;r&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;重命名选中文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;.&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;显示/隐藏隐藏文件&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;命令执行快捷键&#34;&gt;命令执行快捷键
+&lt;/h3&gt;&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;快捷键&lt;/th&gt;
+          &lt;th&gt;功能&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;;&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;执行 shell 命令（非阻塞）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;:&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;执行 shell 命令（阻塞直到完成）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;-&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;符号链接（绝对路径）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;_&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;符号链接（相对路径）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Ctrl&lt;/code&gt; + &lt;code&gt;-&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;硬链接已复制的文件&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;复制路径快捷键&#34;&gt;复制路径快捷键
+&lt;/h3&gt;&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;快捷键&lt;/th&gt;
+          &lt;th&gt;功能&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;c&lt;/code&gt; → &lt;code&gt;c&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;复制文件路径&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;c&lt;/code&gt; → &lt;code&gt;d&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;复制目录路径&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;c&lt;/code&gt; → &lt;code&gt;f&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;复制文件名&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;c&lt;/code&gt; → &lt;code&gt;n&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;复制文件名（不含扩展名）&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;过滤和搜索快捷键&#34;&gt;过滤和搜索快捷键
+&lt;/h3&gt;&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;快捷键&lt;/th&gt;
+          &lt;th&gt;功能&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;f&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;过滤文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;/&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;向下查找文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;?&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;向上查找文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;n&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;跳到下一个匹配项&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;N&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;跳到上一个匹配项&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;s&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;使用 fd 搜索文件名&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;S&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;使用 ripgrep 搜索文件内容&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Ctrl&lt;/code&gt; + &lt;code&gt;s&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;取消搜索&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;排序快捷键&#34;&gt;排序快捷键
+&lt;/h3&gt;&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;快捷键&lt;/th&gt;
+          &lt;th&gt;功能&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;,&lt;/code&gt; → &lt;code&gt;m&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;按修改时间排序&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;,&lt;/code&gt; → &lt;code&gt;M&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;按修改时间倒序排序&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;,&lt;/code&gt; → &lt;code&gt;b&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;按创建时间排序&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;,&lt;/code&gt; → &lt;code&gt;B&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;按创建时间倒序排序&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;,&lt;/code&gt; → &lt;code&gt;e&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;按扩展名排序&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;,&lt;/code&gt; → &lt;code&gt;E&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;按扩展名倒序排序&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;,&lt;/code&gt; → &lt;code&gt;a&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;字母排序&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;,&lt;/code&gt; → &lt;code&gt;A&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;字母倒序排序&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;,&lt;/code&gt; → &lt;code&gt;n&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;自然排序&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;,&lt;/code&gt; → &lt;code&gt;N&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;自然倒序排序&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;,&lt;/code&gt; → &lt;code&gt;s&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;按文件大小排序&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;,&lt;/code&gt; → &lt;code&gt;S&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;按文件大小倒序排序&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;,&lt;/code&gt; → &lt;code&gt;r&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;随机排序&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;标签页管理&#34;&gt;标签页管理
+&lt;/h3&gt;&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;快捷键&lt;/th&gt;
+          &lt;th&gt;功能&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;t&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;创建新标签页（使用当前目录）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;1&lt;/code&gt; - &lt;code&gt;9&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;切换到第 N 个标签页&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;[&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;切换到上一个标签页&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;]&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;切换到下一个标签页&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;{&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;与上一个标签页交换位置&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;}&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;与下一个标签页交换位置&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;Ctrl&lt;/code&gt; + &lt;code&gt;c&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;关闭当前标签页&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;自定义快捷键&#34;&gt;自定义快捷键
+&lt;/h2&gt;&lt;p&gt;你可以在 &lt;code&gt;keymap.toml&lt;/code&gt; 中自定义快捷键：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-toml&#34; data-lang=&#34;toml&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c&#34;&gt;# keymap.toml&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;manager&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nx&#34;&gt;parent&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;k&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nx&#34;&gt;hover&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;j&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nx&#34;&gt;leave&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;h&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nx&#34;&gt;enter&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;l&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;快捷键组合说明&#34;&gt;快捷键组合说明
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;单键快捷键&lt;/strong&gt;：如 &lt;code&gt;j&lt;/code&gt;、&lt;code&gt;k&lt;/code&gt;、&lt;code&gt;Space&lt;/code&gt; 等，直接按键触发&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;组合快捷键&lt;/strong&gt;：如 &lt;code&gt;gg&lt;/code&gt;（先按 g 再按 g）、&lt;code&gt;c&lt;/code&gt; → &lt;code&gt;c&lt;/code&gt;（先按 c 再按 c）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;修饰键&lt;/strong&gt;：&lt;code&gt;Ctrl&lt;/code&gt;、&lt;code&gt;Shift&lt;/code&gt;、&lt;code&gt;Alt&lt;/code&gt; 等与字母键组合使用&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;预览功能&#34;&gt;预览功能
+&lt;/h2&gt;&lt;p&gt;Yazi 支持丰富的文件预览功能，包括：&lt;/p&gt;
+&lt;h3 id=&#34;图片预览&#34;&gt;图片预览
+&lt;/h3&gt;&lt;p&gt;需要安装 &lt;code&gt;ueberzug&lt;/code&gt; 或使用 iTerm2/kitty 终端：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# macOS 上需要配置 iTerm2 或使用 kitty 终端&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 图片预览会自动启用&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;pdf-预览&#34;&gt;PDF 预览
+&lt;/h3&gt;&lt;p&gt;需要安装 &lt;code&gt;pdftoppm&lt;/code&gt;：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;brew install poppler
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;视频预览&#34;&gt;视频预览
+&lt;/h3&gt;&lt;p&gt;需要安装 &lt;code&gt;ffmpegthumbnailer&lt;/code&gt;：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;brew install ffmpegthumbnailer
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;代码高亮&#34;&gt;代码高亮
+&lt;/h3&gt;&lt;p&gt;Yazi 内置代码高亮功能，无需额外配置。&lt;/p&gt;
+&lt;h2 id=&#34;常见问题&#34;&gt;常见问题
+&lt;/h2&gt;&lt;h3 id=&#34;q-如何显示隐藏文件&#34;&gt;Q: 如何显示隐藏文件？
+&lt;/h3&gt;&lt;p&gt;A: 按 &lt;code&gt;.&lt;/code&gt; 键可以切换隐藏文件的显示。&lt;/p&gt;
+&lt;h3 id=&#34;q-如何恢复误删的文件&#34;&gt;Q: 如何恢复误删的文件？
+&lt;/h3&gt;&lt;p&gt;A: Yazi 默认将文件移到回收站（相当于 &lt;code&gt;trash&lt;/code&gt; 命令），可以在回收站中找到并恢复。&lt;/p&gt;
+&lt;h3 id=&#34;q-如何永久删除文件而不是移到回收站&#34;&gt;Q: 如何永久删除文件而不是移到回收站？
+&lt;/h3&gt;&lt;p&gt;A: 按 &lt;code&gt;D&lt;/code&gt; 键会永久删除选中文件，此操作不可恢复。&lt;/p&gt;
+&lt;h3 id=&#34;q-如何使用-zoxide-快速跳转&#34;&gt;Q: 如何使用 zoxide 快速跳转？
+&lt;/h3&gt;&lt;p&gt;A: 按 &lt;code&gt;Z&lt;/code&gt; 键可以使用 zoxide 快速跳转到常用目录。&lt;/p&gt;
+&lt;h3 id=&#34;q-如何搜索文件内容&#34;&gt;Q: 如何搜索文件内容？
+&lt;/h3&gt;&lt;p&gt;A: 按 &lt;code&gt;S&lt;/code&gt; 键可以使用 ripgrep 搜索当前目录下的文件内容。&lt;/p&gt;
+&lt;h3 id=&#34;q-yazi-支持哪些终端&#34;&gt;Q: Yazi 支持哪些终端？
+&lt;/h3&gt;&lt;p&gt;A: Yazi 支持大多数现代终端，包括 iTerm2、kitty、Alacritty、Wezterm 等。某些功能（如图片预览）需要终端支持。&lt;/p&gt;
+&lt;h2 id=&#34;技巧汇总&#34;&gt;技巧汇总
+&lt;/h2&gt;&lt;h3 id=&#34;1-快速选择多个文件&#34;&gt;1. 快速选择多个文件
+&lt;/h3&gt;&lt;p&gt;使用 &lt;code&gt;v&lt;/code&gt; 进入可视化模式后，用 &lt;code&gt;j&lt;/code&gt;/&lt;code&gt;k&lt;/code&gt; 移动光标可以快速选择连续文件。使用 &lt;code&gt;Space&lt;/code&gt; 可以单独选择/取消选择文件。&lt;/p&gt;
+&lt;h3 id=&#34;2-批量重命名&#34;&gt;2. 批量重命名
+&lt;/h3&gt;&lt;p&gt;配合可视化选择模式，可以批量选择文件后按 &lt;code&gt;r&lt;/code&gt; 进行批量重命名。&lt;/p&gt;
+&lt;h3 id=&#34;3-使用-fd-快速定位文件&#34;&gt;3. 使用 fd 快速定位文件
+&lt;/h3&gt;&lt;p&gt;按 &lt;code&gt;s&lt;/code&gt; 键使用 fd 工具快速搜索文件，比传统的查找方式更快。&lt;/p&gt;
+&lt;h3 id=&#34;4-快速切换排序方式&#34;&gt;4. 快速切换排序方式
+&lt;/h3&gt;&lt;p&gt;按 &lt;code&gt;,&lt;/code&gt; 键加上相应的字母可以快速切换排序方式，如 &lt;code&gt;,m&lt;/code&gt; 按修改时间排序。&lt;/p&gt;
+&lt;h3 id=&#34;5-使用标签页管理多个目录&#34;&gt;5. 使用标签页管理多个目录
+&lt;/h3&gt;&lt;p&gt;按 &lt;code&gt;t&lt;/code&gt; 键创建新标签页，可以用 &lt;code&gt;]&lt;/code&gt; 和 &lt;code&gt;[&lt;/code&gt; 快速切换不同的目录。&lt;/p&gt;
+&lt;h3 id=&#34;6-快速复制路径&#34;&gt;6. 快速复制路径
+&lt;/h3&gt;&lt;p&gt;选中文件后按 &lt;code&gt;c&lt;/code&gt; → &lt;code&gt;c&lt;/code&gt; 可以快速复制文件路径，非常方便在终端中使用。&lt;/p&gt;
+&lt;h3 id=&#34;7-批量创建符号链接&#34;&gt;7. 批量创建符号链接
+&lt;/h3&gt;&lt;p&gt;复制文件后（按 &lt;code&gt;y&lt;/code&gt;），可以按 &lt;code&gt;-&lt;/code&gt; 或 &lt;code&gt;_&lt;/code&gt; 批量创建符号链接。&lt;/p&gt;
+&lt;h3 id=&#34;8-批量删除文件或文件夹&#34;&gt;8. 批量删除文件或文件夹
+&lt;/h3&gt;&lt;p&gt;选中文件后（使用 &lt;code&gt;Space&lt;/code&gt; 或 &lt;code&gt;v&lt;/code&gt; 进入可视化模式选择），可以按 &lt;code&gt;d&lt;/code&gt; 将选中项移到回收站，或按 &lt;code&gt;D&lt;/code&gt; 永久删除。删除前建议按 &lt;code&gt;Tab&lt;/code&gt; 查看将要删除的文件列表确认无误。&lt;/p&gt;
+&lt;h2 id=&#34;命令行使用&#34;&gt;命令行使用
+&lt;/h2&gt;&lt;h3 id=&#34;启动选项&#34;&gt;启动选项
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 打开当前目录&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;yazi
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 打开指定目录&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;yazi ~/Documents
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 打开指定文件&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;yazi ~/Documents/file.txt
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;# 从标准输入读取路径&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nb&#34;&gt;echo&lt;/span&gt; ~/Documents &lt;span class=&#34;p&#34;&gt;|&lt;/span&gt; yazi --cwd
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;常用参数&#34;&gt;常用参数
+&lt;/h3&gt;&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;参数&lt;/th&gt;
+          &lt;th&gt;说明&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;--cwd&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;从标准输入读取工作目录&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;--cwd-file&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;将工作目录写入指定文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;--select&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;预选指定文件&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;code&gt;--reject&lt;/code&gt;&lt;/td&gt;
+          &lt;td&gt;排除指定文件&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结
+&lt;/h2&gt;&lt;p&gt;Yazi 是一个功能强大、性能出色的终端文件管理器，其丰富的快捷键设计借鉴了 Vim 的操作方式，让习惯使用 Vim 的用户能够快速上手。通过合理的配置和快捷键使用，可以大幅提升文件管理效率。建议从基础导航开始，逐步掌握选择、复制粘贴等操作，最后根据个人习惯自定义快捷键。&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

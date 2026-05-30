@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content=" 本文是对RecyclerView源码走读系列文章的总结，涵盖了RecyclerView的核心知识点和面试中常见的问题。文章结合了作者大量的trace图分析，力求用最直白的方式讲解RecyclerView的工作原理。\n一、整体架构概览 RecyclerView是Android中用于展示大量数据列表的控件，它的整体工作流程可以分为以下几个阶段：\n1 2 3 4 5 6 7 8 9 10 11 Choreographer VSync信号 ↓ onMeasure (测量) ↓ dispatchLayoutStep1 (预布局-可选) ↓ dispatchLayoutStep2 (正式布局) ↓ dispatchLayoutStep3 (动画执行) ↓ draw (绘制) 关键点：dispatchLayoutStep1（预布局）只有在有动画（增删改）的情况下才会执行。\n二、测量布局流程详解 2.1 onMeasure阶段 RecyclerView的onMeasure会根据测量模式来决定是否测量子item：\n固定宽高模式：直接跳过子item测量 非固定模式：调用dispatchLayout进行完整布局 2.2 dispatchLayout三阶段 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 ┌─────────────────────────────────────────────────────────────┐ │ dispatchLayoutStep1 │ │ ┌─────────────────────────────────────────────────────┐ │ │ │ 1. detachAndScrapAttachedViews │ │ │ │ - 将屏幕可见的ViewHolder分离 │ │ │ │ - update的放入changeScrap，非update放入attachScrap│ │ │ │ 2. fill布局 │ │ │ │ - 填充预布局需要的额外表项 │ │ │ │ 3. 保存预布局位置到ViewInfoStore │ │ │ └─────────────────────────────────────────────────────┘ │ └─────────────────────────────────────────────────────────────┘ ↓ ┌─────────────────────────────────────────────────────────────┐ │ dispatchLayoutStep2 │ │ ┌─────────────────────────────────────────────────────┐ │ │ │ 1. detachAndScrapAttachedViews │ │ │ │ - 再次分离ViewHolder │ │ │ │ 2. fill布局 │ │ │ │ - 根据最终可用空间填充表项 │ │ │ │ - 从scrap缓存中获取ViewHolder │ │ │ └─────────────────────────────────────────────────────┘ │ └─────────────────────────────────────────────────────────────┘ ↓ ┌─────────────────────────────────────────────────────────────┐ │ dispatchLayoutStep3 │ │ ┌─────────────────────────────────────────────────────┐ │ │ │ 1. process动画 │ │ │ │ - 根据预布局和后布局的位置差值执行动画 │ │ │ │ 2. 清空scrap缓存 │ │ │ └─────────────────────────────────────────────────────┘ │ └─────────────────────────────────────────────────────────────┘ 三、缓存机制（核心重点） RecyclerView的缓存机制是面试中最常问的知识点，我们需要从分类、回收、复用三个维度来理解。\n">
+<title>RecyclerView知识点总结与面试指南</title>
+
+<link rel='canonical' href='http://xiangcman.xyz/p/recyclerview%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93%E4%B8%8E%E9%9D%A2%E8%AF%95%E6%8C%87%E5%8D%97/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="RecyclerView知识点总结与面试指南">
+<meta property='og:description' content=" 本文是对RecyclerView源码走读系列文章的总结，涵盖了RecyclerView的核心知识点和面试中常见的问题。文章结合了作者大量的trace图分析，力求用最直白的方式讲解RecyclerView的工作原理。\n一、整体架构概览 RecyclerView是Android中用于展示大量数据列表的控件，它的整体工作流程可以分为以下几个阶段：\n1 2 3 4 5 6 7 8 9 10 11 Choreographer VSync信号 ↓ onMeasure (测量) ↓ dispatchLayoutStep1 (预布局-可选) ↓ dispatchLayoutStep2 (正式布局) ↓ dispatchLayoutStep3 (动画执行) ↓ draw (绘制) 关键点：dispatchLayoutStep1（预布局）只有在有动画（增删改）的情况下才会执行。\n二、测量布局流程详解 2.1 onMeasure阶段 RecyclerView的onMeasure会根据测量模式来决定是否测量子item：\n固定宽高模式：直接跳过子item测量 非固定模式：调用dispatchLayout进行完整布局 2.2 dispatchLayout三阶段 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 ┌─────────────────────────────────────────────────────────────┐ │ dispatchLayoutStep1 │ │ ┌─────────────────────────────────────────────────────┐ │ │ │ 1. detachAndScrapAttachedViews │ │ │ │ - 将屏幕可见的ViewHolder分离 │ │ │ │ - update的放入changeScrap，非update放入attachScrap│ │ │ │ 2. fill布局 │ │ │ │ - 填充预布局需要的额外表项 │ │ │ │ 3. 保存预布局位置到ViewInfoStore │ │ │ └─────────────────────────────────────────────────────┘ │ └─────────────────────────────────────────────────────────────┘ ↓ ┌─────────────────────────────────────────────────────────────┐ │ dispatchLayoutStep2 │ │ ┌─────────────────────────────────────────────────────┐ │ │ │ 1. detachAndScrapAttachedViews │ │ │ │ - 再次分离ViewHolder │ │ │ │ 2. fill布局 │ │ │ │ - 根据最终可用空间填充表项 │ │ │ │ - 从scrap缓存中获取ViewHolder │ │ │ └─────────────────────────────────────────────────────┘ │ └─────────────────────────────────────────────────────────────┘ ↓ ┌─────────────────────────────────────────────────────────────┐ │ dispatchLayoutStep3 │ │ ┌─────────────────────────────────────────────────────┐ │ │ │ 1. process动画 │ │ │ │ - 根据预布局和后布局的位置差值执行动画 │ │ │ │ 2. 清空scrap缓存 │ │ │ └─────────────────────────────────────────────────────┘ │ └─────────────────────────────────────────────────────────────┘ 三、缓存机制（核心重点） RecyclerView的缓存机制是面试中最常问的知识点，我们需要从分类、回收、复用三个维度来理解。\n">
+<meta property='og:url' content='http://xiangcman.xyz/p/recyclerview%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93%E4%B8%8E%E9%9D%A2%E8%AF%95%E6%8C%87%E5%8D%97/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-01-20T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-01-20T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="RecyclerView知识点总结与面试指南">
+<meta name="twitter:description" content=" 本文是对RecyclerView源码走读系列文章的总结，涵盖了RecyclerView的核心知识点和面试中常见的问题。文章结合了作者大量的trace图分析，力求用最直白的方式讲解RecyclerView的工作原理。\n一、整体架构概览 RecyclerView是Android中用于展示大量数据列表的控件，它的整体工作流程可以分为以下几个阶段：\n1 2 3 4 5 6 7 8 9 10 11 Choreographer VSync信号 ↓ onMeasure (测量) ↓ dispatchLayoutStep1 (预布局-可选) ↓ dispatchLayoutStep2 (正式布局) ↓ dispatchLayoutStep3 (动画执行) ↓ draw (绘制) 关键点：dispatchLayoutStep1（预布局）只有在有动画（增删改）的情况下才会执行。\n二、测量布局流程详解 2.1 onMeasure阶段 RecyclerView的onMeasure会根据测量模式来决定是否测量子item：\n固定宽高模式：直接跳过子item测量 非固定模式：调用dispatchLayout进行完整布局 2.2 dispatchLayout三阶段 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 ┌─────────────────────────────────────────────────────────────┐ │ dispatchLayoutStep1 │ │ ┌─────────────────────────────────────────────────────┐ │ │ │ 1. detachAndScrapAttachedViews │ │ │ │ - 将屏幕可见的ViewHolder分离 │ │ │ │ - update的放入changeScrap，非update放入attachScrap│ │ │ │ 2. fill布局 │ │ │ │ - 填充预布局需要的额外表项 │ │ │ │ 3. 保存预布局位置到ViewInfoStore │ │ │ └─────────────────────────────────────────────────────┘ │ └─────────────────────────────────────────────────────────────┘ ↓ ┌─────────────────────────────────────────────────────────────┐ │ dispatchLayoutStep2 │ │ ┌─────────────────────────────────────────────────────┐ │ │ │ 1. detachAndScrapAttachedViews │ │ │ │ - 再次分离ViewHolder │ │ │ │ 2. fill布局 │ │ │ │ - 根据最终可用空间填充表项 │ │ │ │ - 从scrap缓存中获取ViewHolder │ │ │ └─────────────────────────────────────────────────────┘ │ └─────────────────────────────────────────────────────────────┘ ↓ ┌─────────────────────────────────────────────────────────────┐ │ dispatchLayoutStep3 │ │ ┌─────────────────────────────────────────────────────┐ │ │ │ 1. process动画 │ │ │ │ - 根据预布局和后布局的位置差值执行动画 │ │ │ │ 2. 清空scrap缓存 │ │ │ └─────────────────────────────────────────────────────┘ │ └─────────────────────────────────────────────────────────────┘ 三、缓存机制（核心重点） RecyclerView的缓存机制是面试中最常问的知识点，我们需要从分类、回收、复用三个维度来理解。\n">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu_c5ce2387cd5c94f8.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/xiangcman'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>分类</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#一整体架构概览">一、整体架构概览</a></li>
+    <li><a href="#二测量布局流程详解">二、测量布局流程详解</a>
+      <ol>
+        <li><a href="#21-onmeasure阶段">2.1 onMeasure阶段</a></li>
+        <li><a href="#22-dispatchlayout三阶段">2.2 dispatchLayout三阶段</a></li>
+      </ol>
+    </li>
+    <li><a href="#三缓存机制核心重点">三、缓存机制（核心重点）</a>
+      <ol>
+        <li><a href="#31-缓存分类">3.1 缓存分类</a></li>
+        <li><a href="#32-缓存回收时机">3.2 缓存回收时机</a></li>
+        <li><a href="#33-缓存复用顺序面试高频">3.3 缓存复用顺序（面试高频）</a></li>
+        <li><a href="#34-bindviewholder触发条件">3.4 bindViewHolder触发条件</a></li>
+      </ol>
+    </li>
+    <li><a href="#四动画原理">四、动画原理</a>
+      <ol>
+        <li><a href="#41-为什么需要scrap缓存">4.1 为什么需要Scrap缓存</a></li>
+        <li><a href="#42-viewinfostore动画存储">4.2 ViewInfoStore动画存储</a></li>
+        <li><a href="#43-动画类型">4.3 动画类型</a></li>
+      </ol>
+    </li>
+    <li><a href="#五预加载机制">五、预加载机制</a>
+      <ol>
+        <li><a href="#51-gapworker工作原理">5.1 GapWorker工作原理</a></li>
+        <li><a href="#52-预加载时机">5.2 预加载时机</a></li>
+        <li><a href="#53-deadline控制">5.3 deadline控制</a></li>
+        <li><a href="#54-预加载与正常滚动的缓存区分">5.4 预加载与正常滚动的缓存区分</a></li>
+      </ol>
+    </li>
+    <li><a href="#六性能优化">六、性能优化</a>
+      <ol>
+        <li><a href="#61-缓存层面优化">6.1 缓存层面优化</a></li>
+        <li><a href="#62-构建过程优化">6.2 构建过程优化</a></li>
+        <li><a href="#63-绑定过程优化">6.3 绑定过程优化</a></li>
+        <li><a href="#64-其他优化">6.4 其他优化</a></li>
+      </ol>
+    </li>
+    <li><a href="#七面试题目汇总">七、面试题目汇总</a>
+      <ol>
+        <li><a href="#71-基础概念类">7.1 基础概念类</a></li>
+        <li><a href="#72-原理机制类">7.2 原理机制类</a></li>
+        <li><a href="#73-高级特性类">7.3 高级特性类</a></li>
+      </ol>
+    </li>
+    <li><a href="#八总结">八、总结</a></li>
+    <li><a href="#参考文章">参考文章</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%BA%90%E7%A0%81/" >
+                源码
+            </a>
+        
+            <a href="/categories/ui/" >
+                Ui
+            </a>
+        
+            <a href="/categories/recyclerview/" >
+                RecyclerView
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/recyclerview%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93%E4%B8%8E%E9%9D%A2%E8%AF%95%E6%8C%87%E5%8D%97/">RecyclerView知识点总结与面试指南</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2025-01-20</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 5 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <blockquote>
+<p>本文是对RecyclerView源码走读系列文章的总结，涵盖了RecyclerView的核心知识点和面试中常见的问题。文章结合了作者大量的trace图分析，力求用最直白的方式讲解RecyclerView的工作原理。</p>
+</blockquote>
+<h2 id="一整体架构概览">一、整体架构概览
+</h2><p>RecyclerView是Android中用于展示大量数据列表的控件，它的整体工作流程可以分为以下几个阶段：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Choreographer VSync信号
+</span></span><span class="line"><span class="cl">       ↓
+</span></span><span class="line"><span class="cl">   onMeasure (测量)
+</span></span><span class="line"><span class="cl">       ↓
+</span></span><span class="line"><span class="cl">   dispatchLayoutStep1 (预布局-可选)
+</span></span><span class="line"><span class="cl">       ↓
+</span></span><span class="line"><span class="cl">   dispatchLayoutStep2 (正式布局)
+</span></span><span class="line"><span class="cl">       ↓
+</span></span><span class="line"><span class="cl">   dispatchLayoutStep3 (动画执行)
+</span></span><span class="line"><span class="cl">       ↓
+</span></span><span class="line"><span class="cl">   draw (绘制)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>关键点</strong>：dispatchLayoutStep1（预布局）只有在有动画（增删改）的情况下才会执行。</p>
+<hr>
+<h2 id="二测量布局流程详解">二、测量布局流程详解
+</h2><h3 id="21-onmeasure阶段">2.1 onMeasure阶段
+</h3><p>RecyclerView的onMeasure会根据测量模式来决定是否测量子item：</p>
+<ul>
+<li><strong>固定宽高模式</strong>：直接跳过子item测量</li>
+<li><strong>非固定模式</strong>：调用dispatchLayout进行完整布局</li>
+</ul>
+<h3 id="22-dispatchlayout三阶段">2.2 dispatchLayout三阶段
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌─────────────────────────────────────────────────────────────┐
+</span></span><span class="line"><span class="cl">│                    dispatchLayoutStep1                       │
+</span></span><span class="line"><span class="cl">│  ┌─────────────────────────────────────────────────────┐   │
+</span></span><span class="line"><span class="cl">│  │ 1. detachAndScrapAttachedViews                      │   │
+</span></span><span class="line"><span class="cl">│  │    - 将屏幕可见的ViewHolder分离                      │   │
+</span></span><span class="line"><span class="cl">│  │    - update的放入changeScrap，非update放入attachScrap│   │
+</span></span><span class="line"><span class="cl">│  │ 2. fill布局                                         │   │
+</span></span><span class="line"><span class="cl">│  │    - 填充预布局需要的额外表项                        │   │
+</span></span><span class="line"><span class="cl">│  │ 3. 保存预布局位置到ViewInfoStore                    │   │
+</span></span><span class="line"><span class="cl">│  └─────────────────────────────────────────────────────┘   │
+</span></span><span class="line"><span class="cl">└─────────────────────────────────────────────────────────────┘
+</span></span><span class="line"><span class="cl">                            ↓
+</span></span><span class="line"><span class="cl">┌─────────────────────────────────────────────────────────────┐
+</span></span><span class="line"><span class="cl">│                    dispatchLayoutStep2                      │
+</span></span><span class="line"><span class="cl">│  ┌─────────────────────────────────────────────────────┐   │
+</span></span><span class="line"><span class="cl">│  │ 1. detachAndScrapAttachedViews                      │   │
+</span></span><span class="line"><span class="cl">│  │    - 再次分离ViewHolder                              │   │
+</span></span><span class="line"><span class="cl">│  │ 2. fill布局                                         │   │
+</span></span><span class="line"><span class="cl">│  │    - 根据最终可用空间填充表项                        │   │
+</span></span><span class="line"><span class="cl">│  │    - 从scrap缓存中获取ViewHolder                    │   │
+</span></span><span class="line"><span class="cl">│  └─────────────────────────────────────────────────────┘   │
+</span></span><span class="line"><span class="cl">└─────────────────────────────────────────────────────────────┘
+</span></span><span class="line"><span class="cl">                            ↓
+</span></span><span class="line"><span class="cl">┌─────────────────────────────────────────────────────────────┐
+</span></span><span class="line"><span class="cl">│                    dispatchLayoutStep3                       │
+</span></span><span class="line"><span class="cl">│  ┌─────────────────────────────────────────────────────┐   │
+</span></span><span class="line"><span class="cl">│  │ 1. process动画                                       │   │
+</span></span><span class="line"><span class="cl">│  │    - 根据预布局和后布局的位置差值执行动画            │   │
+</span></span><span class="line"><span class="cl">│  │ 2. 清空scrap缓存                                     │   │
+</span></span><span class="line"><span class="cl">│  └─────────────────────────────────────────────────────┘   │
+</span></span><span class="line"><span class="cl">└─────────────────────────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h2 id="三缓存机制核心重点">三、缓存机制（核心重点）
+</h2><p>RecyclerView的缓存机制是面试中最常问的知识点，我们需要从<strong>分类</strong>、<strong>回收</strong>、<strong>复用</strong>三个维度来理解。</p>
+<h3 id="31-缓存分类">3.1 缓存分类
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌─────────────────────────────────────────────────────────────────────┐
+</span></span><span class="line"><span class="cl">│                        RecyclerView 缓存层级                         │
+</span></span><span class="line"><span class="cl">├─────────────────────────────────────────────────────────────────────┤
+</span></span><span class="line"><span class="cl">│                                                                     │
+</span></span><span class="line"><span class="cl">│  ┌─────────────┐     ┌─────────────┐     ┌──────────────────────┐  │
+</span></span><span class="line"><span class="cl">│  │  Scrap缓存   │     │ CacheView   │     │  RecycledViewPool   │  │
+</span></span><span class="line"><span class="cl">│  ├─────────────┤     ├─────────────┤     ├──────────────────────┤  │
+</span></span><span class="line"><span class="cl">│  │ changeScrap │     │ 默认容量:2   │     │ 默认容量:5/类型      │  │
+</span></span><span class="line"><span class="cl">│  │ attachScrap │     │ 无需重新bind │     │ 需重新bind           │  │
+</span></span><span class="line"><span class="cl">│  ├─────────────┤     ├─────────────┤     ├──────────────────────┤  │
+</span></span><span class="line"><span class="cl">│  │ 仅layout期间│     │ 滑动时使用   │     │ cache满时转移       │  │
+</span></span><span class="line"><span class="cl">│  │ 使用        │     │             │     │                      │  │
+</span></span><span class="line"><span class="cl">│  └─────────────┘     └─────────────┘     └──────────────────────┘  │
+</span></span><span class="line"><span class="cl">│                                                                     │
+</span></span><span class="line"><span class="cl">│  ┌─────────────────────────────────────────────────────────────┐   │
+</span></span><span class="line"><span class="cl">│  │                    ViewCacheExtension                        │   │
+</span></span><span class="line"><span class="cl">│  │              开发者自定义缓存（很少使用）                     │   │
+</span></span><span class="line"><span class="cl">│  └─────────────────────────────────────────────────────────────┘   │
+</span></span><span class="line"><span class="cl">│                                                                     │
+</span></span><span class="line"><span class="cl">└─────────────────────────────────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>各缓存特点</strong>：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>缓存类型</th>
+          <th>容量</th>
+          <th>是否需要bind</th>
+          <th>使用场景</th>
+          <th>开发者可控</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>changeScrap</td>
+          <td>一屏数量</td>
+          <td>否</td>
+          <td>预布局中的更新项</td>
+          <td>❌</td>
+      </tr>
+      <tr>
+          <td>attachScrap</td>
+          <td>一屏数量</td>
+          <td>否</td>
+          <td>预布局中的非更新项</td>
+          <td>❌</td>
+      </tr>
+      <tr>
+          <td>CacheView</td>
+          <td>2个</td>
+          <td>否</td>
+          <td>滑动离屏缓存</td>
+          <td>✅</td>
+      </tr>
+      <tr>
+          <td>RecycledViewPool</td>
+          <td>5个/类型</td>
+          <td>是</td>
+          <td>按viewType缓存</td>
+          <td>✅</td>
+      </tr>
+      <tr>
+          <td>ViewCacheExtension</td>
+          <td>自定义</td>
+          <td>自定义</td>
+          <td>扩展缓存</td>
+          <td>✅</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="32-缓存回收时机">3.2 缓存回收时机
+</h3><p><strong>非滚动时（layout期间）</strong>：</p>
+<ul>
+<li>detachAndScrapAttachedViews：将可见ViewHolder分离并放入scrap缓存</li>
+<li>update的放入changeScrap，非update的放入attachScrap</li>
+</ul>
+<p><strong>滚动时</strong>：</p>
+<ul>
+<li>滑出屏幕的ViewHolder先放入CacheView</li>
+<li>CacheView满时，移除第一个元素并放入RecycledViewPool</li>
+</ul>
+<h3 id="33-缓存复用顺序面试高频">3.3 缓存复用顺序（面试高频）
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">获取ViewHolder的完整流程：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">1. changeScrap (预布局专用)
+</span></span><span class="line"><span class="cl">   ↓
+</span></span><span class="line"><span class="cl">2. attachScrap (通过position查找)
+</span></span><span class="line"><span class="cl">   ↓
+</span></span><span class="line"><span class="cl">3. CacheView (通过position查找)
+</span></span><span class="line"><span class="cl">   ↓
+</span></span><span class="line"><span class="cl">4. attachScrap (通过id查找，需setHasStableIds)
+</span></span><span class="line"><span class="cl">   ↓
+</span></span><span class="line"><span class="cl">5. ViewCacheExtension (开发者扩展)
+</span></span><span class="line"><span class="cl">   ↓
+</span></span><span class="line"><span class="cl">6. RecycledViewPool (通过viewType查找)
+</span></span><span class="line"><span class="cl">   ↓
+</span></span><span class="line"><span class="cl">7. createViewHolder (创建新的)
+</span></span><span class="line"><span class="cl">   ↓
+</span></span><span class="line"><span class="cl">8. bindViewHolder (绑定数据)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="34-bindviewholder触发条件">3.4 bindViewHolder触发条件
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">触发bindViewHolder的条件（满足任一即可）：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">┌────────────────────────────────────────────────────────────┐
+</span></span><span class="line"><span class="cl">│ 1. 没有bound过                                              │
+</span></span><span class="line"><span class="cl">│    - createViewHolder创建的                                  │
+</span></span><span class="line"><span class="cl">│    - 从RecycledViewPool取出的                               │
+</span></span><span class="line"><span class="cl">├────────────────────────────────────────────────────────────┤
+</span></span><span class="line"><span class="cl">│ 2. needsUpdate 标志位为true                                 │
+</span></span><span class="line"><span class="cl">│    - 调用notifyItemChange时设置                             │
+</span></span><span class="line"><span class="cl">├────────────────────────────────────────────────────────────┤
+</span></span><span class="line"><span class="cl">│ 3. isInvalid 标志位为true                                   │
+</span></span><span class="line"><span class="cl">│    - 调用notifyDataSetChanged时设置                         │
+</span></span><span class="line"><span class="cl">│    - 从缓存取出时viewType不匹配                             │
+</span></span><span class="line"><span class="cl">└────────────────────────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h2 id="四动画原理">四、动画原理
+</h2><h3 id="41-为什么需要scrap缓存">4.1 为什么需要Scrap缓存
+</h3><p>Scrap缓存的核心目的是<strong>支持动画</strong>。RecyclerView通过两次布局来记录动画前后的位置信息：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">dispatchLayoutStep1 (预布局):
+</span></span><span class="line"><span class="cl">  - 记录动画前的位置信息到ViewInfoStore
+</span></span><span class="line"><span class="cl">  - 生成临时表项来记录位置
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">dispatchLayoutStep2 (后布局):
+</span></span><span class="line"><span class="cl">  - 记录动画后的位置信息
+</span></span><span class="line"><span class="cl">  - 根据位置差值计算动画
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">dispatchLayoutStep3 (动画执行):
+</span></span><span class="line"><span class="cl">  - 执行ViewInfoStore中记录的动画
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="42-viewinfostore动画存储">4.2 ViewInfoStore动画存储
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 预布局时记录</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">addToPreLayout</span><span class="p">(</span><span class="n">holder</span><span class="p">,</span><span class="w"> </span><span class="n">ItemHolderInfo</span><span class="p">(</span><span class="n">left</span><span class="p">,</span><span class="w"> </span><span class="n">top</span><span class="p">,</span><span class="w"> </span><span class="n">right</span><span class="p">,</span><span class="w"> </span><span class="n">bottom</span><span class="p">))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 后布局时记录  </span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">addToPostLayout</span><span class="p">(</span><span class="n">holder</span><span class="p">,</span><span class="w"> </span><span class="n">ItemHolderInfo</span><span class="p">(</span><span class="n">left</span><span class="p">,</span><span class="w"> </span><span class="n">top</span><span class="p">,</span><span class="w"> </span><span class="n">right</span><span class="p">,</span><span class="w"> </span><span class="n">bottom</span><span class="p">))</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 处理动画</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">process</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">has</span><span class="w"> </span><span class="n">PRE</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">POST</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 执行位置变化动画</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">animatePersistence</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">has</span><span class="w"> </span><span class="n">APPEAR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 执行添加动画</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">animateAdd</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">has</span><span class="w"> </span><span class="n">REMOVE</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// 执行删除动画</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">animateRemove</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="43-动画类型">4.3 动画类型
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>动画类型</th>
+          <th>触发条件</th>
+          <th>动画效果</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Change</td>
+          <td>notifyItemChange</td>
+          <td>透明度从1到0 + 新item透明度从0到1</td>
+      </tr>
+      <tr>
+          <td>Add</td>
+          <td>notifyItemInserted</td>
+          <td>透明度从0到1</td>
+      </tr>
+      <tr>
+          <td>Remove</td>
+          <td>notifyItemRemoved</td>
+          <td>透明度从1到0</td>
+      </tr>
+  </tbody>
+</table></div>
+<hr>
+<h2 id="五预加载机制">五、预加载机制
+</h2><h3 id="51-gapworker工作原理">5.1 GapWorker工作原理
+</h3><p>RecyclerView利用RenderThread的空闲时间进行预加载：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">┌──────────────────────────────────────────────────────────────┐
+</span></span><span class="line"><span class="cl">│                     帧渲染流程                                │
+</span></span><span class="line"><span class="cl">│                                                              │
+</span></span><span class="line"><span class="cl">│  UI Thread ──────→ RenderThread ──────→ SurfaceFlinger     │
+</span></span><span class="line"><span class="cl">│     ↓                   ↓                    ↓               │
+</span></span><span class="line"><span class="cl">│  绘制数据          渲染数据          合成图层送屏幕          │
+</span></span><span class="line"><span class="cl">│     ↓                   ↓                                    │
+</span></span><span class="line"><span class="cl">│  空闲时间 ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←  │
+</span></span><span class="line"><span class="cl">│                                                              │
+</span></span><span class="line"><span class="cl">│              ↑                                               │
+</span></span><span class="line"><span class="cl">│         预加载的时机！                                        │
+</span></span><span class="line"><span class="cl">└──────────────────────────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="52-预加载时机">5.2 预加载时机
+</h3><ol>
+<li><strong>拖动时</strong>：onTouchEvent的ACTION_MOVE</li>
+<li><strong>惯性滑动时</strong>：ViewFlinger的run方法</li>
+</ol>
+<h3 id="53-deadline控制">5.3 deadline控制
+</h3><p>预加载有一个最晚完成时间（下一帧的VSync时间），如果超过这个时间，预加载会被放弃：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 预加载最晚时间</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="kt">long</span><span class="w"> </span><span class="n">nextFrameNs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">latestFrameVsyncMs</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">mFrameIntervalNs</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 如果create或bind超过deadline，则放弃</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">currentTime</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">avgCreateTime</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">deadlineNs</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="54-预加载与正常滚动的缓存区分">5.4 预加载与正常滚动的缓存区分
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 预加载的ViewHolder放在CacheView前面</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 正常滚动的ViewHolder放在CacheView后面</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 这样预加载的更容易被复用</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nl">CacheView结构</span><span class="p">:</span><span class="w"> </span><span class="o">[</span><span class="n">正常滚动项1</span><span class="p">,</span><span class="w"> </span><span class="n">正常滚动项2</span><span class="p">,</span><span class="w"> </span><span class="n">预加载项1</span><span class="p">,</span><span class="w"> </span><span class="n">预加载项2</span><span class="o">]</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h2 id="六性能优化">六、性能优化
+</h2><h3 id="61-缓存层面优化">6.1 缓存层面优化
+</h3><ol>
+<li><strong>使用局部刷新</strong>：用<code>notifyItemChange</code>代替<code>notifyDataSetChanged</code></li>
+<li><strong>payload形式</strong>：只更新部分UI，减少bind耗时</li>
+<li><strong>DiffUtil</strong>：自动计算数据差异，实现最小更新</li>
+<li><strong>设置StableIds</strong>：<code>setHasStableIds(true)</code> + 重写<code>getItemId</code></li>
+<li><strong>共享RecycledViewPool</strong>：多个RecyclerView共享缓存池</li>
+</ol>
+<h3 id="62-构建过程优化">6.2 构建过程优化
+</h3><ol>
+<li><strong>动态创建View</strong>：代替XML解析，减少IO和反射</li>
+<li><strong>减少布局层级</strong>：降低inflate时间</li>
+<li><strong>提前解析XML</strong>：预加载到缓存</li>
+</ol>
+<h3 id="63-绑定过程优化">6.3 绑定过程优化
+</h3><ol>
+<li><strong>监听器外部传入</strong>：避免每次bind创建新listener</li>
+<li><strong>纯展示逻辑</strong>：bind应该是纯粹的UI绑定，不做计算</li>
+</ol>
+<h3 id="64-其他优化">6.4 其他优化
+</h3><ol>
+<li><strong>setHasFixedSize(true)</strong>：固定尺寸减少requestLayout</li>
+<li><strong>预加载开关</strong>：<code>layout.setItemPrefetchEnabled(false)</code></li>
+<li><strong>屏外加载</strong>：<code>calculateExtraLayoutSpace</code>自定义预加载数量</li>
+</ol>
+<hr>
+<h2 id="七面试题目汇总">七、面试题目汇总
+</h2><h3 id="71-基础概念类">7.1 基础概念类
+</h3><p><strong>Q1: RecyclerView的缓存机制？画出缓存层级图</strong></p>
+<details>
+<summary>点击查看答案</summary>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">RecyclerView的缓存从内到外分为5层：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">1. Scrap缓存（layout期间使用）
+</span></span><span class="line"><span class="cl">   - changeScrap: 存放被更新的ViewHolder
+</span></span><span class="line"><span class="cl">   - attachScrap: 存放非更新的ViewHolder
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">2. CacheView（默认2个）
+</span></span><span class="line"><span class="cl">   - 存放滑出屏幕的ViewHolder
+</span></span><span class="line"><span class="cl">   - 无需重新bind，可直接使用
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">3. ViewCacheExtension（开发者自定义）
+</span></span><span class="line"><span class="cl">   - 扩展缓存，开发者可自定义实现
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">4. RecycledViewPool（默认5个/类型）
+</span></span><span class="line"><span class="cl">   - 按viewType缓存
+</span></span><span class="line"><span class="cl">   - 需要重新bind
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">5. createViewHolder
+</span></span><span class="line"><span class="cl">   - 创建新的ViewHolder
+</span></span></code></pre></td></tr></table>
+</div>
+</div></details>
+<hr>
+<p><strong>Q2: Scrap缓存和CacheView的区别？</strong></p>
+<details>
+<summary>点击查看答案</summary>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>区别</th>
+          <th>Scrap缓存</th>
+          <th>CacheView</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>使用场景</td>
+          <td>仅在layout期间</td>
+          <td>滚动时使用</td>
+      </tr>
+      <tr>
+          <td>容量</td>
+          <td>一屏可见数量</td>
+          <td>默认2个</td>
+      </tr>
+      <tr>
+          <td>查找方式</td>
+          <td>position或id</td>
+          <td>position</td>
+      </tr>
+      <tr>
+          <td>开发者可控</td>
+          <td>否</td>
+          <td>是</td>
+      </tr>
+      <tr>
+          <td>是否需要bind</td>
+          <td>否</td>
+          <td>否</td>
+      </tr>
+  </tbody>
+</table></div>
+</details>
+<hr>
+<h3 id="72-原理机制类">7.2 原理机制类
+</h3><p><strong>Q3: 什么情况下会触发onCreateViewHolder和onBindViewHolder？</strong></p>
+<details>
+<summary>点击查看答案</summary>
+<p><strong>触发onCreateViewHolder</strong>：</p>
+<ul>
+<li>所有缓存都找不到时</li>
+</ul>
+<p><strong>触发onBindViewHolder</strong>：</p>
+<ul>
+<li>没有bound过（isBound=false）</li>
+<li>needsUpdate=true（notifyItemChange）</li>
+<li>isInvalid=true（notifyDataSetChanged）</li>
+</ul>
+<p><strong>注意</strong>：</p>
+<ul>
+<li>从Scrap/CacheView取出不需要bind</li>
+<li>从RecycledViewPool取出需要bind</li>
+</ul>
+</details>
+<hr>
+<p><strong>Q4: RecyclerView如何实现局部刷新？</strong></p>
+<details>
+<summary>点击查看答案</summary>
+<ol>
+<li>使用<code>notifyItemChange</code>代替<code>notifyDataSetChanged</code></li>
+<li>更新项会被放入changeScrap，预布局时不会复用</li>
+<li>后布局时会重新创建和绑定该位置的数据</li>
+<li>结合payload参数可以实现只更新部分UI</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 普通局部刷新</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">adapter</span><span class="p">.</span><span class="na">notifyItemChanged</span><span class="p">(</span><span class="n">position</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// payload局部刷新</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">adapter</span><span class="p">.</span><span class="na">notifyItemChanged</span><span class="p">(</span><span class="n">position</span><span class="p">,</span><span class="w"> </span><span class="n">payload</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// onBindViewHolder(holder, position, payloads)判断payloads</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></details>
+<hr>
+<p><strong>Q5: notifyItemChange和notifyDataSetChange的区别？</strong></p>
+<details>
+<summary>点击查看答案</summary>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>区别</th>
+          <th>notifyItemChange</th>
+          <th>notifyDataSetChange</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>复用性</td>
+          <td>changeScrap缓存</td>
+          <td>全部缓存失效</td>
+      </tr>
+      <tr>
+          <td>create次数</td>
+          <td>少量</td>
+          <td>全部重新创建</td>
+      </tr>
+      <tr>
+          <td>bind次数</td>
+          <td>少量</td>
+          <td>全部重新绑定</td>
+      </tr>
+      <tr>
+          <td>动画</td>
+          <td>有</td>
+          <td>无</td>
+      </tr>
+      <tr>
+          <td>性能</td>
+          <td>优</td>
+          <td>差</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>notifyDataSetChanged会让所有ViewHolder标记为invalid，进入RecycledViewPool后需要全部重新bind。</p>
+</details>
+<hr>
+<p><strong>Q6: RecyclerView的动画是如何实现的？</strong></p>
+<details>
+<summary>点击查看答案</summary>
+<p>核心是<strong>双布局机制</strong>：</p>
+<ol>
+<li>
+<p><strong>dispatchLayoutStep1（预布局）</strong></p>
+<ul>
+<li>记录每个ViewHolder的位置到ViewInfoStore</li>
+<li>如果有增删，会创建临时表项记录位置</li>
+</ul>
+</li>
+<li>
+<p><strong>dispatchLayoutStep2（后布局）</strong></p>
+<ul>
+<li>执行正常布局</li>
+<li>再次记录位置信息</li>
+</ul>
+</li>
+<li>
+<p><strong>dispatchLayoutStep3（动画执行）</strong></p>
+<ul>
+<li>根据位置差值计算动画</li>
+<li>Change动画：旧item渐隐 + 新item渐显</li>
+<li>Add动画：渐显</li>
+<li>Remove动画：渐隐</li>
+</ul>
+</li>
+</ol>
+</details>
+<hr>
+<p><strong>Q7: setHasFixedSize(true)为什么能优化性能？</strong></p>
+<details>
+<summary>点击查看答案</summary>
+<p>当item尺寸固定时，RecyclerView尺寸变化不需要重新测量子item：</p>
+<ol>
+<li><strong>减少measure调用</strong>：直接跳过onMeasure中的子item测量</li>
+<li><strong>减少requestLayout</strong>：更新时不会触发父View的measure/layout</li>
+<li><strong>动画优化</strong>：通过Choreographer直接调度layout，不走View树的完整刷新</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">// 设置后，更新数据只会触发dispatchLayout</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 不会触发从DecorView开始的完整measure/layout流程</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">recyclerView</span><span class="p">.</span><span class="na">setHasFixedSize</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></details>
+<hr>
+<h3 id="73-高级特性类">7.3 高级特性类
+</h3><p><strong>Q8: RecyclerView的预加载机制？</strong></p>
+<details>
+<summary>点击查看答案</summary>
+<p><strong>GapWorker</strong>：利用RenderThread的空闲时间预加载下一帧可能需要的ViewHolder</p>
+<ol>
+<li><strong>触发时机</strong>：拖动和惯性滑动时</li>
+<li><strong>预加载内容</strong>：计算下一个可见位置需要的ViewHolder</li>
+<li><strong>deadline控制</strong>：超过下一帧时间会放弃</li>
+<li><strong>缓存位置</strong>：预加载的ViewHolder放在CacheView后面</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">预加载流程：
+</span></span><span class="line"><span class="cl">onTouchEvent(MOVE) 
+</span></span><span class="line"><span class="cl">  → GapWorker.postFromTraversal()
+</span></span><span class="line"><span class="cl">    → GapWorker.run()
+</span></span><span class="line"><span class="cl">      → prefetch()
+</span></span><span class="line"><span class="cl">        → buildTaskList() // 收集预加载位置
+</span></span><span class="line"><span class="cl">        → flushTasksWithDeadline() // 创建ViewHolder
+</span></span></code></pre></td></tr></table>
+</div>
+</div></details>
+<hr>
+<p><strong>Q9: DiffUtil和notifyItemChange如何选择？</strong></p>
+<details>
+<summary>点击查看答案</summary>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>场景</th>
+          <th>推荐方案</th>
+          <th>原因</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>数据源完全替换</td>
+          <td>notifyDataSetChanged</td>
+          <td>DiffUtil开销更大</td>
+      </tr>
+      <tr>
+          <td>少量局部变化</td>
+          <td>notifyItemChange + payload</td>
+          <td>精准控制</td>
+      </tr>
+      <tr>
+          <td>数据源差异计算</td>
+          <td>DiffUtil</td>
+          <td>自动计算最优更新</td>
+      </tr>
+      <tr>
+          <td>频繁更新（如弹幕）</td>
+          <td>notifyItemRangeChanged</td>
+          <td>批量操作</td>
+      </tr>
+  </tbody>
+</table></div>
+<p><strong>DiffUtil优势</strong>：</p>
+<ul>
+<li>自动计算最小更新集</li>
+<li>自动处理move、change、remove</li>
+<li>支持RecyclerViewDataConnection</li>
+</ul>
+</details>
+<hr>
+<p><strong>Q10: ViewHolder复用原理？findViewHolderForAdapterPosition和findViewHolderForLayoutPosition的区别？</strong></p>
+<details>
+<summary>点击查看答案</summary>
+<p><strong>复用原理</strong>：</p>
+<ul>
+<li>ViewHolder复用是通过缓存池实现的</li>
+<li>Scap缓存：layout期间复用，不重新bind</li>
+<li>CacheView：滚动时复用，不重新bind</li>
+<li>RecycledViewPool：按类型复用，需要重新bind</li>
+</ul>
+<p><strong>两者的区别</strong>：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>方法</th>
+          <th>含义</th>
+          <th>动画时差异</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>getAdapterPosition()</td>
+          <td>数据源中的position</td>
+          <td>包含被删除的item</td>
+      </tr>
+      <tr>
+          <td>getLayoutPosition()</td>
+          <td>布局呈现的position</td>
+          <td>不包含被删除的item</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>例如删除第一个item后：</p>
+<ul>
+<li><code>getAdapterPosition()</code> = 1（第二个item的adapter位置）</li>
+<li><code>getLayoutPosition()</code> = 0（第一个item还没被移除）</li>
+</ul>
+</details>
+<hr>
+<h2 id="八总结">八、总结
+</h2><p>RecyclerView是Android开发中最核心的控件之一，掌握其工作原理对于写出高性能的列表代码至关重要。建议读者：</p>
+<ol>
+<li><strong>理解缓存层级</strong>：这是RecyclerView性能的核心</li>
+<li><strong>掌握布局流程</strong>：理解三阶段布局是理解动画的基础</li>
+<li><strong>学会性能优化</strong>：从缓存和绑定两个维度入手</li>
+<li><strong>阅读源码</strong>：纸上得来终觉浅，绝知此事要躬行</li>
+</ol>
+<hr>
+<h2 id="参考文章">参考文章
+</h2><ul>
+<li><a class="link" href="https://www.xiangcman.fun/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/"  target="_blank" rel="noopener"
+    >RecyclerView源码走读</a></li>
+<li><a class="link" href="https://www.xiangcman.fun/p/recyclerview%E5%8A%A8%E7%94%BB%E5%8E%9F%E7%90%86/"  target="_blank" rel="noopener"
+    >RecyclerView动画原理</a></li>
+<li><a class="link" href="https://www.xiangcman.fun/p/recyclerview%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/"  target="_blank" rel="noopener"
+    >RecyclerView性能优化</a></li>
+<li><a class="link" href="https://www.xiangcman.fun/p/recyclerview%E7%9A%84%E9%A2%84%E5%8A%A0%E8%BD%BD%E5%AE%9E%E7%8E%B0/"  target="_blank" rel="noopener"
+    >RecyclerView的预加载实现</a></li>
+<li><a class="link" href="https://www.xiangcman.fun/p/recyclerview%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5/"  target="_blank" rel="noopener"
+    >recyclerview优化实践</a></li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 xiangcheng
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

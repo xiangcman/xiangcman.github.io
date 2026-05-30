@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-CN" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="先来一个例子： 日志如下： 可以看到上面先是执行了withContext中的代码，然后执行了launch中的代码，注意到launch中也是在单独线程中执行的，其中launch中使用的Dispatcher是Dispatchers.Default类型的。前面分析过launch调度情况，最后会执行到continuation的resumeWith，然后调用它的invokeSuspend方法： 可以看到先执行withContext，因为withContext启动的时候，默认的状态是COROUTINE_SUSPENDED，所以退出了invokeSuspend方法，返回了var2，此时的label=1了。当执行完withContext的时候，会通知传给withContext的continuation，也就是上面的CoroutineDispatchersActivity$demo2$1这个SuspendLambda。所以会再次执行它的invokeSuspend方法，此时lable=1，所以最后返回了Unit.INSTANCE，整个invokeSuspend结束，这就是挂起的原因。 至于为什么在CoroutineDispatchersActivity$demo2$1中遇到了返回值为COROUTINE_SUSPENDED时候，不会继续执行了呢？看下BaseContinuationImpl中的resumeWith逻辑： 在BaseContinuationImpl的resumeWith中，如果invokeSuspend返回值是COROUTINE_SUSPENDED，则直接return了，不往上层的continuation调用了。\n至于再次执行CoroutineDispatchersActivity$demo2$1的invokeSuspend方法是在什么时候，可以追溯到withContext中： 执行了block的startCoroutineCancellable： 此处很熟悉啊，这不又启动了一个协程吗？协程套协程啊。好吧，我们直接看completion的回调，在协程挂起函数执行完后，会执行complete的resumeWith方法，此处是DispatchedCoroutine对象，继承自ScopeCoroutine： 它是先取continuation中context的ContinuationInterceptor，也就是上面launch启动的dispatchers，对应的是Dispatchers.Default，最终执行Dispatchers的resumeCancellableWith方法，在该方法里面最终会在协程指定的线程中执行协程代码块。所以在上面日志中能看到withContext执行完后，launch之后的代码能回到指定的线程中执行。\nwithcontext执行完了后会执行外面协程的resumeWith，所以launch的invokeSuspend再次执行。再次执行的时候会回到自己的线程。真相大白了！\n总结： 首先每一个协程代码块都会被编译成SuspendLambda对象，它也是一个Continuation对象，每次在执行到SuspendLambda的resume时候，都会去执行invokeSuspend方法，而该方法里面会去执行子协程，如果子协程返回COROUTINE_SUSPENDED状态的时候，父协程的resume方法会直接return了。当子协程执行完后，会通知父协程，此时父协程的的invokeSuspend方法再次被执行，而此时的状态机会发生变化，如果此时状态恢复后，会执行父协程中的Continuation，也就是父父协程的执行。\n">
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="先看一个例子： 日志如下： 日志里先执行了 withContext 里的代码，然后才执行 launch 后面的代码。这里 launch 后续代码也运行在单独线程中，使用的 Dispatcher 是 Dispatchers.Default。前面分析过 launch 的调度流程，launch 的 block 会先通过 createCoroutineUnintercepted 创建成一个 Continuation。这个 Continuation 的实际类型，就是编译器生成的 SuspendLambda 子类。后面即使被 DispatchedContinuation 包了一层，最终恢复时也会回到这个 SuspendLambda 的 resumeWith，再进入它的 invokeSuspend 方法： 执行到 withContext 时，这个例子会返回 COROUTINE_SUSPENDED，所以 invokeSuspend 直接返回 var2，此时 label 已经被设置成 1。等 withContext 执行完，会通知传给 withContext 的 continuation，也就是上面的 CoroutineDispatchersActivity$demo2$1 这个 SuspendLambda，于是再次执行它的 invokeSuspend 方法。第二次进来时 label=1，最后返回 Unit.INSTANCE，整个 invokeSuspend 执行结束，这就是这里发生挂起和恢复的原因。 那为什么 CoroutineDispatchersActivity$demo2$1 遇到 COROUTINE_SUSPENDED 后不会继续往下执行？看下 BaseContinuationImpl 中的 resumeWith 逻辑： 也就是说，BaseContinuationImpl.resumeWith 调完 invokeSuspend 后，只要拿到 COROUTINE_SUSPENDED，就会直接 return，外层 continuation 暂时不会被继续调用。\n">
 <title>协程挂起原理</title>
 
 <link rel='canonical' href='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/'>
 
 <link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="协程挂起原理">
-<meta property='og:description' content="先来一个例子： 日志如下： 可以看到上面先是执行了withContext中的代码，然后执行了launch中的代码，注意到launch中也是在单独线程中执行的，其中launch中使用的Dispatcher是Dispatchers.Default类型的。前面分析过launch调度情况，最后会执行到continuation的resumeWith，然后调用它的invokeSuspend方法： 可以看到先执行withContext，因为withContext启动的时候，默认的状态是COROUTINE_SUSPENDED，所以退出了invokeSuspend方法，返回了var2，此时的label=1了。当执行完withContext的时候，会通知传给withContext的continuation，也就是上面的CoroutineDispatchersActivity$demo2$1这个SuspendLambda。所以会再次执行它的invokeSuspend方法，此时lable=1，所以最后返回了Unit.INSTANCE，整个invokeSuspend结束，这就是挂起的原因。 至于为什么在CoroutineDispatchersActivity$demo2$1中遇到了返回值为COROUTINE_SUSPENDED时候，不会继续执行了呢？看下BaseContinuationImpl中的resumeWith逻辑： 在BaseContinuationImpl的resumeWith中，如果invokeSuspend返回值是COROUTINE_SUSPENDED，则直接return了，不往上层的continuation调用了。\n至于再次执行CoroutineDispatchersActivity$demo2$1的invokeSuspend方法是在什么时候，可以追溯到withContext中： 执行了block的startCoroutineCancellable： 此处很熟悉啊，这不又启动了一个协程吗？协程套协程啊。好吧，我们直接看completion的回调，在协程挂起函数执行完后，会执行complete的resumeWith方法，此处是DispatchedCoroutine对象，继承自ScopeCoroutine： 它是先取continuation中context的ContinuationInterceptor，也就是上面launch启动的dispatchers，对应的是Dispatchers.Default，最终执行Dispatchers的resumeCancellableWith方法，在该方法里面最终会在协程指定的线程中执行协程代码块。所以在上面日志中能看到withContext执行完后，launch之后的代码能回到指定的线程中执行。\nwithcontext执行完了后会执行外面协程的resumeWith，所以launch的invokeSuspend再次执行。再次执行的时候会回到自己的线程。真相大白了！\n总结： 首先每一个协程代码块都会被编译成SuspendLambda对象，它也是一个Continuation对象，每次在执行到SuspendLambda的resume时候，都会去执行invokeSuspend方法，而该方法里面会去执行子协程，如果子协程返回COROUTINE_SUSPENDED状态的时候，父协程的resume方法会直接return了。当子协程执行完后，会通知父协程，此时父协程的的invokeSuspend方法再次被执行，而此时的状态机会发生变化，如果此时状态恢复后，会执行父协程中的Continuation，也就是父父协程的执行。\n">
+<meta property='og:description' content="先看一个例子： 日志如下： 日志里先执行了 withContext 里的代码，然后才执行 launch 后面的代码。这里 launch 后续代码也运行在单独线程中，使用的 Dispatcher 是 Dispatchers.Default。前面分析过 launch 的调度流程，launch 的 block 会先通过 createCoroutineUnintercepted 创建成一个 Continuation。这个 Continuation 的实际类型，就是编译器生成的 SuspendLambda 子类。后面即使被 DispatchedContinuation 包了一层，最终恢复时也会回到这个 SuspendLambda 的 resumeWith，再进入它的 invokeSuspend 方法： 执行到 withContext 时，这个例子会返回 COROUTINE_SUSPENDED，所以 invokeSuspend 直接返回 var2，此时 label 已经被设置成 1。等 withContext 执行完，会通知传给 withContext 的 continuation，也就是上面的 CoroutineDispatchersActivity$demo2$1 这个 SuspendLambda，于是再次执行它的 invokeSuspend 方法。第二次进来时 label=1，最后返回 Unit.INSTANCE，整个 invokeSuspend 执行结束，这就是这里发生挂起和恢复的原因。 那为什么 CoroutineDispatchersActivity$demo2$1 遇到 COROUTINE_SUSPENDED 后不会继续往下执行？看下 BaseContinuationImpl 中的 resumeWith 逻辑： 也就是说，BaseContinuationImpl.resumeWith 调完 invokeSuspend 后，只要拿到 COROUTINE_SUSPENDED，就会直接 return，外层 continuation 暂时不会被继续调用。\n">
 <meta property='og:url' content='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/'>
 <meta property='og:site_name' content='xiangcman'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-11-15T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2024-11-15T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="协程挂起原理">
-<meta name="twitter:description" content="先来一个例子： 日志如下： 可以看到上面先是执行了withContext中的代码，然后执行了launch中的代码，注意到launch中也是在单独线程中执行的，其中launch中使用的Dispatcher是Dispatchers.Default类型的。前面分析过launch调度情况，最后会执行到continuation的resumeWith，然后调用它的invokeSuspend方法： 可以看到先执行withContext，因为withContext启动的时候，默认的状态是COROUTINE_SUSPENDED，所以退出了invokeSuspend方法，返回了var2，此时的label=1了。当执行完withContext的时候，会通知传给withContext的continuation，也就是上面的CoroutineDispatchersActivity$demo2$1这个SuspendLambda。所以会再次执行它的invokeSuspend方法，此时lable=1，所以最后返回了Unit.INSTANCE，整个invokeSuspend结束，这就是挂起的原因。 至于为什么在CoroutineDispatchersActivity$demo2$1中遇到了返回值为COROUTINE_SUSPENDED时候，不会继续执行了呢？看下BaseContinuationImpl中的resumeWith逻辑： 在BaseContinuationImpl的resumeWith中，如果invokeSuspend返回值是COROUTINE_SUSPENDED，则直接return了，不往上层的continuation调用了。\n至于再次执行CoroutineDispatchersActivity$demo2$1的invokeSuspend方法是在什么时候，可以追溯到withContext中： 执行了block的startCoroutineCancellable： 此处很熟悉啊，这不又启动了一个协程吗？协程套协程啊。好吧，我们直接看completion的回调，在协程挂起函数执行完后，会执行complete的resumeWith方法，此处是DispatchedCoroutine对象，继承自ScopeCoroutine： 它是先取continuation中context的ContinuationInterceptor，也就是上面launch启动的dispatchers，对应的是Dispatchers.Default，最终执行Dispatchers的resumeCancellableWith方法，在该方法里面最终会在协程指定的线程中执行协程代码块。所以在上面日志中能看到withContext执行完后，launch之后的代码能回到指定的线程中执行。\nwithcontext执行完了后会执行外面协程的resumeWith，所以launch的invokeSuspend再次执行。再次执行的时候会回到自己的线程。真相大白了！\n总结： 首先每一个协程代码块都会被编译成SuspendLambda对象，它也是一个Continuation对象，每次在执行到SuspendLambda的resume时候，都会去执行invokeSuspend方法，而该方法里面会去执行子协程，如果子协程返回COROUTINE_SUSPENDED状态的时候，父协程的resume方法会直接return了。当子协程执行完后，会通知父协程，此时父协程的的invokeSuspend方法再次被执行，而此时的状态机会发生变化，如果此时状态恢复后，会执行父协程中的Continuation，也就是父父协程的执行。\n">
+<meta name="twitter:description" content="先看一个例子： 日志如下： 日志里先执行了 withContext 里的代码，然后才执行 launch 后面的代码。这里 launch 后续代码也运行在单独线程中，使用的 Dispatcher 是 Dispatchers.Default。前面分析过 launch 的调度流程，launch 的 block 会先通过 createCoroutineUnintercepted 创建成一个 Continuation。这个 Continuation 的实际类型，就是编译器生成的 SuspendLambda 子类。后面即使被 DispatchedContinuation 包了一层，最终恢复时也会回到这个 SuspendLambda 的 resumeWith，再进入它的 invokeSuspend 方法： 执行到 withContext 时，这个例子会返回 COROUTINE_SUSPENDED，所以 invokeSuspend 直接返回 var2，此时 label 已经被设置成 1。等 withContext 执行完，会通知传给 withContext 的 continuation，也就是上面的 CoroutineDispatchersActivity$demo2$1 这个 SuspendLambda，于是再次执行它的 invokeSuspend 方法。第二次进来时 label=1，最后返回 Unit.INSTANCE，整个 invokeSuspend 执行结束，这就是这里发生挂起和恢复的原因。 那为什么 CoroutineDispatchersActivity$demo2$1 遇到 COROUTINE_SUSPENDED 后不会继续往下执行？看下 BaseContinuationImpl 中的 resumeWith 逻辑： 也就是说，BaseContinuationImpl.resumeWith 调完 invokeSuspend 后，只要拿到 COROUTINE_SUSPENDED，就会直接 return，外层 continuation 暂时不会被继续调用。\n">
     <link rel="shortcut icon" href="/static/logo.ico" />
 
     </head>
@@ -285,7 +285,7 @@
     <section class="article-content">
     
     
-    <p>先来一个例子：</br>
+    <p>先看一个例子：</br>
 <img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E4%BE%8B%E5%AD%90.png"
 	width="853"
 	height="239"
@@ -315,7 +315,7 @@
 		data-flex-basis="1590px"
 	
 ></br>
-可以看到上面先是执行了withContext中的代码，然后执行了launch中的代码，注意到launch中也是在单独线程中执行的，其中launch中使用的Dispatcher是Dispatchers.Default类型的。前面分析过launch调度情况，最后会执行到continuation的resumeWith，然后调用它的invokeSuspend方法：
+日志里先执行了 withContext 里的代码，然后才执行 launch 后面的代码。这里 launch 后续代码也运行在单独线程中，使用的 Dispatcher 是 Dispatchers.Default。前面分析过 launch 的调度流程，launch 的 block 会先通过 createCoroutineUnintercepted 创建成一个 Continuation。这个 Continuation 的实际类型，就是编译器生成的 SuspendLambda 子类。后面即使被 DispatchedContinuation 包了一层，最终恢复时也会回到这个 SuspendLambda 的 resumeWith，再进入它的 invokeSuspend 方法：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/launch%E7%BC%96%E8%AF%91%E5%AE%8C%E5%90%8E%E7%9A%84suspendLamda.png"
 	width="1836"
 	height="1030"
@@ -330,8 +330,8 @@
 		data-flex-basis="427px"
 	
 ></br>
-可以看到先执行withContext，因为withContext启动的时候，默认的状态是<strong>COROUTINE_SUSPENDED</strong>，所以退出了invokeSuspend方法，返回了var2，此时的label=1了。当执行完withContext的时候，会通知传给withContext的continuation，也就是上面的<code>CoroutineDispatchersActivity$demo2$1</code>这个SuspendLambda。所以会再次执行它的invokeSuspend方法，此时lable=1，所以最后返回了Unit.INSTANCE，整个invokeSuspend结束，这就是挂起的原因。
-至于为什么在<code>CoroutineDispatchersActivity$demo2$1</code>中遇到了返回值为COROUTINE_SUSPENDED时候，不会继续执行了呢？看下BaseContinuationImpl中的resumeWith逻辑：
+执行到 withContext 时，这个例子会返回 <strong>COROUTINE_SUSPENDED</strong>，所以 invokeSuspend 直接返回 var2，此时 label 已经被设置成 1。等 withContext 执行完，会通知传给 withContext 的 continuation，也就是上面的 <code>CoroutineDispatchersActivity$demo2$1</code> 这个 SuspendLambda，于是再次执行它的 invokeSuspend 方法。第二次进来时 label=1，最后返回 Unit.INSTANCE，整个 invokeSuspend 执行结束，这就是这里发生挂起和恢复的原因。
+那为什么 <code>CoroutineDispatchersActivity$demo2$1</code> 遇到 COROUTINE_SUSPENDED 后不会继续往下执行？看下 BaseContinuationImpl 中的 resumeWith 逻辑：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/BaseContinuationImpl%E7%9A%84resumeWith%E6%96%B9%E6%B3%95.png"
 	width="1089"
 	height="896"
@@ -346,8 +346,8 @@
 		data-flex-basis="291px"
 	
 ></br>
-在BaseContinuationImpl的resumeWith中，如果invokeSuspend返回值是COROUTINE_SUSPENDED，则直接return了，不往上层的continuation调用了。</p>
-<p>至于再次执行<code>CoroutineDispatchersActivity$demo2$1</code>的invokeSuspend方法是在什么时候，可以追溯到withContext中：
+也就是说，BaseContinuationImpl.resumeWith 调完 invokeSuspend 后，只要拿到 COROUTINE_SUSPENDED，就会直接 return，外层 continuation 暂时不会被继续调用。</p>
+<p>再看 <code>CoroutineDispatchersActivity$demo2$1</code> 的 invokeSuspend 是什么时候被第二次执行的，可以追溯到 withContext：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/withContext%E5%90%AF%E5%8A%A8%E5%8D%8F%E7%A8%8B.png"
 	width="1109"
 	height="944"
@@ -362,7 +362,7 @@
 		data-flex-basis="281px"
 	
 > </br>
-执行了block的startCoroutineCancellable：
+这里执行了 block 的 startCoroutineCancellable：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/%E6%8C%82%E8%B5%B7%E5%87%BD%E6%95%B0%E7%9A%84startCoroutineCancellable.png"
 	width="1215"
 	height="208"
@@ -377,14 +377,14 @@
 		data-flex-basis="1401px"
 	
 ></br>
-此处很熟悉啊，这不又启动了一个协程吗？协程套协程啊。好吧，我们直接看completion的回调，在协程挂起函数执行完后，会执行complete的resumeWith方法，此处是DispatchedCoroutine对象，继承自ScopeCoroutine：
+这里和启动协程的流程很像，本质上是把 withContext 的 block 包成新的协程来执行。先看 completion 的回调，挂起函数执行完后，会执行 completion 的 resumeWith 方法。这里的 completion 是 DispatchedCoroutine 对象，它继承自 ScopeCoroutine：
 <img src="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/DispatchedContinuatine%E7%9A%84afterResume%E6%96%B9%E6%B3%95.png"
 	width="2038"
 	height="1104"
 	srcset="/p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/DispatchedContinuatine%E7%9A%84afterResume%E6%96%B9%E6%B3%95_hu_f08a46597722ac43.png 480w, /p/%E5%8D%8F%E7%A8%8B%E6%8C%82%E8%B5%B7%E5%8E%9F%E7%90%86/DispatchedContinuatine%E7%9A%84afterResume%E6%96%B9%E6%B3%95_hu_5bc23c62867664e.png 1024w"
 	loading="lazy"
 	
-		alt="DispatchedContinuate的afterResume方法"
+		alt="DispatchedCoroutine 的 afterResume 方法"
 	
 	
 		class="gallery-image" 
@@ -392,10 +392,10 @@
 		data-flex-basis="443px"
 	
 >
-它是先取continuation中context的ContinuationInterceptor，也就是上面launch启动的dispatchers，对应的是Dispatchers.Default，最终执行Dispatchers的resumeCancellableWith方法，在该方法里面最终会在协程指定的线程中执行协程代码块。所以在上面日志中能看到withContext执行完后，launch之后的代码能回到指定的线程中执行。</p>
-<p>withcontext执行完了后会执行外面协程的resumeWith，所以launch的invokeSuspend再次执行。再次执行的时候会回到自己的线程。真相大白了！</p>
+afterResume 里会先取 continuation 的 context 中的 ContinuationInterceptor，也就是上面 launch 启动时使用的 dispatcher，对应的是 Dispatchers.Default。然后拿到 intercepted 后的 continuation，调用它的 resumeCancellableWith，最终把外层协程恢复到指定线程中继续执行。所以日志里能看到，withContext 执行完后，launch 后面的代码又回到了自己的线程。</p>
+<p>withContext 执行完后触发外层协程的 resumeWith，launch 对应的 invokeSuspend 就会再次执行，而且会回到自己的 dispatcher 线程上。</p>
 <p>总结：</br>
-首先每一个协程代码块都会被编译成SuspendLambda对象，它也是一个Continuation对象，每次在执行到SuspendLambda的resume时候，都会去执行invokeSuspend方法，而该方法里面会去执行子协程，如果子协程返回<strong>COROUTINE_SUSPENDED</strong>状态的时候，父协程的resume方法会直接return了。当子协程执行完后，会通知父协程，此时父协程的的invokeSuspend方法再次被执行，而此时的状态机会发生变化，如果此时状态恢复后，会执行父协程中的Continuation，也就是父父协程的执行。</p>
+协程代码块会被编译成 SuspendLambda，它本身也是一个 Continuation。执行 SuspendLambda 的 resume 时，会进入 invokeSuspend 方法。invokeSuspend 里如果调用了子协程或者挂起函数，并且拿到 <strong>COROUTINE_SUSPENDED</strong>，父协程的 resumeWith 就会直接 return，后面的代码暂时不执行。等子协程执行完后，它会恢复父协程，父协程的 invokeSuspend 再次执行。此时 label 状态已经变化，状态机会从上次挂起的位置继续往下走。父协程执行结束后，再继续回调自己的 completion。</p>
 
 </section>
 

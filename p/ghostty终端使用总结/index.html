@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Ghostty 是一个现代化的终端模拟器，由 mitchellh 开发，以其出色的性能和原生 macOS 集成而闻名。本文将详细介绍 Ghostty 在 macOS 上的安装、配置和快捷键使用方法。\n安装 Homebrew 安装（推荐） 1 brew install ghostty 安装完成后，你可以通过 Spotlight 搜索 &ldquo;Ghostty&rdquo; 或在终端中输入 ghostty 启动应用。\n配置文件 Ghostty 使用简洁的配置文件进行配置，配置文件位置为 ~/.config/ghostty/config。\n基础配置示例 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 # 字体配置 font-family = &#34;JetBrains Mono&#34; font-size = 14 # 窗口配置 window-width = 1200 window-height = 800 window-position = center window-padding-x = 10 window-padding-y = 10 # 主题配置 theme = dracula background-opacity = 0.95 # 鼠标配置 mouse-scroll-multiplier = 5 # 粘贴配置 paste-protection = true paste-always-history = true 常用配置项 配置项 说明 示例值 font-family 字体名称 JetBrains Mono font-size 字体大小 14 window-width 窗口宽度 1200 window-height 窗口高度 800 theme 主题名称 dracula, monokai, solarized-dark background-opacity 背景透明度 0.95 cursor-style 光标样式 block, underline, bar cursor-blink 光标闪烁 true, false 快捷键 Ghostty 提供了丰富的快捷键，以下是常用快捷键汇总：\n">
+<title>Ghostty终端使用总结</title>
+
+<link rel='canonical' href='http://xiangcman.xyz/p/ghostty%E7%BB%88%E7%AB%AF%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Ghostty终端使用总结">
+<meta property='og:description' content="Ghostty 是一个现代化的终端模拟器，由 mitchellh 开发，以其出色的性能和原生 macOS 集成而闻名。本文将详细介绍 Ghostty 在 macOS 上的安装、配置和快捷键使用方法。\n安装 Homebrew 安装（推荐） 1 brew install ghostty 安装完成后，你可以通过 Spotlight 搜索 &ldquo;Ghostty&rdquo; 或在终端中输入 ghostty 启动应用。\n配置文件 Ghostty 使用简洁的配置文件进行配置，配置文件位置为 ~/.config/ghostty/config。\n基础配置示例 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 # 字体配置 font-family = &#34;JetBrains Mono&#34; font-size = 14 # 窗口配置 window-width = 1200 window-height = 800 window-position = center window-padding-x = 10 window-padding-y = 10 # 主题配置 theme = dracula background-opacity = 0.95 # 鼠标配置 mouse-scroll-multiplier = 5 # 粘贴配置 paste-protection = true paste-always-history = true 常用配置项 配置项 说明 示例值 font-family 字体名称 JetBrains Mono font-size 字体大小 14 window-width 窗口宽度 1200 window-height 窗口高度 800 theme 主题名称 dracula, monokai, solarized-dark background-opacity 背景透明度 0.95 cursor-style 光标样式 block, underline, bar cursor-blink 光标闪烁 true, false 快捷键 Ghostty 提供了丰富的快捷键，以下是常用快捷键汇总：\n">
+<meta property='og:url' content='http://xiangcman.xyz/p/ghostty%E7%BB%88%E7%AB%AF%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2026-04-03T15:47:00&#43;08:00'/><meta property='article:modified_time' content='2026-04-03T15:47:00&#43;08:00'/>
+<meta name="twitter:title" content="Ghostty终端使用总结">
+<meta name="twitter:description" content="Ghostty 是一个现代化的终端模拟器，由 mitchellh 开发，以其出色的性能和原生 macOS 集成而闻名。本文将详细介绍 Ghostty 在 macOS 上的安装、配置和快捷键使用方法。\n安装 Homebrew 安装（推荐） 1 brew install ghostty 安装完成后，你可以通过 Spotlight 搜索 &ldquo;Ghostty&rdquo; 或在终端中输入 ghostty 启动应用。\n配置文件 Ghostty 使用简洁的配置文件进行配置，配置文件位置为 ~/.config/ghostty/config。\n基础配置示例 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 # 字体配置 font-family = &#34;JetBrains Mono&#34; font-size = 14 # 窗口配置 window-width = 1200 window-height = 800 window-position = center window-padding-x = 10 window-padding-y = 10 # 主题配置 theme = dracula background-opacity = 0.95 # 鼠标配置 mouse-scroll-multiplier = 5 # 粘贴配置 paste-protection = true paste-always-history = true 常用配置项 配置项 说明 示例值 font-family 字体名称 JetBrains Mono font-size 字体大小 14 window-width 窗口宽度 1200 window-height 窗口高度 800 theme 主题名称 dracula, monokai, solarized-dark background-opacity 背景透明度 0.95 cursor-style 光标样式 block, underline, bar cursor-blink 光标闪烁 true, false 快捷键 Ghostty 提供了丰富的快捷键，以下是常用快捷键汇总：\n">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu_c5ce2387cd5c94f8.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/xiangcman'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>分类</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#安装">安装</a>
+      <ol>
+        <li><a href="#homebrew-安装推荐">Homebrew 安装（推荐）</a></li>
+      </ol>
+    </li>
+    <li><a href="#配置文件">配置文件</a>
+      <ol>
+        <li><a href="#基础配置示例">基础配置示例</a></li>
+        <li><a href="#常用配置项">常用配置项</a></li>
+      </ol>
+    </li>
+    <li><a href="#快捷键">快捷键</a>
+      <ol>
+        <li><a href="#查看所有快捷键">查看所有快捷键</a></li>
+        <li><a href="#标签页管理">标签页管理</a></li>
+        <li><a href="#复制粘贴">复制粘贴</a></li>
+        <li><a href="#搜索功能">搜索功能</a></li>
+        <li><a href="#面板分割">面板分割</a></li>
+        <li><a href="#其他常用快捷键">其他常用快捷键</a></li>
+      </ol>
+    </li>
+    <li><a href="#自定义快捷键">自定义快捷键</a></li>
+    <li><a href="#主题配置">主题配置</a>
+      <ol>
+        <li><a href="#查看所有可用主题">查看所有可用主题</a></li>
+        <li><a href="#使用内置主题">使用内置主题</a></li>
+        <li><a href="#自定义主题颜色">自定义主题颜色</a></li>
+      </ol>
+    </li>
+    <li><a href="#高级配置">高级配置</a>
+      <ol>
+        <li><a href="#终端仿真配置">终端仿真配置</a></li>
+        <li><a href="#鼠标配置">鼠标配置</a></li>
+        <li><a href="#提示音和通知">提示音和通知</a></li>
+        <li><a href="#滚动条配置">滚动条配置</a></li>
+        <li><a href="#窗口边框和装饰">窗口边框和装饰</a></li>
+      </ol>
+    </li>
+    <li><a href="#性能优化配置">性能优化配置</a></li>
+    <li><a href="#技巧汇总">技巧汇总</a>
+      <ol>
+        <li><a href="#1-快速打开配置">1. 快速打开配置</a></li>
+        <li><a href="#2-查看所有快捷键">2. 查看所有快捷键</a></li>
+        <li><a href="#3-透明背景效果">3. 透明背景效果</a></li>
+        <li><a href="#4-快捷命令">4. 快捷命令</a></li>
+        <li><a href="#5-多显示器配置">5. 多显示器配置</a></li>
+      </ol>
+    </li>
+    <li><a href="#命令行使用">命令行使用</a>
+      <ol>
+        <li><a href="#列出所有信息">列出所有信息</a></li>
+        <li><a href="#快速下拉终端quake-模式">快速下拉终端（Quake 模式）</a>
+          <ol>
+            <li><a href="#启用-quake-模式">启用 Quake 模式</a></li>
+            <li><a href="#quake-模式窗口配置">Quake 模式窗口配置</a></li>
+            <li><a href="#quake-模式使用技巧">Quake 模式使用技巧</a></li>
+          </ol>
+        </li>
+        <li><a href="#启动选项">启动选项</a></li>
+        <li><a href="#常用命令行参数">常用命令行参数</a></li>
+      </ol>
+    </li>
+    <li><a href="#配置文件位置说明">配置文件位置说明</a>
+      <ol>
+        <li><a href="#配置文件的加载顺序">配置文件的加载顺序</a></li>
+      </ol>
+    </li>
+    <li><a href="#常见问题">常见问题</a>
+      <ol>
+        <li><a href="#q-如何重置所有配置">Q: 如何重置所有配置？</a></li>
+        <li><a href="#q-ghostty-支持-ssh-代理配置吗">Q: Ghostty 支持 SSH 代理配置吗？</a></li>
+        <li><a href="#q-如何调整光标闪烁速度">Q: 如何调整光标闪烁速度？</a></li>
+        <li><a href="#q-如何禁用终端提示音">Q: 如何禁用终端提示音？</a></li>
+        <li><a href="#q-ghostty-与其他终端模拟器有什么优势">Q: Ghostty 与其他终端模拟器有什么优势？</a></li>
+        <li><a href="#q-如何导出备份配置">Q: 如何导出/备份配置？</a></li>
+      </ol>
+    </li>
+    <li><a href="#总结">总结</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/ghostty/" >
+                Ghostty
+            </a>
+        
+            <a href="/categories/%E5%B7%A5%E5%85%B7/" >
+                工具
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/ghostty%E7%BB%88%E7%AB%AF%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/">Ghostty终端使用总结</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2026-04-03</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 7 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>Ghostty 是一个现代化的终端模拟器，由 mitchellh 开发，以其出色的性能和原生 macOS 集成而闻名。本文将详细介绍 Ghostty 在 macOS 上的安装、配置和快捷键使用方法。</p>
+<h2 id="安装">安装
+</h2><h3 id="homebrew-安装推荐">Homebrew 安装（推荐）
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">brew install ghostty
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>安装完成后，你可以通过 Spotlight 搜索 &ldquo;Ghostty&rdquo; 或在终端中输入 <code>ghostty</code> 启动应用。</p>
+<h2 id="配置文件">配置文件
+</h2><p>Ghostty 使用简洁的配置文件进行配置，配置文件位置为 <code>~/.config/ghostty/config</code>。</p>
+<h3 id="基础配置示例">基础配置示例
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># 字体配置</span>
+</span></span><span class="line"><span class="cl"><span class="na">font-family</span> <span class="o">=</span> <span class="s">&#34;JetBrains Mono&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="na">font-size</span> <span class="o">=</span> <span class="s">14</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 窗口配置</span>
+</span></span><span class="line"><span class="cl"><span class="na">window-width</span> <span class="o">=</span> <span class="s">1200</span>
+</span></span><span class="line"><span class="cl"><span class="na">window-height</span> <span class="o">=</span> <span class="s">800</span>
+</span></span><span class="line"><span class="cl"><span class="na">window-position</span> <span class="o">=</span> <span class="s">center</span>
+</span></span><span class="line"><span class="cl"><span class="na">window-padding-x</span> <span class="o">=</span> <span class="s">10</span>
+</span></span><span class="line"><span class="cl"><span class="na">window-padding-y</span> <span class="o">=</span> <span class="s">10</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 主题配置</span>
+</span></span><span class="line"><span class="cl"><span class="na">theme</span> <span class="o">=</span> <span class="s">dracula</span>
+</span></span><span class="line"><span class="cl"><span class="na">background-opacity</span> <span class="o">=</span> <span class="s">0.95</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 鼠标配置</span>
+</span></span><span class="line"><span class="cl"><span class="na">mouse-scroll-multiplier</span> <span class="o">=</span> <span class="s">5</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 粘贴配置</span>
+</span></span><span class="line"><span class="cl"><span class="na">paste-protection</span> <span class="o">=</span> <span class="s">true</span>
+</span></span><span class="line"><span class="cl"><span class="na">paste-always-history</span> <span class="o">=</span> <span class="s">true</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="常用配置项">常用配置项
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>配置项</th>
+          <th>说明</th>
+          <th>示例值</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>font-family</td>
+          <td>字体名称</td>
+          <td>JetBrains Mono</td>
+      </tr>
+      <tr>
+          <td>font-size</td>
+          <td>字体大小</td>
+          <td>14</td>
+      </tr>
+      <tr>
+          <td>window-width</td>
+          <td>窗口宽度</td>
+          <td>1200</td>
+      </tr>
+      <tr>
+          <td>window-height</td>
+          <td>窗口高度</td>
+          <td>800</td>
+      </tr>
+      <tr>
+          <td>theme</td>
+          <td>主题名称</td>
+          <td>dracula, monokai, solarized-dark</td>
+      </tr>
+      <tr>
+          <td>background-opacity</td>
+          <td>背景透明度</td>
+          <td>0.95</td>
+      </tr>
+      <tr>
+          <td>cursor-style</td>
+          <td>光标样式</td>
+          <td>block, underline, bar</td>
+      </tr>
+      <tr>
+          <td>cursor-blink</td>
+          <td>光标闪烁</td>
+          <td>true, false</td>
+      </tr>
+  </tbody>
+</table></div>
+<h2 id="快捷键">快捷键
+</h2><p>Ghostty 提供了丰富的快捷键，以下是常用快捷键汇总：</p>
+<h3 id="查看所有快捷键">查看所有快捷键
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 查看所有可用的快捷键</span>
+</span></span><span class="line"><span class="cl">ghostty +list-keybinds
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 输出示例：</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ┌─ General ────────────────────────────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># │ ⌘ + C              复制选中文本                      │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># │ ⌘ + V              粘贴文本                          │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># │ ⌘ + T              新建标签页                        │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># │ ⌘ + W              关闭当前标签页                    │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># │ ⌘ + D              水平分割面板                      │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># │ ⌘ + ⇧ + D          垂直分割面板                      │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># │ ⌘ + K              清屏                              │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># │ ⌘ + F              搜索                              │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># │ ...                                              │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># └─────────────────────────────────────────────────────┘</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>你也可以在 Ghostty 中按 <code>Cmd + .</code> 直接进入快捷键浏览模式。</p>
+<h3 id="标签页管理">标签页管理
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>快捷键</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Cmd + T</td>
+          <td>新建标签页</td>
+      </tr>
+      <tr>
+          <td>Cmd + W</td>
+          <td>关闭当前标签页</td>
+      </tr>
+      <tr>
+          <td>Cmd + 1-9</td>
+          <td>切换到第 N 个标签页</td>
+      </tr>
+      <tr>
+          <td>Cmd + Tab</td>
+          <td>切换到下一个标签页</td>
+      </tr>
+      <tr>
+          <td>Cmd + Shift + Tab</td>
+          <td>切换到上一个标签页</td>
+      </tr>
+      <tr>
+          <td>Cmd + Left/Right</td>
+          <td>切换相邻标签页</td>
+      </tr>
+      <tr>
+          <td>Cmd + Option + Left/Right</td>
+          <td>移动当前标签页位置</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="复制粘贴">复制粘贴
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>快捷键</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Cmd + C</td>
+          <td>复制选中文本</td>
+      </tr>
+      <tr>
+          <td>Cmd + V</td>
+          <td>粘贴文本</td>
+      </tr>
+      <tr>
+          <td>Cmd + Shift + V</td>
+          <td>粘贴并清除格式</td>
+      </tr>
+      <tr>
+          <td>Cmd + Shift + C</td>
+          <td>进入选择模式进行复制</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="搜索功能">搜索功能
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>快捷键</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Cmd + F</td>
+          <td>打开搜索框</td>
+      </tr>
+      <tr>
+          <td>Cmd + G</td>
+          <td>查找下一个</td>
+      </tr>
+      <tr>
+          <td>Cmd + Shift + G</td>
+          <td>查找上一个</td>
+      </tr>
+      <tr>
+          <td>Escape</td>
+          <td>退出搜索模式</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="面板分割">面板分割
+</h3><p>Ghostty 支持水平和垂直分割窗口：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>快捷键</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Cmd + D</td>
+          <td>水平分割</td>
+      </tr>
+      <tr>
+          <td>Cmd + Shift + D</td>
+          <td>垂直分割</td>
+      </tr>
+      <tr>
+          <td>Cmd + ]</td>
+          <td>切换到下一个面板</td>
+      </tr>
+      <tr>
+          <td>Cmd + [</td>
+          <td>切换到上一个面板</td>
+      </tr>
+      <tr>
+          <td>Cmd + W</td>
+          <td>关闭当前面板</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="其他常用快捷键">其他常用快捷键
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>快捷键</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Cmd + K</td>
+          <td>清屏（相当于 clear）</td>
+      </tr>
+      <tr>
+          <td>Cmd + +</td>
+          <td>放大字体</td>
+      </tr>
+      <tr>
+          <td>Cmd + -</td>
+          <td>缩小字体</td>
+      </tr>
+      <tr>
+          <td>Cmd + 0</td>
+          <td>重置字体大小</td>
+      </tr>
+      <tr>
+          <td>Cmd + .</td>
+          <td>进入快捷键配置模式</td>
+      </tr>
+      <tr>
+          <td>Cmd + ,</td>
+          <td>打开配置文件</td>
+      </tr>
+  </tbody>
+</table></div>
+<h2 id="自定义快捷键">自定义快捷键
+</h2><p>你可以在配置文件中自定义快捷键：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># 自定义快捷键</span>
+</span></span><span class="line"><span class="cl"><span class="na">keybind.new_tab</span> <span class="o">=</span> <span class="s">cmd+t</span>
+</span></span><span class="line"><span class="cl"><span class="na">keybind.close_tab</span> <span class="o">=</span> <span class="s">cmd+w</span>
+</span></span><span class="line"><span class="cl"><span class="na">keybind.copy</span> <span class="o">=</span> <span class="s">cmd+c</span>
+</span></span><span class="line"><span class="cl"><span class="na">keybind.paste</span> <span class="o">=</span> <span class="s">cmd+v</span>
+</span></span><span class="line"><span class="cl"><span class="na">keybind.search</span> <span class="o">=</span> <span class="s">cmd+f</span>
+</span></span><span class="line"><span class="cl"><span class="na">keybind.font_size_up</span> <span class="o">=</span> <span class="s">cmd+plus</span>
+</span></span><span class="line"><span class="cl"><span class="na">keybind.font_size_down</span> <span class="o">=</span> <span class="s">cmd+minus</span>
+</span></span><span class="line"><span class="cl"><span class="na">keybind.font_size_reset</span> <span class="o">=</span> <span class="s">cmd+0</span>
+</span></span><span class="line"><span class="cl"><span class="na">keybind.clear_screen</span> <span class="o">=</span> <span class="s">cmd+k</span>
+</span></span><span class="line"><span class="cl"><span class="na">keybind.split_horizontal</span> <span class="o">=</span> <span class="s">cmd+d</span>
+</span></span><span class="line"><span class="cl"><span class="na">keybind.split_vertical</span> <span class="o">=</span> <span class="s">cmd+shift+d</span>
+</span></span><span class="line"><span class="cl"><span class="na">keybind.switch_pane</span> <span class="o">=</span> <span class="s">cmd+bracketleft</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="主题配置">主题配置
+</h2><p>Ghostty 内置了多个主题，也可以使用外部主题文件。</p>
+<h3 id="查看所有可用主题">查看所有可用主题
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 列出所有内置主题</span>
+</span></span><span class="line"><span class="cl">ghostty +list-themes
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 输出示例：</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ── Themes ────────────────────────────────────────</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● 30394 (Dracula)                                 │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Adventure                                      │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Argonaut                                       │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Batman                                         │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Birds Of Paradise                               │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Blazer                                          │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Borland                                        │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Catppuccin Frappe                              │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Catppuccin Latte                               │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Catppuccin Macchiato                           │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Catppuccin Mocha                               │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Challenger Deep                                │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Chernobyl                                       │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Ciapre                                         │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Clone of Ubuntu                                 │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Cool Glow                                       │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Dracula                                        │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Dracula At Night                               │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Dracula v2                                     │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Edge Dark                                     │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Elemental                                      │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Espresso Libre                                 │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Fiery                                          │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Firefox DEV                                    │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Flat                                           │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Galaxy                                         │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Github Dark                                    │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Github Dark Dimmed                             │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Github Default                                 │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Github Light                                  │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ● Gob                      │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># │ ...                                             │</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># └─────────────────────────────────────────────────┘</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="使用内置主题">使用内置主题
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="na">theme</span> <span class="o">=</span> <span class="s">dracula</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>常用内置主题：30394, adventure, argonaut, batman, borland, challenger-deep, chernobyl, ciapre, dracula, espresso-libre, flat, galaxy, github-dark, gruvbox, hopscotch, monster, monokai, nord, one-dark, solarized-dark, solarized-light, tokyo-night, tokyo-night-storm, ubuntu, zenburn</p>
+<h3 id="自定义主题颜色">自定义主题颜色
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># 前景色和背景色</span>
+</span></span><span class="line"><span class="cl"><span class="na">foreground-color</span> <span class="o">=</span> <span class="s">#f8f8f2</span>
+</span></span><span class="line"><span class="cl"><span class="na">background-color</span> <span class="o">=</span> <span class="s">#282a36</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 光标颜色</span>
+</span></span><span class="line"><span class="cl"><span class="na">cursor-color</span> <span class="o">=</span> <span class="s">#f8f8f2</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 选择颜色</span>
+</span></span><span class="line"><span class="cl"><span class="na">selection-foreground-color</span> <span class="o">=</span> <span class="s">#282a36</span>
+</span></span><span class="line"><span class="cl"><span class="na">selection-background-color</span> <span class="o">=</span> <span class="s">#44475a</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># ansi 颜色</span>
+</span></span><span class="line"><span class="cl"><span class="na">palette</span> <span class="o">=</span> <span class="s">#282a36,#ff5555,#50fa7b,#f1fa8c,#bd93f9,#ff79c6,#8be9fd,#f8f8f2,#6272a4,#ff6e6e,#69ff94,#ffffa5,#d6acff,#ff92df,#a4ffff,#ffffff</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="高级配置">高级配置
+</h2><h3 id="终端仿真配置">终端仿真配置
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># 设置终端类型</span>
+</span></span><span class="line"><span class="cl"><span class="na">term</span> <span class="o">=</span> <span class="s">xterm-256color</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 启用修饰键报告</span>
+</span></span><span class="line"><span class="cl"><span class="na">macos-option-as-alt</span> <span class="o">=</span> <span class="s">false</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 禁用应用程序鼠标模式</span>
+</span></span><span class="line"><span class="cl"><span class="na">mouse.hide-when-typing</span> <span class="o">=</span> <span class="s">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 启用 URL 检测</span>
+</span></span><span class="line"><span class="cl"><span class="na">url-detection</span> <span class="o">=</span> <span class="s">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># URL 点击配置</span>
+</span></span><span class="line"><span class="cl"><span class="na">url-launcher</span> <span class="o">=</span> <span class="s">open</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="鼠标配置">鼠标配置
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># 鼠标报告模式</span>
+</span></span><span class="line"><span class="cl"><span class="na">mouse-report-raw-events</span> <span class="o">=</span> <span class="s">false</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 滚动倍数</span>
+</span></span><span class="line"><span class="cl"><span class="na">mouse-scroll-multiplier</span> <span class="o">=</span> <span class="s">5</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 启用鼠标点击链接</span>
+</span></span><span class="line"><span class="cl"><span class="na">mouse.show-hyperlink-underlines</span> <span class="o">=</span> <span class="s">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 鼠标跟随聚焦</span>
+</span></span><span class="line"><span class="cl"><span class="na">focus-follows-mouse</span> <span class="o">=</span> <span class="s">true</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="提示音和通知">提示音和通知
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># 提示音设置</span>
+</span></span><span class="line"><span class="cl"><span class="na">bell</span> <span class="o">=</span> <span class="s">audible  # audible | visual | none</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 视觉提示音颜色</span>
+</span></span><span class="line"><span class="cl"><span class="na">bell-color</span> <span class="o">=</span> <span class="s">#ff5555</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 窗口闪动通知</span>
+</span></span><span class="line"><span class="cl"><span class="na">window-bell</span> <span class="o">=</span> <span class="s">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 当收到后台输出时闪动窗口</span>
+</span></span><span class="line"><span class="cl"><span class="na">window-bell-on-bell</span> <span class="o">=</span> <span class="s">true</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="滚动条配置">滚动条配置
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># 滚动条样式</span>
+</span></span><span class="line"><span class="cl"><span class="na">scrollbar</span> <span class="o">=</span> <span class="s">hidden  # hidden | minimal | normal</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 滚动行数</span>
+</span></span><span class="line"><span class="cl"><span class="na">scrollback-lines</span> <span class="o">=</span> <span class="s">10000</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 即时滚动</span>
+</span></span><span class="line"><span class="cl"><span class="na">scroll-to-bottom-on-keystroke</span> <span class="o">=</span> <span class="s">true</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="窗口边框和装饰">窗口边框和装饰
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># 窗口边框宽度</span>
+</span></span><span class="line"><span class="cl"><span class="na">window-border-width</span> <span class="o">=</span> <span class="s">2</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 聚焦面板边框颜色</span>
+</span></span><span class="line"><span class="cl"><span class="na">unfocused-pause-background</span> <span class="o">=</span> <span class="s">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 窗口标题</span>
+</span></span><span class="line"><span class="cl"><span class="na">window-title</span> <span class="o">=</span> <span class="s">&#34;{title} — {process}&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 动态标题</span>
+</span></span><span class="line"><span class="cl"><span class="na">window-title-length</span> <span class="o">=</span> <span class="s">50</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="性能优化配置">性能优化配置
+</h2><p>Ghostty 以高性能著称，但通过以下配置可以进一步优化：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># 启用 GPU 加速（默认启用）</span>
+</span></span><span class="line"><span class="cl"><span class="na">renderer</span> <span class="o">=</span> <span class="s">gpu</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 禁用动画提升性能</span>
+</span></span><span class="line"><span class="cl"><span class="na">animation</span> <span class="o">=</span> <span class="s">false</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 调整滚动缓冲区</span>
+</span></span><span class="line"><span class="cl"><span class="na">scrollback-limit</span> <span class="o">=</span> <span class="s">10000</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 禁用终端铃声</span>
+</span></span><span class="line"><span class="cl"><span class="na">bell</span> <span class="o">=</span> <span class="s">none</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 禁用终端视觉铃声</span>
+</span></span><span class="line"><span class="cl"><span class="na">visual-bell</span> <span class="o">=</span> <span class="s">false</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="技巧汇总">技巧汇总
+</h2><h3 id="1-快速打开配置">1. 快速打开配置
+</h3><p>按 Cmd + , 可以直接打开配置文件进行编辑。</p>
+<h3 id="2-查看所有快捷键">2. 查看所有快捷键
+</h3><p>按 Cmd + . 可以进入快捷键浏览模式，查看所有可用快捷键。</p>
+<h3 id="3-透明背景效果">3. 透明背景效果
+</h3><p>结合 macOS 的窗口模糊效果可以获得更好的视觉体验：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="na">background-opacity</span> <span class="o">=</span> <span class="s">0.90</span>
+</span></span><span class="line"><span class="cl"><span class="na">background-blur</span> <span class="o">=</span> <span class="s">true</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="4-快捷命令">4. 快捷命令
+</h3><p>在配置文件中设置 shell 启动命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="na">shell</span> <span class="o">=</span> <span class="s">/bin/zsh</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 或使用特定配置启动</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># shell = /usr/local/bin/fish</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="5-多显示器配置">5. 多显示器配置
+</h3><p>为不同显示器保存不同的窗口位置：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># 保存窗口位置</span>
+</span></span><span class="line"><span class="cl"><span class="na">save-state</span> <span class="o">=</span> <span class="s">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 记住上次关闭时的位置</span>
+</span></span><span class="line"><span class="cl"><span class="na">window-state-dir</span> <span class="o">=</span> <span class="s">~/Library/Application Support/com.mitchellh.ghostty/</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="命令行使用">命令行使用
+</h2><h3 id="列出所有信息">列出所有信息
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 列出所有内置主题</span>
+</span></span><span class="line"><span class="cl">ghostty +list-themes
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 列出所有可用的快捷键</span>
+</span></span><span class="line"><span class="cl">ghostty +list-keybinds
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 列出所有可用字体</span>
+</span></span><span class="line"><span class="cl">ghostty +list-fonts
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看帮助信息</span>
+</span></span><span class="line"><span class="cl">ghostty --help
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看版本信息</span>
+</span></span><span class="line"><span class="cl">ghostty --version
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="快速下拉终端quake-模式">快速下拉终端（Quake 模式）
+</h3><p>Ghostty 支持类似 Quake 游戏的下拉终端效果，终端可以从屏幕顶部快速滑入/滑出。</p>
+<h4 id="启用-quake-模式">启用 Quake 模式
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># 启用 Quake 模式</span>
+</span></span><span class="line"><span class="cl"><span class="na">quick-toggle-terminal</span> <span class="o">=</span> <span class="s">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 设置下拉快捷键（默认 Cmd + Shift + Space）</span>
+</span></span><span class="line"><span class="cl"><span class="na">keybind.quake-toggle</span> <span class="o">=</span> <span class="s">cmd+shift+space</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="quake-模式窗口配置">Quake 模式窗口配置
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># Quake 模式窗口位置</span>
+</span></span><span class="line"><span class="cl"><span class="na">quick-toggle-position</span> <span class="o">=</span> <span class="s">top  # top | center | bottom</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Quake 模式窗口高度（百分比）</span>
+</span></span><span class="line"><span class="cl"><span class="na">quick-toggle-height</span> <span class="o">=</span> <span class="s">50</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Quake 模式动画速度（毫秒）</span>
+</span></span><span class="line"><span class="cl"><span class="na">quick-toggle-animation-duration</span> <span class="o">=</span> <span class="s">100</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 是否在 Quake 窗口失去焦点时隐藏</span>
+</span></span><span class="line"><span class="cl"><span class="na">quick-toggle-hide-when-focus-lost</span> <span class="o">=</span> <span class="s">true</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 是否记住 Quake 窗口状态</span>
+</span></span><span class="line"><span class="cl"><span class="na">quick-toggle-state-file</span> <span class="o">=</span> <span class="s">~/Library/Application Support/com.mitchellh.ghostty/quake-state.txt</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="quake-模式使用技巧">Quake 模式使用技巧
+</h4><ul>
+<li><strong>快捷键</strong>：按 <code>Cmd + Shift + Space</code> 可以快速切换下拉终端</li>
+<li><strong>专属配置</strong>：可以设置 Quake 模式的专用配置：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="c1"># Quake 模式使用不同配置</span>
+</span></span><span class="line"><span class="cl"><span class="na">quick-toggle-config-name</span> <span class="o">=</span> <span class="s">quake</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 在配置文件中创建 [quake] 部分来设置专用配置</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># [quake]</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># font-size = 16</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># theme = nord</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="启动选项">启动选项
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 基本启动</span>
+</span></span><span class="line"><span class="cl">ghostty
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 使用指定配置文件启动</span>
+</span></span><span class="line"><span class="cl">ghostty --config-file /path/to/config
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 启动时执行命令</span>
+</span></span><span class="line"><span class="cl">ghostty -e <span class="s2">&#34;ls -la&#34;</span>
+</span></span><span class="line"><span class="cl">ghostty --command <span class="s2">&#34;ls -la&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 打开指定目录</span>
+</span></span><span class="line"><span class="cl">ghostty --working-directory /path/to/dir
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 设置窗口标题</span>
+</span></span><span class="line"><span class="cl">ghostty --title <span class="s2">&#34;My Terminal&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 以全屏模式启动</span>
+</span></span><span class="line"><span class="cl">ghostty --fullscreen
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 最大化窗口</span>
+</span></span><span class="line"><span class="cl">ghostty --maximized
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 设置窗口位置</span>
+</span></span><span class="line"><span class="cl">ghostty --position 100,100
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 设置窗口大小</span>
+</span></span><span class="line"><span class="cl">ghostty --size 1200x800
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="常用命令行参数">常用命令行参数
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>参数</th>
+          <th>说明</th>
+          <th>示例</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>-e, &ndash;command</td>
+          <td>启动时执行的命令</td>
+          <td>ghostty -e &ldquo;htop&rdquo;</td>
+      </tr>
+      <tr>
+          <td>&ndash;config-file</td>
+          <td>指定配置文件</td>
+          <td>ghostty &ndash;config-file ~/myconfig</td>
+      </tr>
+      <tr>
+          <td>&ndash;working-directory</td>
+          <td>指定工作目录</td>
+          <td>ghostty -d ~/projects</td>
+      </tr>
+      <tr>
+          <td>&ndash;title</td>
+          <td>设置窗口标题</td>
+          <td>ghostty &ndash;title &ldquo;Server&rdquo;</td>
+      </tr>
+      <tr>
+          <td>&ndash;fullscreen</td>
+          <td>全屏模式</td>
+          <td>ghostty &ndash;fullscreen</td>
+      </tr>
+      <tr>
+          <td>&ndash;maximized</td>
+          <td>最大化窗口</td>
+          <td>ghostty &ndash;maximized</td>
+      </tr>
+      <tr>
+          <td>+list-themes</td>
+          <td>列出所有主题</td>
+          <td>ghostty +list-themes</td>
+      </tr>
+      <tr>
+          <td>+list-keybinds</td>
+          <td>列出所有快捷键</td>
+          <td>ghostty +list-keybinds</td>
+      </tr>
+      <tr>
+          <td>+list-fonts</td>
+          <td>列出所有可用字体</td>
+          <td>ghostty +list-fonts</td>
+      </tr>
+      <tr>
+          <td>+list-actions</td>
+          <td>列出所有可用动作</td>
+          <td>ghostty +list-actions</td>
+      </tr>
+      <tr>
+          <td>+list-features</td>
+          <td>列出所有功能特性</td>
+          <td>ghostty +list-features</td>
+      </tr>
+      <tr>
+          <td>&ndash;help</td>
+          <td>显示帮助信息</td>
+          <td>ghostty &ndash;help</td>
+      </tr>
+      <tr>
+          <td>&ndash;version</td>
+          <td>显示版本信息</td>
+          <td>ghostty &ndash;version</td>
+      </tr>
+  </tbody>
+</table></div>
+<h2 id="配置文件位置说明">配置文件位置说明
+</h2><p>Ghostty 的配置文件位置遵循 XDG 规范：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 配置文件位置</span>
+</span></span><span class="line"><span class="cl">~/.config/ghostty/config
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 你也可以使用环境变量指定配置目录</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">GHOSTTY_CONFIG_DIR</span><span class="o">=</span>~/.config/ghostty
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="配置文件的加载顺序">配置文件的加载顺序
+</h3><ol>
+<li><code>$XDG_CONFIG_HOME/ghostty/config</code> (默认 <code>~/.config/ghostty/config</code>)</li>
+<li><code>$HOME/.ghostty</code> (旧版本兼容)</li>
+<li>命令行 <code>--config-file</code> 参数指定的文件</li>
+</ol>
+<h2 id="常见问题">常见问题
+</h2><h3 id="q-如何重置所有配置">Q: 如何重置所有配置？
+</h3><p>A: 删除配置文件 <code>~/.config/ghostty/config</code> 即可恢复默认设置：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rm ~/.config/ghostty/config
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="q-ghostty-支持-ssh-代理配置吗">Q: Ghostty 支持 SSH 代理配置吗？
+</h3><p>A: 支持，可以在配置文件中设置代理：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="na">http-proxy</span> <span class="o">=</span> <span class="s">http://127.0.0.1:7890</span>
+</span></span><span class="line"><span class="cl"><span class="na">https-proxy</span> <span class="o">=</span> <span class="s">http://127.0.0.1:7890</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="q-如何调整光标闪烁速度">Q: 如何调整光标闪烁速度？
+</h3><p>A: Ghostty 不提供单独的光标闪烁速度配置，但可以通过以下方式控制：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="na">cursor-blink</span> <span class="o">=</span> <span class="s">false  # 禁用闪烁</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="q-如何禁用终端提示音">Q: 如何禁用终端提示音？
+</h3><p>A: 在配置文件中添加以下内容：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-ini" data-lang="ini"><span class="line"><span class="cl"><span class="na">bell</span> <span class="o">=</span> <span class="s">none</span>
+</span></span><span class="line"><span class="cl"><span class="na">visual-bell</span> <span class="o">=</span> <span class="s">false</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="q-ghostty-与其他终端模拟器有什么优势">Q: Ghostty 与其他终端模拟器有什么优势？
+</h3><p>A: Ghostty 的主要优势包括：</p>
+<ul>
+<li>GPU 加速渲染，性能出色</li>
+<li>原生 macOS 集成</li>
+<li>配置文件简洁易用</li>
+<li>支持 GPU 加速的字体渲染</li>
+<li>内置丰富的主题</li>
+</ul>
+<h3 id="q-如何导出备份配置">Q: 如何导出/备份配置？
+</h3><p>A: 配置文件位于 <code>~/.config/ghostty/config</code>，直接复制该文件即可备份：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 备份配置</span>
+</span></span><span class="line"><span class="cl">cp ~/.config/ghostty/config ~/backup/ghostty-config
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 恢复配置</span>
+</span></span><span class="line"><span class="cl">cp ~/backup/ghostty-config ~/.config/ghostty/config
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="总结">总结
+</h2><p>Ghostty 是一个高性能、功能丰富的终端模拟器，特别适合 macOS 用户。通过合理的配置和快捷键使用，可以大幅提升终端使用体验。建议从基础配置开始，逐步根据个人习惯调整，找到最适合自己的配置方案。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 xiangcheng
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
