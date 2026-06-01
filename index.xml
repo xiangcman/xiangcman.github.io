@@ -30347,6 +30347,893 @@ allprojects主要是指所有的模块需要的三方依赖库时候的仓库
 </description>
         </item>
         <item>
+        <title>RecyclerView知识点总结与面试指南</title>
+        <link>http://xiangcman.xyz/p/recyclerview%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93%E4%B8%8E%E9%9D%A2%E8%AF%95%E6%8C%87%E5%8D%97/</link>
+        <pubDate>Mon, 20 Jan 2025 00:00:00 +0000</pubDate>
+        
+        <guid>http://xiangcman.xyz/p/recyclerview%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93%E4%B8%8E%E9%9D%A2%E8%AF%95%E6%8C%87%E5%8D%97/</guid>
+        <description>&lt;blockquote&gt;
+&lt;p&gt;本文是对RecyclerView源码走读系列文章的总结，涵盖了RecyclerView的核心知识点和面试中常见的问题。文章结合了作者大量的trace图分析，力求用最直白的方式讲解RecyclerView的工作原理。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;一整体架构概览&#34;&gt;一、整体架构概览
+&lt;/h2&gt;&lt;p&gt;RecyclerView是Android中用于展示大量数据列表的控件，它的整体工作流程可以分为以下几个阶段：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Choreographer VSync信号
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;       ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   onMeasure (测量)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;       ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   dispatchLayoutStep1 (预布局-可选)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;       ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   dispatchLayoutStep2 (正式布局)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;       ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   dispatchLayoutStep3 (动画执行)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;       ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   draw (绘制)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;关键点&lt;/strong&gt;：dispatchLayoutStep1（预布局）只有在有动画（增删改）的情况下才会执行。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;二测量布局流程详解&#34;&gt;二、测量布局流程详解
+&lt;/h2&gt;&lt;h3 id=&#34;21-onmeasure阶段&#34;&gt;2.1 onMeasure阶段
+&lt;/h3&gt;&lt;p&gt;RecyclerView的onMeasure会根据测量模式来决定是否测量子item：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;固定宽高模式&lt;/strong&gt;：直接跳过子item测量&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;非固定模式&lt;/strong&gt;：调用dispatchLayout进行完整布局&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;22-dispatchlayout三阶段&#34;&gt;2.2 dispatchLayout三阶段
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;28
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;29
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;30
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;31
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;┌─────────────────────────────────────────────────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│                    dispatchLayoutStep1                       │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  ┌─────────────────────────────────────────────────────┐   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │ 1. detachAndScrapAttachedViews                      │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │    - 将屏幕可见的ViewHolder分离                      │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │    - update的放入changeScrap，非update放入attachScrap│   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │ 2. fill布局                                         │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │    - 填充预布局需要的额外表项                        │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │ 3. 保存预布局位置到ViewInfoStore                    │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  └─────────────────────────────────────────────────────┘   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;└─────────────────────────────────────────────────────────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                            ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;┌─────────────────────────────────────────────────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│                    dispatchLayoutStep2                      │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  ┌─────────────────────────────────────────────────────┐   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │ 1. detachAndScrapAttachedViews                      │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │    - 再次分离ViewHolder                              │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │ 2. fill布局                                         │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │    - 根据最终可用空间填充表项                        │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │    - 从scrap缓存中获取ViewHolder                    │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  └─────────────────────────────────────────────────────┘   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;└─────────────────────────────────────────────────────────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                            ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;┌─────────────────────────────────────────────────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│                    dispatchLayoutStep3                       │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  ┌─────────────────────────────────────────────────────┐   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │ 1. process动画                                       │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │    - 根据预布局和后布局的位置差值执行动画            │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │ 2. 清空scrap缓存                                     │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  └─────────────────────────────────────────────────────┘   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;└─────────────────────────────────────────────────────────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;hr&gt;
+&lt;h2 id=&#34;三缓存机制核心重点&#34;&gt;三、缓存机制（核心重点）
+&lt;/h2&gt;&lt;p&gt;RecyclerView的缓存机制是面试中最常问的知识点，我们需要从&lt;strong&gt;分类&lt;/strong&gt;、&lt;strong&gt;回收&lt;/strong&gt;、&lt;strong&gt;复用&lt;/strong&gt;三个维度来理解。&lt;/p&gt;
+&lt;h3 id=&#34;31-缓存分类&#34;&gt;3.1 缓存分类
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;┌─────────────────────────────────────────────────────────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│                        RecyclerView 缓存层级                         │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├─────────────────────────────────────────────────────────────────────┤
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│                                                                     │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  ┌─────────────┐     ┌─────────────┐     ┌──────────────────────┐  │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │  Scrap缓存   │     │ CacheView   │     │  RecycledViewPool   │  │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  ├─────────────┤     ├─────────────┤     ├──────────────────────┤  │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │ changeScrap │     │ 默认容量:2   │     │ 默认容量:5/类型      │  │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │ attachScrap │     │ 无需重新bind │     │ 需重新bind           │  │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  ├─────────────┤     ├─────────────┤     ├──────────────────────┤  │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │ 仅layout期间│     │ 滑动时使用   │     │ cache满时转移       │  │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │ 使用        │     │             │     │                      │  │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  └─────────────┘     └─────────────┘     └──────────────────────┘  │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│                                                                     │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  ┌─────────────────────────────────────────────────────────────┐   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │                    ViewCacheExtension                        │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  │              开发者自定义缓存（很少使用）                     │   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  └─────────────────────────────────────────────────────────────┘   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│                                                                     │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;└─────────────────────────────────────────────────────────────────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;各缓存特点&lt;/strong&gt;：&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;缓存类型&lt;/th&gt;
+          &lt;th&gt;容量&lt;/th&gt;
+          &lt;th&gt;是否需要bind&lt;/th&gt;
+          &lt;th&gt;使用场景&lt;/th&gt;
+          &lt;th&gt;开发者可控&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;changeScrap&lt;/td&gt;
+          &lt;td&gt;一屏数量&lt;/td&gt;
+          &lt;td&gt;否&lt;/td&gt;
+          &lt;td&gt;预布局中的更新项&lt;/td&gt;
+          &lt;td&gt;❌&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;attachScrap&lt;/td&gt;
+          &lt;td&gt;一屏数量&lt;/td&gt;
+          &lt;td&gt;否&lt;/td&gt;
+          &lt;td&gt;预布局中的非更新项&lt;/td&gt;
+          &lt;td&gt;❌&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;CacheView&lt;/td&gt;
+          &lt;td&gt;2个&lt;/td&gt;
+          &lt;td&gt;否&lt;/td&gt;
+          &lt;td&gt;滑动离屏缓存&lt;/td&gt;
+          &lt;td&gt;✅&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;RecycledViewPool&lt;/td&gt;
+          &lt;td&gt;5个/类型&lt;/td&gt;
+          &lt;td&gt;是&lt;/td&gt;
+          &lt;td&gt;按viewType缓存&lt;/td&gt;
+          &lt;td&gt;✅&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;ViewCacheExtension&lt;/td&gt;
+          &lt;td&gt;自定义&lt;/td&gt;
+          &lt;td&gt;自定义&lt;/td&gt;
+          &lt;td&gt;扩展缓存&lt;/td&gt;
+          &lt;td&gt;✅&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;32-缓存回收时机&#34;&gt;3.2 缓存回收时机
+&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;非滚动时（layout期间）&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;detachAndScrapAttachedViews：将可见ViewHolder分离并放入scrap缓存&lt;/li&gt;
+&lt;li&gt;update的放入changeScrap，非update的放入attachScrap&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;滚动时&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;滑出屏幕的ViewHolder先放入CacheView&lt;/li&gt;
+&lt;li&gt;CacheView满时，移除第一个元素并放入RecycledViewPool&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;33-缓存复用顺序面试高频&#34;&gt;3.3 缓存复用顺序（面试高频）
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;获取ViewHolder的完整流程：
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;1. changeScrap (预布局专用)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;2. attachScrap (通过position查找)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;3. CacheView (通过position查找)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;4. attachScrap (通过id查找，需setHasStableIds)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;5. ViewCacheExtension (开发者扩展)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;6. RecycledViewPool (通过viewType查找)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;7. createViewHolder (创建新的)
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;8. bindViewHolder (绑定数据)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;34-bindviewholder触发条件&#34;&gt;3.4 bindViewHolder触发条件
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;触发bindViewHolder的条件（满足任一即可）：
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;┌────────────────────────────────────────────────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│ 1. 没有bound过                                              │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│    - createViewHolder创建的                                  │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│    - 从RecycledViewPool取出的                               │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├────────────────────────────────────────────────────────────┤
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│ 2. needsUpdate 标志位为true                                 │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│    - 调用notifyItemChange时设置                             │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;├────────────────────────────────────────────────────────────┤
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│ 3. isInvalid 标志位为true                                   │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│    - 调用notifyDataSetChanged时设置                         │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│    - 从缓存取出时viewType不匹配                             │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;└────────────────────────────────────────────────────────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;hr&gt;
+&lt;h2 id=&#34;四动画原理&#34;&gt;四、动画原理
+&lt;/h2&gt;&lt;h3 id=&#34;41-为什么需要scrap缓存&#34;&gt;4.1 为什么需要Scrap缓存
+&lt;/h3&gt;&lt;p&gt;Scrap缓存的核心目的是&lt;strong&gt;支持动画&lt;/strong&gt;。RecyclerView通过两次布局来记录动画前后的位置信息：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;dispatchLayoutStep1 (预布局):
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  - 记录动画前的位置信息到ViewInfoStore
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  - 生成临时表项来记录位置
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;dispatchLayoutStep2 (后布局):
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  - 记录动画后的位置信息
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  - 根据位置差值计算动画
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;dispatchLayoutStep3 (动画执行):
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  - 执行ViewInfoStore中记录的动画
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;42-viewinfostore动画存储&#34;&gt;4.2 ViewInfoStore动画存储
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// 预布局时记录&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;addToPreLayout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;holder&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ItemHolderInfo&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;left&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;top&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;right&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;bottom&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// 后布局时记录  &lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;addToPostLayout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;holder&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ItemHolderInfo&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;left&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;top&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;right&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;bottom&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// 处理动画&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;process&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;callback&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;has&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;PRE&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;POST&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 执行位置变化动画&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;animatePersistence&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;else&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;has&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;APPEAR&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 执行添加动画&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;animateAdd&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;else&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;has&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;REMOVE&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;// 执行删除动画&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;        &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;animateRemove&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;43-动画类型&#34;&gt;4.3 动画类型
+&lt;/h3&gt;&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;动画类型&lt;/th&gt;
+          &lt;th&gt;触发条件&lt;/th&gt;
+          &lt;th&gt;动画效果&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;Change&lt;/td&gt;
+          &lt;td&gt;notifyItemChange&lt;/td&gt;
+          &lt;td&gt;透明度从1到0 + 新item透明度从0到1&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;Add&lt;/td&gt;
+          &lt;td&gt;notifyItemInserted&lt;/td&gt;
+          &lt;td&gt;透明度从0到1&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;Remove&lt;/td&gt;
+          &lt;td&gt;notifyItemRemoved&lt;/td&gt;
+          &lt;td&gt;透明度从1到0&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;五预加载机制&#34;&gt;五、预加载机制
+&lt;/h2&gt;&lt;h3 id=&#34;51-gapworker工作原理&#34;&gt;5.1 GapWorker工作原理
+&lt;/h3&gt;&lt;p&gt;RecyclerView利用RenderThread的空闲时间进行预加载：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;┌──────────────────────────────────────────────────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│                     帧渲染流程                                │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│                                                              │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  UI Thread ──────→ RenderThread ──────→ SurfaceFlinger     │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│     ↓                   ↓                    ↓               │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  绘制数据          渲染数据          合成图层送屏幕          │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│     ↓                   ↓                                    │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│  空闲时间 ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←  │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│                                                              │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│              ↑                                               │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;│         预加载的时机！                                        │
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;└──────────────────────────────────────────────────────────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;52-预加载时机&#34;&gt;5.2 预加载时机
+&lt;/h3&gt;&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;拖动时&lt;/strong&gt;：onTouchEvent的ACTION_MOVE&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;惯性滑动时&lt;/strong&gt;：ViewFlinger的run方法&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;53-deadline控制&#34;&gt;5.3 deadline控制
+&lt;/h3&gt;&lt;p&gt;预加载有一个最晚完成时间（下一帧的VSync时间），如果超过这个时间，预加载会被放弃：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// 预加载最晚时间&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kt&#34;&gt;long&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;nextFrameNs&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;latestFrameVsyncMs&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mFrameIntervalNs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// 如果create或bind超过deadline，则放弃&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;if&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;currentTime&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;avgCreateTime&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;deadlineNs&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;    &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;return&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;null&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;54-预加载与正常滚动的缓存区分&#34;&gt;5.4 预加载与正常滚动的缓存区分
+&lt;/h3&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// 预加载的ViewHolder放在CacheView前面&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// 正常滚动的ViewHolder放在CacheView后面&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// 这样预加载的更容易被复用&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nl&#34;&gt;CacheView结构&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;正常滚动项1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;正常滚动项2&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;预加载项1&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;预加载项2&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;hr&gt;
+&lt;h2 id=&#34;六性能优化&#34;&gt;六、性能优化
+&lt;/h2&gt;&lt;h3 id=&#34;61-缓存层面优化&#34;&gt;6.1 缓存层面优化
+&lt;/h3&gt;&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;使用局部刷新&lt;/strong&gt;：用&lt;code&gt;notifyItemChange&lt;/code&gt;代替&lt;code&gt;notifyDataSetChanged&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;payload形式&lt;/strong&gt;：只更新部分UI，减少bind耗时&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;DiffUtil&lt;/strong&gt;：自动计算数据差异，实现最小更新&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;设置StableIds&lt;/strong&gt;：&lt;code&gt;setHasStableIds(true)&lt;/code&gt; + 重写&lt;code&gt;getItemId&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;共享RecycledViewPool&lt;/strong&gt;：多个RecyclerView共享缓存池&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;62-构建过程优化&#34;&gt;6.2 构建过程优化
+&lt;/h3&gt;&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;动态创建View&lt;/strong&gt;：代替XML解析，减少IO和反射&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;减少布局层级&lt;/strong&gt;：降低inflate时间&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;提前解析XML&lt;/strong&gt;：预加载到缓存&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;63-绑定过程优化&#34;&gt;6.3 绑定过程优化
+&lt;/h3&gt;&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;监听器外部传入&lt;/strong&gt;：避免每次bind创建新listener&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;纯展示逻辑&lt;/strong&gt;：bind应该是纯粹的UI绑定，不做计算&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;64-其他优化&#34;&gt;6.4 其他优化
+&lt;/h3&gt;&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;setHasFixedSize(true)&lt;/strong&gt;：固定尺寸减少requestLayout&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;预加载开关&lt;/strong&gt;：&lt;code&gt;layout.setItemPrefetchEnabled(false)&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;屏外加载&lt;/strong&gt;：&lt;code&gt;calculateExtraLayoutSpace&lt;/code&gt;自定义预加载数量&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;七面试题目汇总&#34;&gt;七、面试题目汇总
+&lt;/h2&gt;&lt;h3 id=&#34;71-基础概念类&#34;&gt;7.1 基础概念类
+&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;Q1: RecyclerView的缓存机制？画出缓存层级图&lt;/strong&gt;&lt;/p&gt;
+&lt;details&gt;
+&lt;summary&gt;点击查看答案&lt;/summary&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;RecyclerView的缓存从内到外分为5层：
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;1. Scrap缓存（layout期间使用）
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   - changeScrap: 存放被更新的ViewHolder
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   - attachScrap: 存放非更新的ViewHolder
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;2. CacheView（默认2个）
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   - 存放滑出屏幕的ViewHolder
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   - 无需重新bind，可直接使用
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;3. ViewCacheExtension（开发者自定义）
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   - 扩展缓存，开发者可自定义实现
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;4. RecycledViewPool（默认5个/类型）
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   - 按viewType缓存
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   - 需要重新bind
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;5. createViewHolder
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;   - 创建新的ViewHolder
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/details&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;Q2: Scrap缓存和CacheView的区别？&lt;/strong&gt;&lt;/p&gt;
+&lt;details&gt;
+&lt;summary&gt;点击查看答案&lt;/summary&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;区别&lt;/th&gt;
+          &lt;th&gt;Scrap缓存&lt;/th&gt;
+          &lt;th&gt;CacheView&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;使用场景&lt;/td&gt;
+          &lt;td&gt;仅在layout期间&lt;/td&gt;
+          &lt;td&gt;滚动时使用&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;容量&lt;/td&gt;
+          &lt;td&gt;一屏可见数量&lt;/td&gt;
+          &lt;td&gt;默认2个&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;查找方式&lt;/td&gt;
+          &lt;td&gt;position或id&lt;/td&gt;
+          &lt;td&gt;position&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;开发者可控&lt;/td&gt;
+          &lt;td&gt;否&lt;/td&gt;
+          &lt;td&gt;是&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;是否需要bind&lt;/td&gt;
+          &lt;td&gt;否&lt;/td&gt;
+          &lt;td&gt;否&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/details&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;72-原理机制类&#34;&gt;7.2 原理机制类
+&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;Q3: 什么情况下会触发onCreateViewHolder和onBindViewHolder？&lt;/strong&gt;&lt;/p&gt;
+&lt;details&gt;
+&lt;summary&gt;点击查看答案&lt;/summary&gt;
+&lt;p&gt;&lt;strong&gt;触发onCreateViewHolder&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;所有缓存都找不到时&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;触发onBindViewHolder&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;没有bound过（isBound=false）&lt;/li&gt;
+&lt;li&gt;needsUpdate=true（notifyItemChange）&lt;/li&gt;
+&lt;li&gt;isInvalid=true（notifyDataSetChanged）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;从Scrap/CacheView取出不需要bind&lt;/li&gt;
+&lt;li&gt;从RecycledViewPool取出需要bind&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/details&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;Q4: RecyclerView如何实现局部刷新？&lt;/strong&gt;&lt;/p&gt;
+&lt;details&gt;
+&lt;summary&gt;点击查看答案&lt;/summary&gt;
+&lt;ol&gt;
+&lt;li&gt;使用&lt;code&gt;notifyItemChange&lt;/code&gt;代替&lt;code&gt;notifyDataSetChanged&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;更新项会被放入changeScrap，预布局时不会复用&lt;/li&gt;
+&lt;li&gt;后布局时会重新创建和绑定该位置的数据&lt;/li&gt;
+&lt;li&gt;结合payload参数可以实现只更新部分UI&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// 普通局部刷新&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;adapter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;notifyItemChanged&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;position&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// payload局部刷新&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;adapter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;notifyItemChanged&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;position&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;payload&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// onBindViewHolder(holder, position, payloads)判断payloads&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/details&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;Q5: notifyItemChange和notifyDataSetChange的区别？&lt;/strong&gt;&lt;/p&gt;
+&lt;details&gt;
+&lt;summary&gt;点击查看答案&lt;/summary&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;区别&lt;/th&gt;
+          &lt;th&gt;notifyItemChange&lt;/th&gt;
+          &lt;th&gt;notifyDataSetChange&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;复用性&lt;/td&gt;
+          &lt;td&gt;changeScrap缓存&lt;/td&gt;
+          &lt;td&gt;全部缓存失效&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;create次数&lt;/td&gt;
+          &lt;td&gt;少量&lt;/td&gt;
+          &lt;td&gt;全部重新创建&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;bind次数&lt;/td&gt;
+          &lt;td&gt;少量&lt;/td&gt;
+          &lt;td&gt;全部重新绑定&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;动画&lt;/td&gt;
+          &lt;td&gt;有&lt;/td&gt;
+          &lt;td&gt;无&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;性能&lt;/td&gt;
+          &lt;td&gt;优&lt;/td&gt;
+          &lt;td&gt;差&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;notifyDataSetChanged会让所有ViewHolder标记为invalid，进入RecycledViewPool后需要全部重新bind。&lt;/p&gt;
+&lt;/details&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;Q6: RecyclerView的动画是如何实现的？&lt;/strong&gt;&lt;/p&gt;
+&lt;details&gt;
+&lt;summary&gt;点击查看答案&lt;/summary&gt;
+&lt;p&gt;核心是&lt;strong&gt;双布局机制&lt;/strong&gt;：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;dispatchLayoutStep1（预布局）&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;记录每个ViewHolder的位置到ViewInfoStore&lt;/li&gt;
+&lt;li&gt;如果有增删，会创建临时表项记录位置&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;dispatchLayoutStep2（后布局）&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;执行正常布局&lt;/li&gt;
+&lt;li&gt;再次记录位置信息&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;dispatchLayoutStep3（动画执行）&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;根据位置差值计算动画&lt;/li&gt;
+&lt;li&gt;Change动画：旧item渐隐 + 新item渐显&lt;/li&gt;
+&lt;li&gt;Add动画：渐显&lt;/li&gt;
+&lt;li&gt;Remove动画：渐隐&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/details&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;Q7: setHasFixedSize(true)为什么能优化性能？&lt;/strong&gt;&lt;/p&gt;
+&lt;details&gt;
+&lt;summary&gt;点击查看答案&lt;/summary&gt;
+&lt;p&gt;当item尺寸固定时，RecyclerView尺寸变化不需要重新测量子item：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;减少measure调用&lt;/strong&gt;：直接跳过onMeasure中的子item测量&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;减少requestLayout&lt;/strong&gt;：更新时不会触发父View的measure/layout&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;动画优化&lt;/strong&gt;：通过Choreographer直接调度layout，不走View树的完整刷新&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// 设置后，更新数据只会触发dispatchLayout&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;// 不会触发从DecorView开始的完整measure/layout流程&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;recyclerView&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;setHasFixedSize&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;true&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/details&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;73-高级特性类&#34;&gt;7.3 高级特性类
+&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;Q8: RecyclerView的预加载机制？&lt;/strong&gt;&lt;/p&gt;
+&lt;details&gt;
+&lt;summary&gt;点击查看答案&lt;/summary&gt;
+&lt;p&gt;&lt;strong&gt;GapWorker&lt;/strong&gt;：利用RenderThread的空闲时间预加载下一帧可能需要的ViewHolder&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;触发时机&lt;/strong&gt;：拖动和惯性滑动时&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;预加载内容&lt;/strong&gt;：计算下一个可见位置需要的ViewHolder&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;deadline控制&lt;/strong&gt;：超过下一帧时间会放弃&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;缓存位置&lt;/strong&gt;：预加载的ViewHolder放在CacheView后面&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;预加载流程：
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;onTouchEvent(MOVE) 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  → GapWorker.postFromTraversal()
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    → GapWorker.run()
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;      → prefetch()
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        → buildTaskList() // 收集预加载位置
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        → flushTasksWithDeadline() // 创建ViewHolder
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/details&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;Q9: DiffUtil和notifyItemChange如何选择？&lt;/strong&gt;&lt;/p&gt;
+&lt;details&gt;
+&lt;summary&gt;点击查看答案&lt;/summary&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;场景&lt;/th&gt;
+          &lt;th&gt;推荐方案&lt;/th&gt;
+          &lt;th&gt;原因&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;数据源完全替换&lt;/td&gt;
+          &lt;td&gt;notifyDataSetChanged&lt;/td&gt;
+          &lt;td&gt;DiffUtil开销更大&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;少量局部变化&lt;/td&gt;
+          &lt;td&gt;notifyItemChange + payload&lt;/td&gt;
+          &lt;td&gt;精准控制&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;数据源差异计算&lt;/td&gt;
+          &lt;td&gt;DiffUtil&lt;/td&gt;
+          &lt;td&gt;自动计算最优更新&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;频繁更新（如弹幕）&lt;/td&gt;
+          &lt;td&gt;notifyItemRangeChanged&lt;/td&gt;
+          &lt;td&gt;批量操作&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;strong&gt;DiffUtil优势&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;自动计算最小更新集&lt;/li&gt;
+&lt;li&gt;自动处理move、change、remove&lt;/li&gt;
+&lt;li&gt;支持RecyclerViewDataConnection&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/details&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;strong&gt;Q10: ViewHolder复用原理？findViewHolderForAdapterPosition和findViewHolderForLayoutPosition的区别？&lt;/strong&gt;&lt;/p&gt;
+&lt;details&gt;
+&lt;summary&gt;点击查看答案&lt;/summary&gt;
+&lt;p&gt;&lt;strong&gt;复用原理&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ViewHolder复用是通过缓存池实现的&lt;/li&gt;
+&lt;li&gt;Scap缓存：layout期间复用，不重新bind&lt;/li&gt;
+&lt;li&gt;CacheView：滚动时复用，不重新bind&lt;/li&gt;
+&lt;li&gt;RecycledViewPool：按类型复用，需要重新bind&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;两者的区别&lt;/strong&gt;：&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;方法&lt;/th&gt;
+          &lt;th&gt;含义&lt;/th&gt;
+          &lt;th&gt;动画时差异&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;getAdapterPosition()&lt;/td&gt;
+          &lt;td&gt;数据源中的position&lt;/td&gt;
+          &lt;td&gt;包含被删除的item&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;getLayoutPosition()&lt;/td&gt;
+          &lt;td&gt;布局呈现的position&lt;/td&gt;
+          &lt;td&gt;不包含被删除的item&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;例如删除第一个item后：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;getAdapterPosition()&lt;/code&gt; = 1（第二个item的adapter位置）&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;getLayoutPosition()&lt;/code&gt; = 0（第一个item还没被移除）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/details&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;八总结&#34;&gt;八、总结
+&lt;/h2&gt;&lt;p&gt;RecyclerView是Android开发中最核心的控件之一，掌握其工作原理对于写出高性能的列表代码至关重要。建议读者：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;理解缓存层级&lt;/strong&gt;：这是RecyclerView性能的核心&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;掌握布局流程&lt;/strong&gt;：理解三阶段布局是理解动画的基础&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;学会性能优化&lt;/strong&gt;：从缓存和绑定两个维度入手&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;阅读源码&lt;/strong&gt;：纸上得来终觉浅，绝知此事要躬行&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;参考文章&#34;&gt;参考文章
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.xiangcman.fun/p/recyclerview%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;RecyclerView源码走读&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.xiangcman.fun/p/recyclerview%E5%8A%A8%E7%94%BB%E5%8E%9F%E7%90%86/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;RecyclerView动画原理&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.xiangcman.fun/p/recyclerview%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;RecyclerView性能优化&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.xiangcman.fun/p/recyclerview%E7%9A%84%E9%A2%84%E5%8A%A0%E8%BD%BD%E5%AE%9E%E7%8E%B0/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;RecyclerView的预加载实现&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.xiangcman.fun/p/recyclerview%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;recyclerview优化实践&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        </item>
+        <item>
         <title>RecyclerView优化实践</title>
         <link>http://xiangcman.xyz/p/recyclerview%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5/</link>
         <pubDate>Fri, 17 Jan 2025 00:00:00 +0000</pubDate>
@@ -33730,31 +34617,31 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 &lt;p&gt;所以上面的日志顺序是：&lt;code&gt;job2&lt;/code&gt;、&lt;code&gt;job3&lt;/code&gt; 先收到父 Job 取消带来的 &lt;code&gt;JobCancellationException&lt;/code&gt;，然后 &lt;code&gt;CoroutineExceptionHandler&lt;/code&gt; 收到 &lt;code&gt;job1&lt;/code&gt; 的原始异常，最后 &lt;code&gt;job1.invokeOnCompletion&lt;/code&gt; 收到同一个原始异常。&lt;/p&gt;
 &lt;p&gt;上面涉及到几个关键的类，把关键类的结构梳理下：
 &lt;img src=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%85%B3%E9%94%AE%E7%B1%BB.png&#34;
-	width=&#34;2039&#34;
-	height=&#34;474&#34;
-	srcset=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%85%B3%E9%94%AE%E7%B1%BB_hu_8ce218e7f02d5c0a.png 480w, http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%85%B3%E9%94%AE%E7%B1%BB_hu_d20c258b18360cf8.png 1024w&#34;
+	width=&#34;3186&#34;
+	height=&#34;741&#34;
+	srcset=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%85%B3%E9%94%AE%E7%B1%BB_hu_93dc21f83dafa243.png 480w, http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%85%B3%E9%94%AE%E7%B1%BB_hu_70900455ddb08648.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;
 	
 	
 		class=&#34;gallery-image&#34; 
-		data-flex-grow=&#34;430&#34;
-		data-flex-basis=&#34;1032px&#34;
+		data-flex-grow=&#34;429&#34;
+		data-flex-basis=&#34;1031px&#34;
 	
 &gt;
 &lt;img src=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%88%B0%E7%88%B6%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%88%86%E5%8F%91.png&#34;
-	width=&#34;3383&#34;
-	height=&#34;2415&#34;
-	srcset=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%88%B0%E7%88%B6%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%88%86%E5%8F%91_hu_750eaf216015eee3.png 480w, http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%88%B0%E7%88%B6%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%88%86%E5%8F%91_hu_e3487ba145f5770d.png 1024w&#34;
+	width=&#34;4096&#34;
+	height=&#34;3774&#34;
+	srcset=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%88%B0%E7%88%B6%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%88%86%E5%8F%91_hu_4156b7fc3bdb8d09.png 480w, http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%88%B0%E7%88%B6%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%88%86%E5%8F%91_hu_a07bd1c5649f3f2b.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;alt text&#34;
 	
 	
 		class=&#34;gallery-image&#34; 
-		data-flex-grow=&#34;140&#34;
-		data-flex-basis=&#34;336px&#34;
+		data-flex-grow=&#34;108&#34;
+		data-flex-basis=&#34;260px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;h3 id=&#34;案例六父job使用supervisorjob异常不分发到其它子协程异常协程自己处理异常&#34;&gt;案例六：父Job使用SupervisorJob，异常不分发到其它子协程，异常协程自己处理异常
@@ -34009,8 +34896,10 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 		data-flex-basis=&#34;620px&#34;
 	
 &gt;&lt;/p&gt;
+&lt;p&gt;这个例子和案例八刚好相反。异常还是从 &lt;code&gt;job2&lt;/code&gt; 抛出，也还是会先通过 &lt;code&gt;job2.cancelParent&lt;/code&gt; 传给父协程 &lt;code&gt;job1&lt;/code&gt;。区别在于，这次 &lt;code&gt;CoroutineExceptionHandler&lt;/code&gt; 放在了 &lt;code&gt;job2&lt;/code&gt; 的 context 里。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;job2&lt;/code&gt; 是 &lt;code&gt;job1&lt;/code&gt; 的普通子协程，不是根协程。普通子协程发生未捕获异常时，异常处理权会交给父协程，所以 &lt;code&gt;job2&lt;/code&gt; 自己 context 里的 &lt;code&gt;CoroutineExceptionHandler&lt;/code&gt; 不会作为最终兜底逻辑执行。后面真正走到 &lt;code&gt;handleJobException&lt;/code&gt; 的还是父协程 &lt;code&gt;job1&lt;/code&gt;，但 &lt;code&gt;job1&lt;/code&gt; 的 context 里没有 handler，所以程序会崩溃。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;分析：结合案例七的分析，最终是在job1中处理异常，而此处设置的handler是设置到job2处了，所以程序崩溃了。&lt;/p&gt;
+&lt;p&gt;结论：&lt;code&gt;CoroutineExceptionHandler&lt;/code&gt; 放在普通子协程 &lt;code&gt;job2&lt;/code&gt; 上接不住这个异常。它要放在最终处理异常的协程那一层，也就是这里的父协程 &lt;code&gt;job1&lt;/code&gt;。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h3 id=&#34;案例十增加coroutinescope异常协程的父协程增加try-catch捕捉异常&#34;&gt;案例十：增加coroutineScope，异常协程的父协程增加try-catch捕捉异常
 &lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81.png&#34;
@@ -34028,9 +34917,22 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 	
 &gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;结果：程序不会崩溃，异常被try catch捕获住，而不是被exceptionHandler捕获住。&lt;/p&gt;
+&lt;p&gt;结果：程序不会崩溃，异常会被 &lt;code&gt;try-catch&lt;/code&gt; 捕获，&lt;code&gt;CoroutineExceptionHandler&lt;/code&gt; 不会执行。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;前面分析过当子协程发生异常后，会把异常分发给到父job，在父job中需要等子job都处理完异常了，才会往下走，该处逻辑主要体现在子job中添加了一个ChildCompletion节点到state中，在invoke中会执行到parent.continueCompletion方法：
+&lt;p&gt;这个例子多了一层 &lt;code&gt;coroutineScope&lt;/code&gt;。外层 &lt;code&gt;job1&lt;/code&gt; 执行到 &lt;code&gt;coroutineScope { ... }&lt;/code&gt; 时会挂起，&lt;code&gt;coroutineScope&lt;/code&gt; 内部创建的是 &lt;code&gt;ScopeCoroutine&lt;/code&gt;，里面启动的 &lt;code&gt;job2&lt;/code&gt; 是 &lt;code&gt;ScopeCoroutine&lt;/code&gt; 的子协程。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;job1 外层 launch
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; coroutineScope 对应的 ScopeCoroutine
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;      -&amp;gt; job2 内层 launch
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;当 &lt;code&gt;job2&lt;/code&gt; 抛异常时，异常先传给它的父 Job，也就是 &lt;code&gt;ScopeCoroutine&lt;/code&gt;。&lt;code&gt;ScopeCoroutine&lt;/code&gt; 进入异常完成流程后，也要等 &lt;code&gt;job2&lt;/code&gt; 自己收尾完成，这部分还是前面提到的 &lt;code&gt;ChildCompletion&lt;/code&gt; 机制：&lt;code&gt;tryWaitForChild&lt;/code&gt; 会在子 Job 上挂 &lt;code&gt;ChildCompletion&lt;/code&gt;，子 Job 完成时再调用 &lt;code&gt;parent.continueCompleting&lt;/code&gt;。
 &lt;img src=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/tryWaitForChild%E6%96%B9%E6%B3%95%E5%AE%9E%E7%8E%B0.png&#34;
 	width=&#34;2098&#34;
 	height=&#34;494&#34;
@@ -34058,8 +34960,8 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 		data-flex-grow=&#34;242&#34;
 		data-flex-basis=&#34;581px&#34;
 	
-&gt;
-此处的parent实际是coroutineScope作用域的job，它是ScopeCoroutine，看下它的continueCompleting实现：
+&gt;&lt;/p&gt;
+&lt;p&gt;这里的 &lt;code&gt;parent&lt;/code&gt; 就是 &lt;code&gt;coroutineScope&lt;/code&gt; 对应的 &lt;code&gt;ScopeCoroutine&lt;/code&gt;，后面继续看 &lt;code&gt;ScopeCoroutine.continueCompleting&lt;/code&gt; 和 &lt;code&gt;afterCompletion&lt;/code&gt;：
 &lt;img src=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/ScopeCoroutine%E7%9A%84continueCompleting.png&#34;
 	width=&#34;2138&#34;
 	height=&#34;536&#34;
@@ -34087,8 +34989,8 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 		data-flex-grow=&#34;141&#34;
 		data-flex-basis=&#34;338px&#34;
 	
-&gt;
-最终会把结果回调给到了传递进来的continuation，也就是最外层launch启动的时候的SuspendLambda，最终会调用它的invokeSuspend方法：
+&gt;&lt;/p&gt;
+&lt;p&gt;关键在 &lt;code&gt;afterCompletion&lt;/code&gt;。&lt;code&gt;ScopeCoroutine&lt;/code&gt; 会把失败结果恢复给 &lt;code&gt;coroutineScope&lt;/code&gt; 挂起点对应的 continuation。外层 &lt;code&gt;job1&lt;/code&gt; 的 &lt;code&gt;invokeSuspend&lt;/code&gt; 从 &lt;code&gt;coroutineScope { ... }&lt;/code&gt; 这一行继续执行时，会在这个挂起点重新拿到异常。
 &lt;img src=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%AD%E6%9C%80%E5%A4%96%E5%B1%82launch%E7%9A%84suspendLambda%E5%AD%97%E8%8A%82%E7%A0%81.png&#34;
 	width=&#34;2196&#34;
 	height=&#34;1804&#34;
@@ -34102,8 +35004,11 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 		data-flex-grow=&#34;121&#34;
 		data-flex-basis=&#34;292px&#34;
 	
-&gt;
-所以最终被try-catch捕捉到异常。&lt;/p&gt;
+&gt;&lt;/p&gt;
+&lt;p&gt;所以这里的 &lt;code&gt;try-catch&lt;/code&gt; 能接住异常，是因为它包住了 &lt;code&gt;coroutineScope { ... }&lt;/code&gt; 这个挂起函数调用。&lt;code&gt;job2&lt;/code&gt; 后面异步抛出的异常，最终被 &lt;code&gt;coroutineScope&lt;/code&gt; 重新抛回当前调用点，才进入外层的 &lt;code&gt;catch&lt;/code&gt;。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;结论：&lt;code&gt;coroutineScope&lt;/code&gt; 会等待内部子协程完成，并把子协程失败结果重新抛回自己的调用点。只要 &lt;code&gt;try-catch&lt;/code&gt; 包住的是 &lt;code&gt;coroutineScope { ... }&lt;/code&gt;，就能接住内部 &lt;code&gt;launch&lt;/code&gt; 的异常；异常已经被 &lt;code&gt;catch&lt;/code&gt; 消费掉，外层 &lt;code&gt;CoroutineExceptionHandler&lt;/code&gt; 不会再执行。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;案例十一增加supervisorscope作为异常协程的作用域异常能被异常协程的handler所捕获&#34;&gt;案例十一：增加supervisorScope作为异常协程的作用域，异常能被异常协程的handler所捕获
 &lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%80.png&#34;
 	width=&#34;1442&#34;
@@ -34120,10 +35025,28 @@ launch启动的协程用到的coroutineScope是一个StandaloneCoroutine，withC
 	
 &gt;&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;结果：程序被内层launch指定的exceptionHandler捕捉了
-supervisorScope用到的job是SupervisorCoroutine，它重写了childCancel方法，并返回false，所以当子job发生异常的时候，不会抛给父job，并执行自己的handleJobException方法，所以被自己的handler捕获到。&lt;/p&gt;
+&lt;p&gt;结果：程序不会崩溃，异常被内层 &lt;code&gt;launch&lt;/code&gt; 指定的 &lt;code&gt;CoroutineExceptionHandler&lt;/code&gt; 处理。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h3 id=&#34;案例十二&#34;&gt;案例十二
+&lt;p&gt;这个例子和案例十类似，也多了一层作用域。区别在于，案例十用的是 &lt;code&gt;coroutineScope&lt;/code&gt;，这里用的是 &lt;code&gt;supervisorScope&lt;/code&gt;。&lt;code&gt;supervisorScope&lt;/code&gt; 内部创建的是 &lt;code&gt;SupervisorCoroutine&lt;/code&gt;，&lt;code&gt;job2&lt;/code&gt; 还是它的子协程。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;job1 外层 launch
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; supervisorScope 对应的 SupervisorCoroutine
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;      -&amp;gt; job2 内层 launch
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;当 &lt;code&gt;job2&lt;/code&gt; 抛异常时，它还是会走 &lt;code&gt;job2.cancelParent&lt;/code&gt;，把异常通知给父 Job，也就是 &lt;code&gt;SupervisorCoroutine&lt;/code&gt;。但 &lt;code&gt;SupervisorCoroutine&lt;/code&gt; 重写了 &lt;code&gt;childCancelled&lt;/code&gt;，直接返回 &lt;code&gt;false&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;这个 &lt;code&gt;false&lt;/code&gt; 的意思不是没有父子关系，也不是异常没有通知父 Job，而是父 Job 不处理这个子协程异常。&lt;code&gt;SupervisorCoroutine&lt;/code&gt; 不会因为 &lt;code&gt;job2&lt;/code&gt; 失败而进入取消流程，也不会把这个异常重新抛回 &lt;code&gt;supervisorScope&lt;/code&gt; 的挂起点。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;cancelParent&lt;/code&gt; 返回 &lt;code&gt;false&lt;/code&gt; 后，&lt;code&gt;job2&lt;/code&gt; 会继续走自己的异常完成流程，最后进入 &lt;code&gt;handleJobException&lt;/code&gt;。因为 &lt;code&gt;CoroutineExceptionHandler&lt;/code&gt; 放在了 &lt;code&gt;job2&lt;/code&gt; 的 context 里，所以这里能找到 handler，日志会打印内层 handler 的内容。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;结论：&lt;code&gt;supervisorScope&lt;/code&gt; 会隔离子协程失败。子协程异常会通知父 Job，但父 Job 返回 &lt;code&gt;false&lt;/code&gt; 表示不接管，异常最终留在失败的子协程自己处理，所以放在 &lt;code&gt;job2&lt;/code&gt; 上的 &lt;code&gt;CoroutineExceptionHandler&lt;/code&gt; 可以生效。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;案例十二coroutinescope内部异常未被try-catch捕获外层handler生效&#34;&gt;案例十二：coroutineScope内部异常未被try-catch捕获，外层handler生效
 &lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%BA%8C.png&#34;
 	width=&#34;1512&#34;
 	height=&#34;773&#34;
@@ -34137,16 +35060,41 @@ supervisorScope用到的job是SupervisorCoroutine，它重写了childCancel方�
 		data-flex-grow=&#34;195&#34;
 		data-flex-basis=&#34;469px&#34;
 	
-&gt;
-集合案例七分析，在第七阶段，job1在处理异常时，会找到自己的handler，最终异常被外层的handler所捕获。&lt;/p&gt;
-&lt;h3 id=&#34;案例十三增加supervisorscope作为异常协程的作用域异常被内部的handler所捕获&#34;&gt;案例十三：增加supervisorScope作为异常协程的作用域，异常被内部的handler所捕获
+&gt;&lt;/p&gt;
+&lt;p&gt;这个例子还是 &lt;code&gt;coroutineScope&lt;/code&gt; 这一条路径。&lt;code&gt;job2&lt;/code&gt; 抛异常后，异常先传给 &lt;code&gt;coroutineScope&lt;/code&gt; 对应的 &lt;code&gt;ScopeCoroutine&lt;/code&gt;；&lt;code&gt;ScopeCoroutine&lt;/code&gt; 等 &lt;code&gt;job2&lt;/code&gt; 收尾完成后，会通过 &lt;code&gt;afterCompletion&lt;/code&gt; 把失败结果恢复给 &lt;code&gt;coroutineScope&lt;/code&gt; 的挂起点。&lt;/p&gt;
+&lt;p&gt;和案例十不同的是，这里外层没有 &lt;code&gt;try-catch&lt;/code&gt; 包住 &lt;code&gt;coroutineScope { ... }&lt;/code&gt;。异常从挂起点恢复回来后，会继续从 &lt;code&gt;job1.invokeSuspend&lt;/code&gt; 抛出去，&lt;code&gt;job1&lt;/code&gt; 自己也会以异常完成。&lt;/p&gt;
+&lt;p&gt;后面就回到了普通 &lt;code&gt;launch&lt;/code&gt; 的未捕获异常处理流程：&lt;code&gt;job1&lt;/code&gt; 走到 &lt;code&gt;handleJobException&lt;/code&gt;，从自己的 context 里找到外层传入的 &lt;code&gt;CoroutineExceptionHandler&lt;/code&gt;，于是日志会打印外层 handler 的内容，程序不会崩溃。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;job2 抛异常
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; ScopeCoroutine 记录异常
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; ScopeCoroutine.afterCompletion
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; 异常恢复到 coroutineScope 挂起点
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; job1.invokeSuspend 没有 try-catch，继续抛出
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; job1.handleJobException
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; 外层 CoroutineExceptionHandler 处理
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;结论：&lt;code&gt;coroutineScope&lt;/code&gt; 负责把内部子协程异常重新抛回调用点；如果调用点外面有 &lt;code&gt;try-catch&lt;/code&gt;，就像案例十那样被 &lt;code&gt;catch&lt;/code&gt; 消费；如果没有 &lt;code&gt;try-catch&lt;/code&gt;，异常会继续让外层 &lt;code&gt;launch&lt;/code&gt; 失败，最后由外层 &lt;code&gt;launch&lt;/code&gt; context 里的 &lt;code&gt;CoroutineExceptionHandler&lt;/code&gt; 兜底。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;案例十三supervisorscope隔离子协程异常内部handler生效&#34;&gt;案例十三：supervisorScope隔离子协程异常，内部handler生效
 &lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%89.png&#34;
 	width=&#34;1512&#34;
 	height=&#34;773&#34;
 	srcset=&#34;http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%89_hu_3e098544475e8203.png 480w, http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B%E4%B8%AD%E5%AD%90%E5%8D%8F%E7%A8%8B%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/%E6%A1%88%E4%BE%8B%E5%8D%81%E4%B8%89_hu_8ced9e335611a039.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
-		alt=&#34;案例十二&#34;
+		alt=&#34;案例十三&#34;
 	
 	
 		class=&#34;gallery-image&#34; 
@@ -34154,10 +35102,45 @@ supervisorScope用到的job是SupervisorCoroutine，它重写了childCancel方�
 		data-flex-basis=&#34;469px&#34;
 	
 &gt;&lt;/p&gt;
-&lt;p&gt;此时被内层launch的handler所捕捉，原因是supervisorScope启动的协程不会往上抛，交给了子协程自己处理。&lt;/p&gt;
+&lt;p&gt;这个例子可以和案例十二放在一起看。案例十二用的是 &lt;code&gt;coroutineScope&lt;/code&gt;，&lt;code&gt;job2&lt;/code&gt; 的异常会通过 &lt;code&gt;ScopeCoroutine.afterCompletion&lt;/code&gt; 重新抛回调用点，最后让外层 &lt;code&gt;job1&lt;/code&gt; 失败，所以外层 handler 生效。&lt;/p&gt;
+&lt;p&gt;这里中间换成了 &lt;code&gt;supervisorScope&lt;/code&gt;。&lt;code&gt;job2&lt;/code&gt; 抛异常后，还是会先调用 &lt;code&gt;job2.cancelParent&lt;/code&gt; 通知父 Job，也就是 &lt;code&gt;SupervisorCoroutine&lt;/code&gt;。但 &lt;code&gt;SupervisorCoroutine.childCancelled&lt;/code&gt; 返回 &lt;code&gt;false&lt;/code&gt;，表示它不接管这个子协程异常。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;job2 抛异常
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; job2.cancelParent
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; SupervisorCoroutine.childCancelled 返回 false
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; SupervisorCoroutine 不失败
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; 异常留给 job2 自己处理
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; job2.handleJobException
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  -&amp;gt; 内层 CoroutineExceptionHandler 处理
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;所以外层 &lt;code&gt;job1&lt;/code&gt; 不会因为 &lt;code&gt;job2&lt;/code&gt; 失败而异常完成，外层 handler 也不会执行。真正进入 &lt;code&gt;handleJobException&lt;/code&gt; 的是 &lt;code&gt;job2&lt;/code&gt;，而 &lt;code&gt;job2&lt;/code&gt; 的 context 里有内层 &lt;code&gt;CoroutineExceptionHandler&lt;/code&gt;，所以异常被内层 handler 处理。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;结论：&lt;code&gt;supervisorScope&lt;/code&gt; 会把子协程失败隔离在子协程自己身上。即使外层 &lt;code&gt;launch&lt;/code&gt; 也有 handler，&lt;code&gt;job2&lt;/code&gt; 的异常也不会像 &lt;code&gt;coroutineScope&lt;/code&gt; 那样重新抛回外层调用点；最终生效的是失败子协程 &lt;code&gt;job2&lt;/code&gt; context 里的 &lt;code&gt;CoroutineExceptionHandler&lt;/code&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;总结&#34;&gt;总结
-&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;父子协程关系&lt;/strong&gt;：父子协程之间通过job建立起关系，在子协程的job初始化的时候，会通过childHandleNode绑定到父子关系，其中子job指向childHandleNode的childJob，父job指向childHandleNode的job上，最后子job通过parentHandle持有该childHandleNode。父协程中如何包含了多个子协程，此时父job的state会是一个NodeList，也就是链表结构的对象，然后NodeList的next节点持有了第一个子协程的childHandleNode，第一个子协程的childHandleNode的next节点持有了第二个子协程的childHandleNode，依次类推。&lt;br&gt;
-&lt;strong&gt;异常处理&lt;/strong&gt;：当某个子协程发生异常后，会将自己的state给置为Finishing状态，并且给Finishing状态添加异常信息，接着将异常给到父协程，如果此时父协程不处理异常，则交给自己的context中的CoroutineExceptionHandler处理，如果context中找不到CoroutineExceptionHandler，则将异常抛给系统，直到app崩溃。如果父协程处理异常，则会先取消掉自己下面的其他子协程的job，然后将异常继续抛给自己的父协程，依次这样去处理异常。&lt;/p&gt;
+&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;父子 Job 关系&lt;/strong&gt;：父子协程关系是通过 &lt;code&gt;Job&lt;/code&gt; 建起来的。子协程初始化时，会把自己注册到父 &lt;code&gt;Job&lt;/code&gt; 上，父 &lt;code&gt;Job&lt;/code&gt; 的 &lt;code&gt;NodeList&lt;/code&gt; 里挂的是一个个 &lt;code&gt;ChildHandleNode&lt;/code&gt;，每个 &lt;code&gt;ChildHandleNode&lt;/code&gt; 指向对应的子 &lt;code&gt;Job&lt;/code&gt;；子 &lt;code&gt;Job&lt;/code&gt; 自己也会通过 &lt;code&gt;parentHandle&lt;/code&gt; 持有这个节点。父协程取消子协程、等待子协程完成、接收子协程异常，都是基于这层关系完成的。&lt;/p&gt;
+&lt;p&gt;如果子协程正在 &lt;code&gt;delay&lt;/code&gt; 这种挂起点上，还会有一层挂起点自己的取消注册。&lt;code&gt;delay&lt;/code&gt; 会创建 &lt;code&gt;CancellableContinuationImpl&lt;/code&gt;，并通过 &lt;code&gt;ChildContinuation&lt;/code&gt; 挂到当前子 &lt;code&gt;Job&lt;/code&gt; 上。这样父 &lt;code&gt;Job&lt;/code&gt; 取消子 &lt;code&gt;Job&lt;/code&gt; 时，不只是 &lt;code&gt;Job&lt;/code&gt; 状态变了，挂起点也能收到取消信号。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;异常处理&lt;/strong&gt;：普通子协程抛出非 &lt;code&gt;CancellationException&lt;/code&gt; 时，会先把自己的状态置为异常完成流程，并通过 &lt;code&gt;cancelParent&lt;/code&gt; 通知父 &lt;code&gt;Job&lt;/code&gt;。普通父 &lt;code&gt;Job&lt;/code&gt; 接管这个异常后，会进入取消流程，取消其它子协程，等所有子协程收尾完成后，再继续完成自己的异常处理。最后真正走到 &lt;code&gt;handleJobException&lt;/code&gt; 的，通常是接管异常的那一层协程。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;CoroutineExceptionHandler&lt;/code&gt; 是最后兜底用的，只处理没有被上层消费掉的异常。普通子协程上的 handler 往往不生效，因为异常会先交给父协程处理；handler 要放在最终处理异常的那一层，比如外层 &lt;code&gt;launch&lt;/code&gt;，或者被 &lt;code&gt;supervisorScope&lt;/code&gt; 隔离后的失败子协程自己身上。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;几个结论可以直接记住&lt;/strong&gt;：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;try-catch&lt;/code&gt; 包住普通 &lt;code&gt;launch&lt;/code&gt; 调用，接不住子协程后面异步抛出的异常。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;withContext&lt;/code&gt;、&lt;code&gt;coroutineScope&lt;/code&gt; 这类挂起函数会把内部异常重新抛回调用点，所以外层 &lt;code&gt;try-catch&lt;/code&gt; 可以接住。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;coroutineScope&lt;/code&gt; 内部子协程失败，会让这个 scope 失败；如果调用点没有 &lt;code&gt;try-catch&lt;/code&gt;，异常会继续让外层协程失败，最后可能由外层 handler 处理。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;supervisorScope&lt;/code&gt; / &lt;code&gt;SupervisorJob&lt;/code&gt; 会隔离子协程失败。子协程异常仍然会通知父 &lt;code&gt;Job&lt;/code&gt;，但父 &lt;code&gt;Job&lt;/code&gt; 返回 &lt;code&gt;false&lt;/code&gt; 表示不接管，异常留给失败的子协程自己处理。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;CancellationException&lt;/code&gt; 表示取消，不按普通失败处理，也不会触发 &lt;code&gt;CoroutineExceptionHandler&lt;/code&gt;。&lt;/li&gt;
+&lt;/ol&gt;
 </description>
         </item>
         <item>
