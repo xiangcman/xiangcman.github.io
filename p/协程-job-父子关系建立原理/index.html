@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="前面看异常分发时，经常会提到“子协程把异常交给父协程”“父协程取消其它子协程”。这些说法背后都依赖同一件事：父 Job 和子 Job 在协程启动时就已经建立了联系。\n这篇只看这条关系是怎么建立起来的。异常怎么分发、CoroutineExceptionHandler 什么时候回调，后面再接着看。\n先看一个例子 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 private fun demo() { val handler = CoroutineExceptionHandler { _, throwable -&gt; Log.d(TAG, &#34;handler:${throwable.message}&#34;) } val parentJob = Job() val scope = CoroutineScope(parentJob + handler) val job1 = scope.launch { delay(1000) Log.d(TAG, &#34;job1 end&#34;) } val job2 = scope.launch { delay(2000) Log.d(TAG, &#34;job2 end&#34;) } job1.invokeOnCompletion { Log.d(TAG, &#34;job1 completion:${it?.message}&#34;) } job2.invokeOnCompletion { Log.d(TAG, &#34;job2 completion:${it?.message}&#34;) } } 这里 parentJob 是父 Job，job1、job2 是两个子 Job。它们不是靠变量名建立关系，而是因为 scope 的 CoroutineContext 里带着 parentJob。后面每次调用 scope.launch 时，新协程都会从 context 里取出这个父 Job，再把自己挂上去。\n">
+<title>协程 Job 父子关系建立原理</title>
+
+<link rel='canonical' href='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B-job-%E7%88%B6%E5%AD%90%E5%85%B3%E7%B3%BB%E5%BB%BA%E7%AB%8B%E5%8E%9F%E7%90%86/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="协程 Job 父子关系建立原理">
+<meta property='og:description' content="前面看异常分发时，经常会提到“子协程把异常交给父协程”“父协程取消其它子协程”。这些说法背后都依赖同一件事：父 Job 和子 Job 在协程启动时就已经建立了联系。\n这篇只看这条关系是怎么建立起来的。异常怎么分发、CoroutineExceptionHandler 什么时候回调，后面再接着看。\n先看一个例子 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 private fun demo() { val handler = CoroutineExceptionHandler { _, throwable -&gt; Log.d(TAG, &#34;handler:${throwable.message}&#34;) } val parentJob = Job() val scope = CoroutineScope(parentJob + handler) val job1 = scope.launch { delay(1000) Log.d(TAG, &#34;job1 end&#34;) } val job2 = scope.launch { delay(2000) Log.d(TAG, &#34;job2 end&#34;) } job1.invokeOnCompletion { Log.d(TAG, &#34;job1 completion:${it?.message}&#34;) } job2.invokeOnCompletion { Log.d(TAG, &#34;job2 completion:${it?.message}&#34;) } } 这里 parentJob 是父 Job，job1、job2 是两个子 Job。它们不是靠变量名建立关系，而是因为 scope 的 CoroutineContext 里带着 parentJob。后面每次调用 scope.launch 时，新协程都会从 context 里取出这个父 Job，再把自己挂上去。\n">
+<meta property='og:url' content='http://xiangcman.xyz/p/%E5%8D%8F%E7%A8%8B-job-%E7%88%B6%E5%AD%90%E5%85%B3%E7%B3%BB%E5%BB%BA%E7%AB%8B%E5%8E%9F%E7%90%86/'>
+<meta property='og:site_name' content='xiangcman'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2026-05-31T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-05-31T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="协程 Job 父子关系建立原理">
+<meta name="twitter:description" content="前面看异常分发时，经常会提到“子协程把异常交给父协程”“父协程取消其它子协程”。这些说法背后都依赖同一件事：父 Job 和子 Job 在协程启动时就已经建立了联系。\n这篇只看这条关系是怎么建立起来的。异常怎么分发、CoroutineExceptionHandler 什么时候回调，后面再接着看。\n先看一个例子 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 private fun demo() { val handler = CoroutineExceptionHandler { _, throwable -&gt; Log.d(TAG, &#34;handler:${throwable.message}&#34;) } val parentJob = Job() val scope = CoroutineScope(parentJob + handler) val job1 = scope.launch { delay(1000) Log.d(TAG, &#34;job1 end&#34;) } val job2 = scope.launch { delay(2000) Log.d(TAG, &#34;job2 end&#34;) } job1.invokeOnCompletion { Log.d(TAG, &#34;job1 completion:${it?.message}&#34;) } job2.invokeOnCompletion { Log.d(TAG, &#34;job2 completion:${it?.message}&#34;) } } 这里 parentJob 是父 Job，job1、job2 是两个子 Job。它们不是靠变量名建立关系，而是因为 scope 的 CoroutineContext 里带着 parentJob。后面每次调用 scope.launch 时，新协程都会从 context 里取出这个父 Job，再把自己挂上去。\n">
+    <link rel="shortcut icon" href="/static/logo.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/logo_hu_c5ce2387cd5c94f8.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">xiangcman</a></h1>
+            <h2 class="site-description">大力出奇迹.</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/xiangcman'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E4%B8%AA%E4%BA%BA%E4%BB%8B%E7%BB%8D/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>分类</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#先看一个例子">先看一个例子</a></li>
+        <li><a href="#launch-创建子-job">launch 创建子 Job</a></li>
+        <li><a href="#initparentjob-做了什么">initParentJob 做了什么</a></li>
+        <li><a href="#attachchild-如何绑定父子关系">attachChild 如何绑定父子关系</a></li>
+        <li><a href="#多个子-job-时-state-会变成-nodelist">多个子 Job 时 state 会变成 NodeList</a></li>
+        <li><a href="#子协程如何找到父协程">子协程如何找到父协程</a></li>
+        <li><a href="#父协程如何取消子协程">父协程如何取消子协程</a></li>
+        <li><a href="#childcompletion-不是父子关系本身">ChildCompletion 不是父子关系本身</a></li>
+        <li><a href="#总结">总结</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%BA%90%E7%A0%81/" >
+                源码
+            </a>
+        
+            <a href="/categories/kotin/" >
+                Kotin
+            </a>
+        
+            <a href="/categories/%E5%8D%8F%E7%A8%8B/" >
+                协程
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E5%8D%8F%E7%A8%8B-job-%E7%88%B6%E5%AD%90%E5%85%B3%E7%B3%BB%E5%BB%BA%E7%AB%8B%E5%8E%9F%E7%90%86/">协程 Job 父子关系建立原理</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">2026-05-31</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 3 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>前面看异常分发时，经常会提到“子协程把异常交给父协程”“父协程取消其它子协程”。这些说法背后都依赖同一件事：父 <code>Job</code> 和子 <code>Job</code> 在协程启动时就已经建立了联系。</p>
+<p>这篇只看这条关系是怎么建立起来的。异常怎么分发、<code>CoroutineExceptionHandler</code> 什么时候回调，后面再接着看。</p>
+<h3 id="先看一个例子">先看一个例子
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">private</span> <span class="k">fun</span> <span class="nf">demo</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="py">handler</span> <span class="p">=</span> <span class="n">CoroutineExceptionHandler</span> <span class="p">{</span> <span class="n">_</span><span class="p">,</span> <span class="n">throwable</span> <span class="o">-&gt;</span>
+</span></span><span class="line"><span class="cl">        <span class="nc">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s2">&#34;handler:</span><span class="si">${throwable.message}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="py">parentJob</span> <span class="p">=</span> <span class="n">Job</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="py">scope</span> <span class="p">=</span> <span class="n">CoroutineScope</span><span class="p">(</span><span class="n">parentJob</span> <span class="p">+</span> <span class="n">handler</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="py">job1</span> <span class="p">=</span> <span class="n">scope</span><span class="p">.</span><span class="n">launch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nc">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s2">&#34;job1 end&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="py">job2</span> <span class="p">=</span> <span class="n">scope</span><span class="p">.</span><span class="n">launch</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">delay</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nc">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s2">&#34;job2 end&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">job1</span><span class="p">.</span><span class="n">invokeOnCompletion</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nc">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s2">&#34;job1 completion:</span><span class="si">${it?.message}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">job2</span><span class="p">.</span><span class="n">invokeOnCompletion</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nc">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s2">&#34;job2 completion:</span><span class="si">${it?.message}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里 <code>parentJob</code> 是父 <code>Job</code>，<code>job1</code>、<code>job2</code> 是两个子 <code>Job</code>。它们不是靠变量名建立关系，而是因为 <code>scope</code> 的 <code>CoroutineContext</code> 里带着 <code>parentJob</code>。后面每次调用 <code>scope.launch</code> 时，新协程都会从 context 里取出这个父 <code>Job</code>，再把自己挂上去。</p>
+<h3 id="launch-创建子-job">launch 创建子 Job
+</h3><p><code>launch</code> 内部会先合并当前 <code>CoroutineScope</code> 的 context 和传进来的 context，然后创建 <code>StandaloneCoroutine</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">public</span> <span class="k">fun</span> <span class="nf">CoroutineScope</span><span class="p">.</span><span class="n">launch</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">context</span><span class="p">:</span> <span class="n">CoroutineContext</span> <span class="p">=</span> <span class="n">EmptyCoroutineContext</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">start</span><span class="p">:</span> <span class="n">CoroutineStart</span> <span class="p">=</span> <span class="nc">CoroutineStart</span><span class="p">.</span><span class="n">DEFAULT</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">block</span><span class="p">:</span> <span class="k">suspend</span> <span class="nc">CoroutineScope</span><span class="p">.()</span> <span class="o">-&gt;</span> <span class="n">Unit</span>
+</span></span><span class="line"><span class="cl"><span class="p">):</span> <span class="n">Job</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="py">newContext</span> <span class="p">=</span> <span class="n">newCoroutineContext</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="py">coroutine</span> <span class="p">=</span> <span class="n">StandaloneCoroutine</span><span class="p">(</span><span class="n">newContext</span><span class="p">,</span> <span class="n">active</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">coroutine</span><span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">coroutine</span><span class="p">,</span> <span class="n">block</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">coroutine</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>StandaloneCoroutine</code> 本身就是 <code>Job</code>。所以 <code>launch</code> 返回的 <code>job1</code>、<code>job2</code>，实际都是 <code>StandaloneCoroutine</code> 对象。</p>
+<p>关键点在构造函数。<code>StandaloneCoroutine</code> 继承自 <code>AbstractCoroutine</code>，而 <code>AbstractCoroutine</code> 初始化时会调用 <code>initParentJob</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">public</span> <span class="k">abstract</span> <span class="k">class</span> <span class="nc">AbstractCoroutine</span><span class="p">&lt;</span><span class="k">in</span> <span class="n">T</span><span class="p">&gt;(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">parentContext</span><span class="p">:</span> <span class="n">CoroutineContext</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">initParentJob</span><span class="p">:</span> <span class="n">Boolean</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">active</span><span class="p">:</span> <span class="n">Boolean</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="p">:</span> <span class="n">JobSupport</span><span class="p">(</span><span class="n">active</span><span class="p">),</span> <span class="n">Job</span><span class="p">,</span> <span class="n">Continuation</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;,</span> <span class="n">CoroutineScope</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">init</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">initParentJob</span><span class="p">)</span> <span class="n">initParentJob</span><span class="p">(</span><span class="n">parentContext</span><span class="p">[</span><span class="n">Job</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>注意这里取的是 <code>parentContext[Job]</code>，不是当前协程自己的 <code>context[Job]</code>。因为当前协程创建出来后，它自己也会作为一个 <code>Job</code> 放进 context，如果从自己的 context 里取，拿到的就会是自己。父子关系必须从创建它之前的 parent context 里取父 <code>Job</code>。</p>
+<h3 id="initparentjob-做了什么">initParentJob 做了什么
+</h3><p><code>initParentJob</code> 的逻辑可以简化成这样：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">protected</span> <span class="k">fun</span> <span class="nf">initParentJob</span><span class="p">(</span><span class="n">parent</span><span class="p">:</span> <span class="n">Job</span><span class="p">?)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">parent</span> <span class="o">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">parentHandle</span> <span class="p">=</span> <span class="n">NonDisposableHandle</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">parent</span><span class="p">.</span><span class="n">start</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="py">handle</span> <span class="p">=</span> <span class="n">parent</span><span class="p">.</span><span class="n">attachChild</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">parentHandle</span> <span class="p">=</span> <span class="n">handle</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果没有父 <code>Job</code>，比如 <code>GlobalScope.launch</code>，<code>parentHandle</code> 就会指向 <code>NonDisposableHandle</code>，说明这个协程没有普通父 Job。</p>
+<p>如果能从 <code>parentContext</code> 里拿到父 <code>Job</code>，就会调用 <code>parent.attachChild(this)</code>。这里的 <code>this</code> 是当前正在初始化的子协程，也就是 <code>job1</code> 或 <code>job2</code>。</p>
+<h3 id="attachchild-如何绑定父子关系">attachChild 如何绑定父子关系
+</h3><p><code>attachChild</code> 会创建一个 <code>ChildHandleNode</code>。这个节点很关键，它同时知道父 <code>Job</code> 和子 <code>Job</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-kotlin" data-lang="kotlin"><span class="line"><span class="cl"><span class="k">private</span> <span class="k">class</span> <span class="nc">ChildHandleNode</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="k">val</span> <span class="py">childJob</span><span class="p">:</span> <span class="n">ChildJob</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="p">:</span> <span class="n">JobNode</span><span class="p">(),</span> <span class="n">ChildHandle</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">childCancelled</span><span class="p">(</span><span class="n">cause</span><span class="p">:</span> <span class="n">Throwable</span><span class="p">):</span> <span class="n">Boolean</span> <span class="p">=</span>
+</span></span><span class="line"><span class="cl">        <span class="n">job</span><span class="p">.</span><span class="n">childCancelled</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">override</span> <span class="k">fun</span> <span class="nf">invoke</span><span class="p">(</span><span class="n">cause</span><span class="p">:</span> <span class="n">Throwable</span><span class="p">?)</span> <span class="p">=</span>
+</span></span><span class="line"><span class="cl">        <span class="n">childJob</span><span class="p">.</span><span class="n">parentCancelled</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>JobNode</code> 里有一个 <code>job</code> 字段，它会指向父 <code>Job</code>。<code>ChildHandleNode</code> 自己又保存了 <code>childJob</code>，指向当前子 <code>Job</code>。<code>attachChild</code> 返回的就是这个节点，子 <code>Job</code> 会把它保存到自己的 <code>parentHandle</code> 里。</p>
+<p>所以关系建立完后是这样的：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">parentJob: JobImpl
+</span></span><span class="line"><span class="cl">  state -&gt; ChildHandleNode(job=parentJob, childJob=job1)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">job1: StandaloneCoroutine
+</span></span><span class="line"><span class="cl">  parentHandle -&gt; ChildHandleNode(job=parentJob, childJob=job1)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>父 <code>Job</code> 的 state 里挂着子节点，子 <code>Job</code> 的 <code>parentHandle</code> 又反向持有这个节点。这样父找得到子，子也找得到父。</p>
+<h3 id="多个子-job-时-state-会变成-nodelist">多个子 Job 时 state 会变成 NodeList
+</h3><p>如果只有一个子 <code>Job</code>，父 <code>Job</code> 的 state 里可以直接挂一个 <code>ChildHandleNode</code>。如果继续启动 <code>job2</code>、<code>job3</code>，父 <code>Job</code> 的 state 会升级成 <code>NodeList</code>，所有子节点都挂在这个链表里：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">parentJob: JobImpl
+</span></span><span class="line"><span class="cl">  state -&gt; NodeList
+</span></span><span class="line"><span class="cl">             |
+</span></span><span class="line"><span class="cl">             +-- ChildHandleNode(job=parentJob, childJob=job1)
+</span></span><span class="line"><span class="cl">             |
+</span></span><span class="line"><span class="cl">             +-- ChildHandleNode(job=parentJob, childJob=job2)
+</span></span><span class="line"><span class="cl">             |
+</span></span><span class="line"><span class="cl">             +-- ChildHandleNode(job=parentJob, childJob=job3)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这也是为什么父 <code>Job</code> 能统一管理多个子协程。它不是直接持有一个 <code>children</code> 集合，而是把子协程对应的 <code>ChildHandleNode</code> 挂在自己的 state 链表里。</p>
+<h3 id="子协程如何找到父协程">子协程如何找到父协程
+</h3><p>子协程发生异常时，会进入自己的完成流程。异常处理里有一步是 <code>cancelParent(cause)</code>，它会通过 <code>parentHandle</code> 找到父 <code>Job</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">job1.cancelParent(RuntimeException)
+</span></span><span class="line"><span class="cl">  -&gt; parentHandle.childCancelled(cause)
+</span></span><span class="line"><span class="cl">  -&gt; ChildHandleNode.childCancelled(cause)
+</span></span><span class="line"><span class="cl">  -&gt; parentJob.childCancelled(cause)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>所以“子协程把异常交给父协程”不是抽象说法，它实际就是通过 <code>parentHandle -&gt; ChildHandleNode -&gt; parentJob.childCancelled</code> 这条链路完成的。</p>
+<p>父 <code>Job</code> 收到异常后，会根据自己的类型决定怎么处理。普通 <code>JobImpl</code> 会进入取消流程，<code>SupervisorJobImpl</code> 的 <code>childCancelled</code> 直接返回 <code>false</code>，所以不会因为某个子协程失败就取消其它子协程。</p>
+<h3 id="父协程如何取消子协程">父协程如何取消子协程
+</h3><p>父 <code>Job</code> 被取消时，会遍历自己 state 里的节点。如果节点是 <code>ChildHandleNode</code>，就会调用它的 <code>invoke</code>，最后执行到子 <code>Job</code> 的 <code>parentCancelled</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">parentJob cancel
+</span></span><span class="line"><span class="cl">  -&gt; 遍历 NodeList
+</span></span><span class="line"><span class="cl">  -&gt; ChildHandleNode.invoke(cause)
+</span></span><span class="line"><span class="cl">  -&gt; childJob.parentCancelled(parentJob)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>所以“父协程取消子协程”走的是反方向：父 <code>Job</code> 从自己的 <code>NodeList</code> 找到每个 <code>ChildHandleNode</code>，再通过 <code>childJob</code> 找到对应子协程。</p>
+<h3 id="childcompletion-不是父子关系本身">ChildCompletion 不是父子关系本身
+</h3><p>后面看异常传播时还会遇到 <code>ChildCompletion</code>。它容易和 <code>ChildHandleNode</code> 混在一起。</p>
+<p><code>ChildHandleNode</code> 是父子关系建立时创建的节点，用来让父子 <code>Job</code> 互相找到。<code>ChildCompletion</code> 是父 <code>Job</code> 完成时发现还有子 <code>Job</code> 没结束，临时挂到子 <code>Job</code> 上的完成回调，用来等子 <code>Job</code> 收尾后继续父 <code>Job</code> 的完成流程。</p>
+<p>简单区分：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">ChildHandleNode：建立父子关系，父子互相找得到。
+</span></span><span class="line"><span class="cl">ChildCompletion：父 Job 等子 Job 完成，完成后继续收尾。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="总结">总结
+</h3><p><code>CoroutineScope(Job() + context)</code> 启动子协程时，父 <code>Job</code> 会先放在 scope 的 <code>CoroutineContext</code> 里。<code>launch</code> 创建 <code>StandaloneCoroutine</code> 后，<code>AbstractCoroutine</code> 构造阶段会从 <code>parentContext[Job]</code> 取出父 <code>Job</code>，然后调用 <code>initParentJob</code>。</p>
+<p>如果父 <code>Job</code> 不存在，子协程的 <code>parentHandle</code> 会是 <code>NonDisposableHandle</code>。如果父 <code>Job</code> 存在，<code>initParentJob</code> 会调用 <code>parent.attachChild(child)</code>，创建 <code>ChildHandleNode</code>。这个节点的 <code>job</code> 指向父 <code>Job</code>，<code>childJob</code> 指向子 <code>Job</code>，子 <code>Job</code> 的 <code>parentHandle</code> 再反向持有这个节点。</p>
+<p>多个子协程启动后，父 <code>Job</code> 的 state 会升级成 <code>NodeList</code>，里面挂着多个 <code>ChildHandleNode</code>。子协程异常时，通过 <code>parentHandle.childCancelled</code> 找到父 <code>Job</code>；父协程取消时，通过遍历 <code>NodeList</code> 找到所有子 <code>Job</code>。协程的父子关系就是靠这条链路建立起来的。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script src="https://utteranc.es/client.js" 
+        repo="xiangcman/blog_comment"
+        issue-term="pathname"
+        
+        label="none"
+        
+        crossorigin="anonymous"
+        async
+        >
+</script>
+
+<style>
+    .utterances {
+        max-width: unset;
+    }
+</style>
+
+<script>
+    let utterancesLoaded = false;
+
+    function setUtterancesTheme(theme) {
+        let utterances = document.querySelector('.utterances iframe');
+        if (utterances) {
+            utterances.contentWindow.postMessage(
+                {
+                    type: 'set-theme',
+                    theme: `github-${theme}`
+                },
+                'https://utteranc.es'
+            );
+        }
+    }
+
+    addEventListener('message', event => {
+        if (event.origin !== 'https://utteranc.es') return;
+
+        
+        utterancesLoaded = true;
+        setUtterancesTheme(document.documentElement.dataset.scheme)
+    });
+
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (!utterancesLoaded) return;
+        setUtterancesTheme(e.detail)
+    })
+</script>
+
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 xiangcheng
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
